@@ -4,7 +4,9 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.Response.Builder;
 import com.squareup.okhttp.ResponseBody;
+
 import java.io.IOException;
+
 import okio.Sink;
 
 public interface Transport {

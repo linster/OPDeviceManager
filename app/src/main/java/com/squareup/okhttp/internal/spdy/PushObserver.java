@@ -2,6 +2,7 @@ package com.squareup.okhttp.internal.spdy;
 
 import java.io.IOException;
 import java.util.List;
+
 import okio.BufferedSource;
 
 public interface PushObserver {

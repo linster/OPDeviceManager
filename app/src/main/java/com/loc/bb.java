@@ -9,9 +9,11 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.json.JSONObject;
 
 /* compiled from: CgiManager */

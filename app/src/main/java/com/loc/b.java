@@ -9,8 +9,10 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.Process;
 import android.os.RemoteException;
+
 import com.amap.api.location.APSServiceBase;
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,6 +20,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

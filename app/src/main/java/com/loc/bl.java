@@ -3,11 +3,14 @@ package com.loc;
 import android.content.Context;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
+
 import com.loc.s.a;
+
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

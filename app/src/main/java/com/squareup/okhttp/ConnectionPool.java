@@ -2,6 +2,7 @@ package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.Platform;
 import com.squareup.okhttp.internal.Util;
+
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;

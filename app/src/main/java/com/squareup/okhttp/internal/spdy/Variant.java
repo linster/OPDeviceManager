@@ -1,6 +1,7 @@
 package com.squareup.okhttp.internal.spdy;
 
 import com.squareup.okhttp.Protocol;
+
 import okio.BufferedSink;
 import okio.BufferedSource;
 

@@ -5,7 +5,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import java.io.IOException;
+
 import net.oneplus.odm.common.Def;
 import net.oneplus.odm.common.Utils;
 import net.oneplus.odm.data.Capsule;
@@ -13,8 +15,10 @@ import net.oneplus.odm.data.api.TokenResponse;
 import net.oneplus.odm.database.DeviceInfoDatabaseHelper;
 import net.oneplus.odm.uploader.CustomClient;
 import net.oneplus.odm.uploader.DeviceManagerUploader;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 

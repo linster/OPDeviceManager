@@ -3,6 +3,7 @@ package com.squareup.okhttp;
 import com.squareup.okhttp.internal.Platform;
 import com.squareup.okhttp.internal.Util;
 import com.squareup.okhttp.internal.http.HttpMethod;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;

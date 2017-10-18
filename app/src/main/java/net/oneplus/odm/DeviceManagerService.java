@@ -20,6 +20,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
+
 import net.oneplus.odm.common.Def;
 import net.oneplus.odm.common.Util;
 import net.oneplus.odm.common.Utils;
@@ -30,6 +31,7 @@ import net.oneplus.odm.geolocation.LocationProvider;
 import net.oneplus.odm.insight.OneplusAnalyticsScheduler;
 import net.oneplus.odm.insight.OneplusAnalyticsUploader;
 import net.oneplus.odm.insight.tracker.OSTracker;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

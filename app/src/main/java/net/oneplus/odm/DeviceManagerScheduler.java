@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.SystemClock;
 import android.util.Log;
+
 import java.util.LinkedList;
 
 public class DeviceManagerScheduler {

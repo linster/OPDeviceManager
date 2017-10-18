@@ -2,6 +2,7 @@ package com.google.gson;
 
 import com.google.gson.internal.C$Gson$Preconditions;
 import com.google.gson.internal.LazilyParsedNumber;
+
 import java.math.BigInteger;
 
 public final class JsonPrimitive extends JsonElement {

@@ -1,9 +1,11 @@
 package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.Util;
+
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.util.List;
+
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;

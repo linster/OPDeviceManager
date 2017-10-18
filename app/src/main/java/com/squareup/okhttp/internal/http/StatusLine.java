@@ -2,6 +2,7 @@ package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.Protocol;
 import com.squareup.okhttp.Response;
+
 import java.io.IOException;
 import java.net.ProtocolException;
 

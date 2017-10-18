@@ -159,7 +159,7 @@ final class DistinguishedNameParser {
                         break;
                     }
                     return new String(this.chars, this.beg, this.cur - this.beg);
-                    break;
+                break;
                 case '+':
                 case ',':
                 case ';':

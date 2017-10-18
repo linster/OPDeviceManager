@@ -1,77 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     android:sharedUserId="android.uid.system"
-    package="net.oneplus.odm"
-    platformBuildVersionCode="25"
-    platformBuildVersionName="7.1.1">
+    package="net.oneplus.odm">
 
-  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-  <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.READ_LOGS"/>
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-  <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-  <uses-permission android:name="android.permission.CHANGE_CONFIGURATION"/>
-  <uses-permission android:name="android.permission.WAKE_LOCK"/>
-  <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
-  <permission
-      android:name="getui.permission.GetuiService.net.oneplus.odm"
-      android:protectionLevel="normal"/>
-  <application
-      android:allowBackup="true"
-      android:icon="@mipmap/ic_launcher"
-      android:label="@string/app_name"
-      android:theme="@style/AppTheme">
-    <service android:name="com.amap.api.location.APSService"/>
+    <permission
+        android:name="getui.permission.GetuiService.net.oneplus.odm"
+        android:protectionLevel="normal" />
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+        <service android:name="com.amap.api.location.APSService" />
 
-    <meta-data
-        android:name="com.amap.api.v2.apikey"
-        android:value="b1789a3fbe339d6fd17d445573470917"/>
-    <meta-data
-        android:name="PUSH_APPID"
-        android:value="NowuBz7l8E9in19jLr36c5"/>
-    <meta-data
-        android:name="PUSH_APPKEY"
-        android:value="OO6qrDF5sA926s5ePFvtj6"/>
-    <meta-data
-        android:name="PUSH_APPSECRET"
-        android:value="gMMFwnBJ4t9veYJ8bRjtg"/>
-    <meta-data
-        android:name="PUSH_GROUPID"
-        android:value=""/>
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="b1789a3fbe339d6fd17d445573470917" />
+        <meta-data
+            android:name="PUSH_APPID"
+            android:value="NowuBz7l8E9in19jLr36c5" />
+        <meta-data
+            android:name="PUSH_APPKEY"
+            android:value="OO6qrDF5sA926s5ePFvtj6" />
+        <meta-data
+            android:name="PUSH_APPSECRET"
+            android:value="gMMFwnBJ4t9veYJ8bRjtg" />
+        <meta-data
+            android:name="PUSH_GROUPID"
+            android:value="" />
 
-    <service
-        android:name=".DeviceManagerService"
-        android:enabled="true"
-        android:exported="true"
-        android:permission="net.oneplus.odm.permission.DEFAULT"/>
-    <service
-        android:name=".insight.MDMJobService"
-        android:exported="true"
-        android:permission="android.permission.BIND_JOB_SERVICE"/>
-    <service
-        android:name=".insight.LogParserJobService"
-        android:exported="true"
-        android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service
+            android:name=".DeviceManagerService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="net.oneplus.odm.permission.DEFAULT" />
+        <service
+            android:name=".insight.MDMJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+            android:name=".insight.LogParserJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
-    <receiver
-        android:name=".DeviceManagerReceiver"
-        android:enabled="true">
-      <intent-filter>
-        <action android:name="android.intent.action.BOOT_COMPLETED"/>
-        <action android:name="android.oem.mdm.upload"/>
-      </intent-filter>
-    </receiver>
-    <receiver
-        android:name=".push.PushReceiver"
-        android:exported="false">
-      <intent-filter>
-        <action android:name="com.igexin.sdk.action.NowuBz7l8E9in19jLr36c5"/>
-      </intent-filter>
-    </receiver>
-  </application>
+        <receiver
+            android:name=".DeviceManagerReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.oem.mdm.upload" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".push.PushReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.igexin.sdk.action.NowuBz7l8E9in19jLr36c5" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>

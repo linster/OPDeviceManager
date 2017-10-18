@@ -2,7 +2,9 @@ package com.loc;
 
 import android.content.Context;
 import android.text.TextUtils;
+
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 

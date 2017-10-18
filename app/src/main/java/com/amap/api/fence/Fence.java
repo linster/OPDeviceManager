@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Parcelable.Creator;
+
 import com.loc.br;
 
 public class Fence implements Parcelable {

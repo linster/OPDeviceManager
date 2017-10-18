@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.text.TextUtils;
+
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;

@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+
 import com.amap.api.fence.Fence;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClientOption;
@@ -26,6 +27,7 @@ import com.amap.api.location.APSService;
 import com.amap.api.location.LocationManagerBase;
 import com.autonavi.aps.amapapi.model.AmapLoc;
 import com.squareup.okhttp.internal.http.StatusLine;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 

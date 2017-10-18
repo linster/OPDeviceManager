@@ -2,6 +2,7 @@ package retrofit;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import retrofit.mime.TypedInput;
 
 class ExceptionCatchingTypedInput implements TypedInput {

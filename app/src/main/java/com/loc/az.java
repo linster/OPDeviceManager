@@ -4,9 +4,11 @@ import android.content.Context;
 import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+
 import com.autonavi.aps.amapapi.model.AmapLoc;
 import com.loc.au.c;
 import com.loc.be.a;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
@@ -2586,7 +2588,7 @@ Caused by: jadx.core.utils.exceptions.CodegenException: Unknown instruction: PHI
 	... 26 more
  */
 
-            private static String a(String str, String str2, int i) {
+            private static String a (String str, String str2,int i){
                 if (TextUtils.isEmpty(str) || TextUtils.isEmpty(str2)) {
                     return null;
                 }
@@ -2624,7 +2626,8 @@ Caused by: jadx.core.utils.exceptions.CodegenException: Unknown instruction: PHI
 
             /* JADX WARNING: inconsistent code. */
             /* Code decompiled incorrectly, please refer to instructions dump. */
-            private static boolean a(java.lang.String r10, java.lang.String r11, int r12, java.lang.String[] r13) {
+        private static boolean a (java.lang.String r10, java.lang.String r11,int r12, java.
+        lang.String[] r13){
                 /*
                 r4 = 0;
                 r7 = 3;
@@ -2827,48 +2830,48 @@ Caused by: jadx.core.utils.exceptions.CodegenException: Unknown instruction: PHI
                 r2 = move-exception;
                 goto L_0x014b;
                 */
-                throw new UnsupportedOperationException("Method not decompiled: com.loc.az.a(java.lang.String, java.lang.String, int, java.lang.String[]):boolean");
-            }
-
-            private static boolean a(Context context, String str, int i, boolean z, boolean z2) {
-                boolean z3 = z ? i >= 25 : i != 1;
-                if (!str.contains("cgi") && z3) {
-                    return false;
-                }
-                if ((!str.contains("wifi") && !z3) || c[1] > 2000) {
-                    return false;
-                }
-                NetworkInfo c = br.c(context);
-                if (bl.a(c) == -1) {
-                    return false;
-                }
-                if (c.getType() != 1 && z2) {
-                    return false;
-                }
-                if (!(c.getType() == 1 || z2 || g != null)) {
-                    g = (TelephonyManager) br.a(context, "phone");
-                }
-                return true;
-            }
-
-            private static StringBuilder c() {
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(br.e());
-                stringBuilder.append("offline").append(File.separator);
-                stringBuilder.append(br.j()).append(File.separator).append("s").append(File.separator);
-                return stringBuilder;
-            }
-
-            static int a(int i) {
-                int i2 = 0;
-                int[] iArr = new int[32];
-                int i3 = 0;
-                while (i2 < 4) {
-                    iArr[i2] = (i >> (i2 * 8)) & 255;
-                    iArr[i2] = ((iArr[i2] << 4) & 240) + ((iArr[i2] >> 4) & 15);
-                    i3 += (iArr[i2] & 255) << ((3 - i2) * 8);
-                    i2++;
-                }
-                return d + i3;
-            }
+            throw new UnsupportedOperationException("Method not decompiled: com.loc.az.a(java.lang.String, java.lang.String, int, java.lang.String[]):boolean");
         }
+
+        private static boolean a (Context context, String str,int i, boolean z, boolean z2){
+            boolean z3 = z ? i >= 25 : i != 1;
+            if (!str.contains("cgi") && z3) {
+                return false;
+            }
+            if ((!str.contains("wifi") && !z3) || c[1] > 2000) {
+                return false;
+            }
+            NetworkInfo c = br.c(context);
+            if (bl.a(c) == -1) {
+                return false;
+            }
+            if (c.getType() != 1 && z2) {
+                return false;
+            }
+            if (!(c.getType() == 1 || z2 || g != null)) {
+                g = (TelephonyManager) br.a(context, "phone");
+            }
+            return true;
+        }
+
+        private static StringBuilder c () {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(br.e());
+            stringBuilder.append("offline").append(File.separator);
+            stringBuilder.append(br.j()).append(File.separator).append("s").append(File.separator);
+            return stringBuilder;
+        }
+
+        static int a ( int i){
+            int i2 = 0;
+            int[] iArr = new int[32];
+            int i3 = 0;
+            while (i2 < 4) {
+                iArr[i2] = (i >> (i2 * 8)) & 255;
+                iArr[i2] = ((iArr[i2] << 4) & 240) + ((iArr[i2] >> 4) & 15);
+                i3 += (iArr[i2] & 255) << ((3 - i2) * 8);
+                i2++;
+            }
+            return d + i3;
+        }
+    }

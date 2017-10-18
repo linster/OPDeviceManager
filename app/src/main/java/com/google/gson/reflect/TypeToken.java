@@ -2,6 +2,7 @@ package com.google.gson.reflect;
 
 import com.google.gson.internal.C$Gson$Preconditions;
 import com.google.gson.internal.C$Gson$Types;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 

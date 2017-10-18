@@ -2,6 +2,7 @@ package retrofit;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
+
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;

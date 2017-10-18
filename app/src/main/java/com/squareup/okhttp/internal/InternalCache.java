@@ -4,6 +4,7 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.http.CacheRequest;
 import com.squareup.okhttp.internal.http.CacheStrategy;
+
 import java.io.IOException;
 
 public interface InternalCache {

@@ -1,12 +1,14 @@
 package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.Util;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+
 import okio.Buffer;
 import okio.BufferedSource;
 

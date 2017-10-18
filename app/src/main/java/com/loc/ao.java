@@ -1,6 +1,7 @@
 package com.loc;
 
 import android.os.Build.VERSION;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;

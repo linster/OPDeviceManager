@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Executor;
+
 import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.mime.TypedByteArray;

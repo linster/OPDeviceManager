@@ -2,6 +2,7 @@ package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.http.OkHeaders;
 import com.squareup.okhttp.internal.http.StatusLine;
+
 import java.util.Collections;
 import java.util.List;
 

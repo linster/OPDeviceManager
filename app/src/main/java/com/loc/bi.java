@@ -2,12 +2,15 @@ package com.loc;
 
 import android.content.Context;
 import android.text.TextUtils;
+
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+
 import org.json.JSONObject;
 
 /* compiled from: HeatMap */

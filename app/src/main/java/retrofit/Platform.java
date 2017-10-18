@@ -2,10 +2,13 @@ package retrofit;
 
 import android.os.Build.VERSION;
 import android.os.Process;
+
 import com.google.gson.Gson;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
 import retrofit.RestAdapter.Log;
 import retrofit.android.AndroidApacheClient;
 import retrofit.android.AndroidLog;

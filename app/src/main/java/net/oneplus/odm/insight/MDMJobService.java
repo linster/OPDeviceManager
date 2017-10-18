@@ -10,11 +10,13 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import net.oneplus.odm.ConfigAdapter;
 import net.oneplus.odm.DeviceManagerSetting;
 import net.oneplus.odm.common.Def;
@@ -25,6 +27,7 @@ import net.oneplus.odm.database.DeviceInfoDatabaseHelper;
 import net.oneplus.odm.database.DeviceManagerDatabaseHelper;
 import net.oneplus.odm.uploader.CustomClient;
 import net.oneplus.odm.uploader.DeviceManagerUploader;
+
 import retrofit.RetrofitError;
 
 public class MDMJobService extends JobService {

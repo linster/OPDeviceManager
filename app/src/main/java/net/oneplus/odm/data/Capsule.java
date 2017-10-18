@@ -1,14 +1,18 @@
 package net.oneplus.odm.data;
 
 import android.content.Context;
+
 import java.io.IOException;
 import java.util.ArrayList;
+
 import net.oneplus.odm.analytics.OneplusAnalyticsPayload;
 import net.oneplus.odm.common.Util;
 import net.oneplus.odm.common.Utils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import retrofit.mime.TypedByteArray;
 
 public class Capsule {

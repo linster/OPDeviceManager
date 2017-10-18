@@ -4,8 +4,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
 import com.amap.api.fence.Fence;
 import com.amap.api.location.AMapLocation;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;

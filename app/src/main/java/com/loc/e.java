@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.DPoint;

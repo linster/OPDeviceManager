@@ -2,8 +2,10 @@ package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.Platform;
 import com.squareup.okhttp.internal.Util;
+
 import java.util.Arrays;
 import java.util.List;
+
 import javax.net.ssl.SSLSocket;
 
 public final class ConnectionSpec {

@@ -2,6 +2,7 @@ package com.loc;
 
 import android.location.GpsStatus.Listener;
 import android.location.GpsStatus.NmeaListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;

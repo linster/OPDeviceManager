@@ -2,6 +2,7 @@ package retrofit;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+
 import retrofit.client.Response;
 import retrofit.converter.ConversionException;
 import retrofit.converter.Converter;

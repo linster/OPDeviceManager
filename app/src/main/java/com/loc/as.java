@@ -13,7 +13,9 @@ import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
+
 import org.json.JSONObject;
 
 /* compiled from: APS */
@@ -1176,7 +1179,7 @@ public class as {
                 }
                 str = str + "wifi";
                 break;
-                break;
+            break;
             default:
                 this.j = 11;
                 c.append("get cgi failure");

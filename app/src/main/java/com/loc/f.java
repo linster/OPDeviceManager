@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build.VERSION;
+
 import java.lang.reflect.Method;
 
 /* compiled from: LastLocationManager */

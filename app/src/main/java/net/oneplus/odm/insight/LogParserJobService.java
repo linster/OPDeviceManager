@@ -11,6 +11,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
 import net.oneplus.odm.insight.tracker.OSTracker;
 
 public class LogParserJobService extends JobService {

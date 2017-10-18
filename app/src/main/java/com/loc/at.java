@@ -7,8 +7,10 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+
 import com.amap.api.location.DPoint;
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import org.json.JSONObject;
 
 /* compiled from: ConnectionServiceManager */

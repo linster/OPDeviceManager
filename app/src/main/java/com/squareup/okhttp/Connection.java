@@ -11,14 +11,17 @@ import com.squareup.okhttp.internal.http.SpdyTransport;
 import com.squareup.okhttp.internal.http.Transport;
 import com.squareup.okhttp.internal.spdy.SpdyConnection;
 import com.squareup.okhttp.internal.tls.OkHostnameVerifier;
+
 import java.io.IOException;
 import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
+
 import okio.Source;
 
 public final class Connection {

@@ -2,6 +2,7 @@ package com.google.gson.stream;
 
 import com.google.gson.internal.JsonReaderInternalAccess;
 import com.google.gson.internal.bind.JsonTreeReader;
+
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
@@ -257,7 +258,7 @@ public class JsonReader implements Closeable {
                         }
                     }
                     break;
-                    break;
+                break;
                 default:
                     throw syntaxError("Expected ':'");
             }

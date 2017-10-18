@@ -2,12 +2,14 @@ package retrofit.converter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+
 import retrofit.mime.MimeUtil;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;

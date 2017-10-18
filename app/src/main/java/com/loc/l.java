@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.text.TextUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Key;

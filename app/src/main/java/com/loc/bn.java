@@ -1,11 +1,15 @@
 package com.loc;
 
 import android.text.TextUtils;
+
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+
 import javax.xml.parsers.SAXParserFactory;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xml.sax.Attributes;

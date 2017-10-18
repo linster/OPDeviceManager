@@ -1,6 +1,7 @@
 package com.loc;
 
 import android.text.TextUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;

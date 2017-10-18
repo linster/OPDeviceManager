@@ -2,6 +2,7 @@ package com.loc;
 
 import android.content.Context;
 import android.text.TextUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
+
 import org.json.JSONObject;
 
 /* compiled from: Utils */

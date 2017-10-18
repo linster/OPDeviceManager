@@ -1,8 +1,10 @@
 package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.internal.Util;
+
 import java.io.IOException;
 import java.net.ProtocolException;
+
 import okio.Buffer;
 import okio.Sink;
 import okio.Timeout;

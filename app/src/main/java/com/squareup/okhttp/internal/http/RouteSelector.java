@@ -9,6 +9,7 @@ import com.squareup.okhttp.internal.Internal;
 import com.squareup.okhttp.internal.Network;
 import com.squareup.okhttp.internal.RouteDatabase;
 import com.squareup.okhttp.internal.Util;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLProtocolException;
 

@@ -6,7 +6,9 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
+
 import java.util.List;
+
 import org.json.JSONObject;
 
 /* compiled from: WifiManagerWrapper */

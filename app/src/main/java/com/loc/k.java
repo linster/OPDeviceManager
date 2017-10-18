@@ -2,9 +2,11 @@ package com.loc;
 
 import android.content.Context;
 import android.util.Log;
+
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.json.JSONObject;
 
 /* compiled from: AuthManager */

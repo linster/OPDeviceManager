@@ -2,6 +2,7 @@ package retrofit;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import retrofit.RequestInterceptor.RequestFacade;
 
 final class RequestInterceptorTape implements RequestFacade, RequestInterceptor {

@@ -19,7 +19,7 @@ public enum ErrorCode {
     INADEQUATE_SECURITY(12, -1, -1),
     HTTP_1_1_REQUIRED(13, -1, -1),
     INVALID_CREDENTIALS(-1, 10, -1);
-    
+
     public final int httpCode;
     public final int spdyGoAwayCode;
     public final int spdyRstCode;

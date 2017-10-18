@@ -4,9 +4,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.SparseArray;
+
 import com.amap.api.location.AMapLocation;
 import com.autonavi.aps.amapapi.model.AmapLoc;
 import com.loc.s.a;
+
 import java.util.HashMap;
 import java.util.Locale;
 

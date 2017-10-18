@@ -1,6 +1,7 @@
 package com.loc;
 
 import android.text.TextUtils;
+
 import java.net.Proxy;
 import java.util.Map;
 

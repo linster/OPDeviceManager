@@ -2,13 +2,16 @@ package net.oneplus.odm.uploader;
 
 import android.os.Build;
 import android.util.Log;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import net.oneplus.odm.common.Utils;
 import net.oneplus.odm.data.api.OnePlus;
 import net.oneplus.odm.data.api.TokenResponse;
 import net.oneplus.odm.data.api.TokenResponseDeserializer;
+
 import retrofit.RestAdapter;
 import retrofit.RestAdapter.Builder;
 import retrofit.RestAdapter.LogLevel;

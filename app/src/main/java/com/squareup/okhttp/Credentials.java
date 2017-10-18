@@ -1,6 +1,7 @@
 package com.squareup.okhttp;
 
 import java.io.UnsupportedEncodingException;
+
 import okio.ByteString;
 
 public final class Credentials {

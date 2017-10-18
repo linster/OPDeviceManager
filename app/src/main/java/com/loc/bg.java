@@ -6,7 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
+
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import org.json.JSONObject;
 
 /* compiled from: DB */

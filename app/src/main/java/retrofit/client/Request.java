@@ -3,6 +3,7 @@ package retrofit.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import retrofit.mime.TypedOutput;
 
 public final class Request {

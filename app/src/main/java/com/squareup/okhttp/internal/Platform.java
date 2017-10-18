@@ -1,6 +1,7 @@
 package com.squareup.okhttp.internal;
 
 import com.squareup.okhttp.Protocol;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +16,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+
 import javax.net.ssl.SSLSocket;
+
 import okio.Buffer;
 
 public class Platform {

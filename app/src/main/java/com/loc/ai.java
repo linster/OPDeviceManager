@@ -2,6 +2,7 @@ package com.loc;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+
 import java.util.HashMap;
 import java.util.Map;
 

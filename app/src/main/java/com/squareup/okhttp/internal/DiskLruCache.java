@@ -1,6 +1,7 @@
 package com.squareup.okhttp.internal;
 
 import com.squareup.okhttp.internal.io.FileSystem;
+
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;

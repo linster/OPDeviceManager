@@ -17,6 +17,7 @@ import android.util.Log;
 import android.util.OpFeatures;
 import android.view.Display;
 import android.view.WindowManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

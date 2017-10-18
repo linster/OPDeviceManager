@@ -2,8 +2,10 @@ package com.loc;
 
 import android.content.Context;
 import android.text.TextUtils;
+
 import com.amap.api.location.CoordUtil;
 import com.amap.api.location.DPoint;
+
 import java.io.File;
 
 /* compiled from: OffsetUtil */

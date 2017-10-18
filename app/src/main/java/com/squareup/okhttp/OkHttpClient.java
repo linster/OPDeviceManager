@@ -10,6 +10,7 @@ import com.squareup.okhttp.internal.http.AuthenticatorAdapter;
 import com.squareup.okhttp.internal.http.HttpEngine;
 import com.squareup.okhttp.internal.http.Transport;
 import com.squareup.okhttp.internal.tls.OkHostnameVerifier;
+
 import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.Proxy;
@@ -18,6 +19,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;

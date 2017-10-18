@@ -2,12 +2,14 @@ package net.oneplus.odm.uploader;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request.Builder;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.ResponseBody;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,8 +18,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import net.oneplus.odm.common.Def;
 import net.oneplus.odm.common.Utils;
+
 import retrofit.client.Client;
 import retrofit.client.Header;
 import retrofit.client.Request;

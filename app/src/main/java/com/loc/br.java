@@ -17,8 +17,10 @@ import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.text.TextUtils;
 import android.util.Base64;
+
 import com.amap.api.location.AMapLocation;
 import com.autonavi.aps.amapapi.model.AmapLoc;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Random;
+
 import org.json.JSONObject;
 
 /* compiled from: Utils */
