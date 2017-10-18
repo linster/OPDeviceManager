@@ -2,58 +2,21 @@ package retrofit;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import retrofit.mime.TypedInput;
 
 class ExceptionCatchingTypedInput implements TypedInput {
     private final TypedInput delegate;
     private final ExceptionCatchingInputStream delegateStream;
 
-    private static class ExceptionCatchingInputStream extends InputStream {
+    class ExceptionCatchingInputStream extends InputStream {
         private final InputStream delegate;
         private IOException thrownException;
 
-        ExceptionCatchingInputStream(InputStream delegate) {
-            this.delegate = delegate;
+        ExceptionCatchingInputStream(InputStream inputStream) {
+            this.delegate = inputStream;
         }
 
-        public int read() throws IOException {
-            try {
-                return this.delegate.read();
-            } catch (IOException e) {
-                this.thrownException = e;
-                throw e;
-            }
-        }
-
-        public int read(byte[] buffer) throws IOException {
-            try {
-                return this.delegate.read(buffer);
-            } catch (IOException e) {
-                this.thrownException = e;
-                throw e;
-            }
-        }
-
-        public int read(byte[] buffer, int offset, int length) throws IOException {
-            try {
-                return this.delegate.read(buffer, offset, length);
-            } catch (IOException e) {
-                this.thrownException = e;
-                throw e;
-            }
-        }
-
-        public long skip(long byteCount) throws IOException {
-            try {
-                return this.delegate.skip(byteCount);
-            } catch (IOException e) {
-                this.thrownException = e;
-                throw e;
-            }
-        }
-
-        public int available() throws IOException {
+        public int available() {
             try {
                 return this.delegate.available();
             } catch (IOException e) {
@@ -62,7 +25,7 @@ class ExceptionCatchingTypedInput implements TypedInput {
             }
         }
 
-        public void close() throws IOException {
+        public void close() {
             try {
                 this.delegate.close();
             } catch (IOException e) {
@@ -71,11 +34,42 @@ class ExceptionCatchingTypedInput implements TypedInput {
             }
         }
 
-        public synchronized void mark(int readLimit) {
-            this.delegate.mark(readLimit);
+        public synchronized void mark(int i) {
+            this.delegate.mark(i);
         }
 
-        public synchronized void reset() throws IOException {
+        public boolean markSupported() {
+            return this.delegate.markSupported();
+        }
+
+        public int read() {
+            try {
+                return this.delegate.read();
+            } catch (IOException e) {
+                this.thrownException = e;
+                throw e;
+            }
+        }
+
+        public int read(byte[] bArr) {
+            try {
+                return this.delegate.read(bArr);
+            } catch (IOException e) {
+                this.thrownException = e;
+                throw e;
+            }
+        }
+
+        public int read(byte[] bArr, int i, int i2) {
+            try {
+                return this.delegate.read(bArr, i, i2);
+            } catch (IOException e) {
+                this.thrownException = e;
+                throw e;
+            }
+        }
+
+        public synchronized void reset() {
             try {
                 this.delegate.reset();
             } catch (IOException e) {
@@ -84,30 +78,35 @@ class ExceptionCatchingTypedInput implements TypedInput {
             }
         }
 
-        public boolean markSupported() {
-            return this.delegate.markSupported();
+        public long skip(long j) {
+            try {
+                return this.delegate.skip(j);
+            } catch (IOException e) {
+                this.thrownException = e;
+                throw e;
+            }
         }
     }
 
-    ExceptionCatchingTypedInput(TypedInput delegate) throws IOException {
-        this.delegate = delegate;
-        this.delegateStream = new ExceptionCatchingInputStream(delegate.in());
+    ExceptionCatchingTypedInput(TypedInput typedInput) {
+        this.delegate = typedInput;
+        this.delegateStream = new ExceptionCatchingInputStream(typedInput.in());
     }
 
-    public String mimeType() {
-        return this.delegate.mimeType();
+    IOException getThrownException() {
+        return this.delegateStream.thrownException;
+    }
+
+    public InputStream in() {
+        return this.delegateStream;
     }
 
     public long length() {
         return this.delegate.length();
     }
 
-    public InputStream in() throws IOException {
-        return this.delegateStream;
-    }
-
-    IOException getThrownException() {
-        return this.delegateStream.thrownException;
+    public String mimeType() {
+        return this.delegate.mimeType();
     }
 
     boolean threwException() {

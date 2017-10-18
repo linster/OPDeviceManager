@@ -1,13 +1,24 @@
 package com.google.gson.internal;
 
-import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 
 public final class LazilyParsedNumber extends Number {
     private final String value;
 
-    public LazilyParsedNumber(String value) {
-        this.value = value;
+    public LazilyParsedNumber(String str) {
+        this.value = str;
+    }
+
+    private Object writeReplace() {
+        return new BigDecimal(this.value);
+    }
+
+    public double doubleValue() {
+        return Double.parseDouble(this.value);
+    }
+
+    public float floatValue() {
+        return Float.parseFloat(this.value);
     }
 
     public int intValue() {
@@ -30,19 +41,7 @@ public final class LazilyParsedNumber extends Number {
         }
     }
 
-    public float floatValue() {
-        return Float.parseFloat(this.value);
-    }
-
-    public double doubleValue() {
-        return Double.parseDouble(this.value);
-    }
-
     public String toString() {
         return this.value;
-    }
-
-    private Object writeReplace() throws ObjectStreamException {
-        return new BigDecimal(this.value);
     }
 }

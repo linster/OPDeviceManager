@@ -3,30 +3,37 @@ package retrofit.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import retrofit.mime.TypedOutput;
 
 public final class Request {
     private final TypedOutput body;
-    private final List<Header> headers;
+    private final List headers;
     private final String method;
     private final String url;
 
-    public Request(String method, String url, List<Header> headers, TypedOutput body) {
-        if (method == null) {
+    public Request(String str, String str2, List list, TypedOutput typedOutput) {
+        if (str == null) {
             throw new NullPointerException("Method must not be null.");
-        } else if (url != null) {
-            this.method = method;
-            this.url = url;
-            if (headers != null) {
-                this.headers = Collections.unmodifiableList(new ArrayList(headers));
+        } else if (str2 != null) {
+            this.method = str;
+            this.url = str2;
+            if (list != null) {
+                this.headers = Collections.unmodifiableList(new ArrayList(list));
             } else {
                 this.headers = Collections.emptyList();
             }
-            this.body = body;
+            this.body = typedOutput;
         } else {
             throw new NullPointerException("URL must not be null.");
         }
+    }
+
+    public TypedOutput getBody() {
+        return this.body;
+    }
+
+    public List getHeaders() {
+        return this.headers;
     }
 
     public String getMethod() {
@@ -35,13 +42,5 @@ public final class Request {
 
     public String getUrl() {
         return this.url;
-    }
-
-    public List<Header> getHeaders() {
-        return this.headers;
-    }
-
-    public TypedOutput getBody() {
-        return this.body;
     }
 }

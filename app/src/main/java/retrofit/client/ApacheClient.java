@@ -2,13 +2,11 @@ package retrofit.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,7 +22,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-
 import retrofit.mime.TypedByteArray;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
@@ -32,7 +29,7 @@ import retrofit.mime.TypedOutput;
 public class ApacheClient implements Client {
     private final HttpClient client;
 
-    private static class GenericEntityHttpRequest extends HttpEntityEnclosingRequestBase {
+    class GenericEntityHttpRequest extends HttpEntityEnclosingRequestBase {
         private final String method;
 
         GenericEntityHttpRequest(Request request) {
@@ -49,7 +46,7 @@ public class ApacheClient implements Client {
         }
     }
 
-    private static class GenericHttpRequest extends HttpRequestBase {
+    class GenericHttpRequest extends HttpRequestBase {
         private final String method;
 
         public GenericHttpRequest(Request request) {
@@ -65,7 +62,7 @@ public class ApacheClient implements Client {
         }
     }
 
-    static class TypedOutputEntity extends AbstractHttpEntity {
+    class TypedOutputEntity extends AbstractHttpEntity {
         final TypedOutput typedOutput;
 
         TypedOutputEntity(TypedOutput typedOutput) {
@@ -73,78 +70,75 @@ public class ApacheClient implements Client {
             setContentType(typedOutput.mimeType());
         }
 
-        public boolean isRepeatable() {
-            return true;
+        public InputStream getContent() {
+            OutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            this.typedOutput.writeTo(byteArrayOutputStream);
+            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         }
 
         public long getContentLength() {
             return this.typedOutput.length();
         }
 
-        public InputStream getContent() throws IOException {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            this.typedOutput.writeTo(out);
-            return new ByteArrayInputStream(out.toByteArray());
-        }
-
-        public void writeTo(OutputStream out) throws IOException {
-            this.typedOutput.writeTo(out);
+        public boolean isRepeatable() {
+            return true;
         }
 
         public boolean isStreaming() {
             return false;
         }
-    }
 
-    private static HttpClient createDefaultClient() {
-        HttpParams params = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(params, 15000);
-        HttpConnectionParams.setSoTimeout(params, 20000);
-        return new DefaultHttpClient(params);
+        public void writeTo(OutputStream outputStream) {
+            this.typedOutput.writeTo(outputStream);
+        }
     }
 
     public ApacheClient() {
         this(createDefaultClient());
     }
 
-    public ApacheClient(HttpClient client) {
-        this.client = client;
+    public ApacheClient(HttpClient httpClient) {
+        this.client = httpClient;
     }
 
-    public Response execute(Request request) throws IOException {
-        return parseResponse(request.getUrl(), execute(this.client, createRequest(request)));
-    }
-
-    protected HttpResponse execute(HttpClient client, HttpUriRequest request) throws IOException {
-        return client.execute(request);
+    private static HttpClient createDefaultClient() {
+        HttpParams basicHttpParams = new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(basicHttpParams, 15000);
+        HttpConnectionParams.setSoTimeout(basicHttpParams, 20000);
+        return new DefaultHttpClient(basicHttpParams);
     }
 
     static HttpUriRequest createRequest(Request request) {
-        if (request.getBody() == null) {
-            return new GenericHttpRequest(request);
-        }
-        return new GenericEntityHttpRequest(request);
+        return request.getBody() == null ? new GenericHttpRequest(request) : new GenericEntityHttpRequest(request);
     }
 
-    static Response parseResponse(String url, HttpResponse response) throws IOException {
-        StatusLine statusLine = response.getStatusLine();
-        int status = statusLine.getStatusCode();
-        String reason = statusLine.getReasonPhrase();
-        List<Header> headers = new ArrayList();
-        String contentType = "application/octet-stream";
-        for (Header header : response.getAllHeaders()) {
+    static Response parseResponse(String str, HttpResponse httpResponse) {
+        TypedInput typedInput = null;
+        StatusLine statusLine = httpResponse.getStatusLine();
+        int statusCode = statusLine.getStatusCode();
+        String reasonPhrase = statusLine.getReasonPhrase();
+        List arrayList = new ArrayList();
+        String str2 = "application/octet-stream";
+        for (Header header : httpResponse.getAllHeaders()) {
             String name = header.getName();
             String value = header.getValue();
             if ("Content-Type".equalsIgnoreCase(name)) {
-                contentType = value;
+                str2 = value;
             }
-            headers.add(new Header(name, value));
+            arrayList.add(new Header(name, value));
         }
-        TypedInput body = null;
-        HttpEntity entity = response.getEntity();
+        HttpEntity entity = httpResponse.getEntity();
         if (entity != null) {
-            body = new TypedByteArray(contentType, EntityUtils.toByteArray(entity));
+            typedInput = new TypedByteArray(str2, EntityUtils.toByteArray(entity));
         }
-        return new Response(url, status, reason, headers, body);
+        return new Response(str, statusCode, reasonPhrase, arrayList, typedInput);
+    }
+
+    protected HttpResponse execute(HttpClient httpClient, HttpUriRequest httpUriRequest) {
+        return httpClient.execute(httpUriRequest);
+    }
+
+    public Response execute(Request request) {
+        return parseResponse(request.getUrl(), execute(this.client, createRequest(request)));
     }
 }

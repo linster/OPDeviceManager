@@ -1,30 +1,19 @@
 package com.loc;
 
-import java.util.Locale;
+import java.util.Comparator;
 
-/* compiled from: HeatElement */
-public class bh {
-    private String a;
-    private int b;
-    private String c;
-    private long d;
+class bh implements Comparator {
+    final /* synthetic */ bb sq;
 
-    public bh(String str, long j, int i, String str2) {
-        this.a = str;
-        this.d = j;
-        this.b = i;
-        this.c = str2;
+    bh(bb bbVar) {
+        this.sq = bbVar;
     }
 
-    public String a() {
-        return this.a;
+    public /* synthetic */ int compare(Object obj, Object obj2) {
+        return vd((af) obj, (af) obj2);
     }
 
-    public int b() {
-        return this.b;
-    }
-
-    public String toString() {
-        return String.format(Locale.US, "##h=%s, n=%d, t=%d, ex=%s##", new Object[]{this.a, Integer.valueOf(this.b), Long.valueOf(this.d), this.c});
+    public int vd(af afVar, af afVar2) {
+        return afVar2.og() - afVar.og();
     }
 }

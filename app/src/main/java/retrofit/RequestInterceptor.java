@@ -1,7 +1,10 @@
 package retrofit;
 
 public interface RequestInterceptor {
-    public static final RequestInterceptor NONE;
+    public static final RequestInterceptor NONE = new RequestInterceptor() {
+        public void intercept(RequestFacade requestFacade) {
+        }
+    };
 
     public interface RequestFacade {
         void addEncodedPathParam(String str, String str2);
@@ -16,11 +19,4 @@ public interface RequestInterceptor {
     }
 
     void intercept(RequestFacade requestFacade);
-
-    static {
-        NONE = new RequestInterceptor() {
-            public void intercept(RequestFacade request) {
-            }
-        };
-    }
 }

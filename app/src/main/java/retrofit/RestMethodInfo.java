@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import retrofit.client.Header;
 import retrofit.client.Response;
 import retrofit.http.Body;
 import retrofit.http.EncodedPath;
@@ -22,6 +20,7 @@ import retrofit.http.EncodedQueryMap;
 import retrofit.http.Field;
 import retrofit.http.FieldMap;
 import retrofit.http.FormUrlEncoded;
+import retrofit.http.Header;
 import retrofit.http.Headers;
 import retrofit.http.Multipart;
 import retrofit.http.Part;
@@ -35,22 +34,22 @@ import rx.Observable;
 
 final class RestMethodInfo {
     private static final String PARAM = "[a-zA-Z][a-zA-Z0-9_-]*";
-    private static final Pattern PARAM_NAME_REGEX;
-    private static final Pattern PARAM_URL_REGEX;
+    private static final Pattern PARAM_NAME_REGEX = Pattern.compile(PARAM);
+    private static final Pattern PARAM_URL_REGEX = Pattern.compile("\\{([a-zA-Z][a-zA-Z0-9_-]*)\\}");
     String contentTypeHeader;
-    List<Header> headers;
+    List headers;
     final boolean isObservable;
     boolean isStreaming;
     final boolean isSynchronous;
-    boolean loaded;
+    boolean loaded = false;
     final Method method;
     boolean requestHasBody;
     String requestMethod;
     Annotation[] requestParamAnnotations;
     String requestQuery;
-    RequestType requestType;
+    RequestType requestType = RequestType.SIMPLE;
     String requestUrl;
-    Set<String> requestUrlParamNames;
+    Set requestUrlParamNames;
     Type responseObjectType;
     final ResponseType responseType;
 
@@ -60,83 +59,74 @@ final class RestMethodInfo {
         FORM_URL_ENCODED
     }
 
-    private enum ResponseType {
+    enum ResponseType {
         VOID,
         OBSERVABLE,
         OBJECT
     }
 
-    private static final class RxSupport {
+    final class RxSupport {
         private RxSupport() {
         }
 
-        public static boolean isObservable(Class rawType) {
-            return rawType == Observable.class;
+        public static Type getObservableType(Type type, Class cls) {
+            return Types.getSupertype(type, cls, Observable.class);
         }
 
-        public static Type getObservableType(Type contextType, Class contextRawType) {
-            return Types.getSupertype(contextType, contextRawType, Observable.class);
+        public static boolean isObservable(Class cls) {
+            return cls == Observable.class;
         }
-    }
-
-    static {
-        PARAM_NAME_REGEX = Pattern.compile(PARAM);
-        PARAM_URL_REGEX = Pattern.compile("\\{([a-zA-Z][a-zA-Z0-9_-]*)\\}");
     }
 
     RestMethodInfo(Method method) {
-        boolean z;
-        boolean z2 = false;
-        this.loaded = false;
-        this.requestType = RequestType.SIMPLE;
+        boolean z = false;
         this.method = method;
         this.responseType = parseResponseType();
-        if (this.responseType != ResponseType.OBJECT) {
-            z = false;
-        } else {
+        this.isSynchronous = this.responseType == ResponseType.OBJECT;
+        if (this.responseType == ResponseType.OBSERVABLE) {
             z = true;
         }
-        this.isSynchronous = z;
-        if (this.responseType == ResponseType.OBSERVABLE) {
-            z2 = true;
-        }
-        this.isObservable = z2;
+        this.isObservable = z;
     }
 
-    private RuntimeException methodError(String message, Object... args) {
-        if (args.length > 0) {
-            message = String.format(message, args);
+    private static Type getParameterUpperBound(ParameterizedType parameterizedType) {
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        for (int i = 0; i < actualTypeArguments.length; i++) {
+            Type type = actualTypeArguments[i];
+            if (type instanceof WildcardType) {
+                actualTypeArguments[i] = ((WildcardType) type).getUpperBounds()[0];
+            }
         }
-        return new IllegalArgumentException(this.method.getDeclaringClass().getSimpleName() + "." + this.method.getName() + ": " + message);
+        return actualTypeArguments[0];
     }
 
-    private RuntimeException parameterError(int index, String message, Object... args) {
-        return methodError(message + " (parameter #" + (index + 1) + ")", args);
+    private RuntimeException methodError(String str, Object... objArr) {
+        if (objArr.length > 0) {
+            str = String.format(str, objArr);
+        }
+        return new IllegalArgumentException(this.method.getDeclaringClass().getSimpleName() + "." + this.method.getName() + ": " + str);
     }
 
-    synchronized void init() {
-        if (!this.loaded) {
-            parseMethodAnnotations();
-            parseParameters();
-            this.loaded = true;
-        }
+    private RuntimeException parameterError(int i, String str, Object... objArr) {
+        return methodError(str + " (parameter #" + (i + 1) + ")", objArr);
     }
 
     private void parseMethodAnnotations() {
-        for (Annotation methodAnnotation : this.method.getAnnotations()) {
-            Class<? extends Annotation> annotationType = methodAnnotation.annotationType();
-            RestMethod methodInfo = null;
-            for (Annotation innerAnnotation : annotationType.getAnnotations()) {
-                if (RestMethod.class == innerAnnotation.annotationType()) {
-                    methodInfo = (RestMethod) innerAnnotation;
+        for (Annotation annotation : this.method.getAnnotations()) {
+            RestMethod restMethod;
+            Class annotationType = annotation.annotationType();
+            for (Annotation annotation2 : annotationType.getAnnotations()) {
+                if (RestMethod.class == annotation2.annotationType()) {
+                    restMethod = (RestMethod) annotation2;
                     break;
                 }
             }
-            if (methodInfo == null) {
+            restMethod = null;
+            if (restMethod == null) {
                 if (annotationType == Headers.class) {
-                    String[] headersToParse = ((Headers) methodAnnotation).value();
-                    if (headersToParse.length != 0) {
-                        this.headers = parseHeaders(headersToParse);
+                    String[] value = ((Headers) annotation).value();
+                    if (value.length != 0) {
+                        this.headers = parseHeaders(value);
                     } else {
                         throw methodError("@Headers annotation is empty.", new Object[0]);
                     }
@@ -161,14 +151,14 @@ final class RestMethodInfo {
                 }
             } else if (this.requestMethod == null) {
                 try {
-                    parsePath((String) annotationType.getMethod("value", new Class[0]).invoke(methodAnnotation, new Object[0]));
-                    this.requestMethod = methodInfo.value();
-                    this.requestHasBody = methodInfo.hasBody();
+                    parsePath((String) annotationType.getMethod("value", new Class[0]).invoke(annotation, new Object[0]));
+                    this.requestMethod = restMethod.value();
+                    this.requestHasBody = restMethod.hasBody();
                 } catch (Exception e) {
                     throw methodError("Failed to extract String 'value' from @%s annotation.", annotationType.getSimpleName());
                 }
             } else {
-                throw methodError("Only one HTTP method is allowed. Found: %s and %s.", this.requestMethod, methodInfo.value());
+                throw methodError("Only one HTTP method is allowed. Found: %s and %s.", this.requestMethod, restMethod.value());
             }
         }
         if (this.requestMethod == null) {
@@ -182,215 +172,282 @@ final class RestMethodInfo {
         }
     }
 
-    private void parsePath(String path) {
-        if (path == null || path.length() == 0 || path.charAt(0) != '/') {
-            throw methodError("URL path \"%s\" must start with '/'.", path);
-        }
-        String url = path;
-        String query = null;
-        int question = path.indexOf(63);
-        if (question != -1 && question < path.length() - 1) {
-            url = path.substring(0, question);
-            query = path.substring(question + 1);
-            if (PARAM_URL_REGEX.matcher(query).find()) {
-                throw methodError("URL query string \"%s\" must not have replace block. For dynamic query parameters use @Query.", query);
+    private void parseParameters() {
+        Class[] parameterTypes = this.method.getParameterTypes();
+        Annotation[][] parameterAnnotations = this.method.getParameterAnnotations();
+        int length = parameterAnnotations.length;
+        int i = (this.isSynchronous || this.isObservable) ? length : length - 1;
+        Annotation[] annotationArr = new Annotation[i];
+        Object obj = null;
+        Object obj2 = null;
+        Object obj3 = null;
+        int i2 = 0;
+        while (i2 < i) {
+            Class cls = parameterTypes[i2];
+            Annotation[] annotationArr2 = parameterAnnotations[i2];
+            if (annotationArr2 != null) {
+                for (Annotation annotation : annotationArr2) {
+                    Class annotationType = annotation.annotationType();
+                    Object obj4;
+                    if (annotationType != Path.class) {
+                        if (annotationType == EncodedPath.class) {
+                            validatePathName(i2, ((EncodedPath) annotation).value());
+                        } else if (annotationType != Query.class) {
+                            if (annotationType == EncodedQuery.class) {
+                                obj4 = obj3;
+                                obj3 = obj2;
+                                obj2 = obj;
+                            } else if (annotationType != QueryMap.class) {
+                                if (annotationType != EncodedQueryMap.class) {
+                                    if (annotationType == Header.class) {
+                                        obj4 = obj3;
+                                        obj3 = obj2;
+                                        obj2 = obj;
+                                    } else if (annotationType != Field.class) {
+                                        if (annotationType != FieldMap.class) {
+                                            int i3;
+                                            if (annotationType != Part.class) {
+                                                if (annotationType != PartMap.class) {
+                                                    if (annotationType != Body.class) {
+                                                        continue;
+                                                    } else if (this.requestType != RequestType.SIMPLE) {
+                                                        throw parameterError(i2, "@Body parameters cannot be used with form or multi-part encoding.", new Object[0]);
+                                                    } else if (obj3 == null) {
+                                                        obj4 = 1;
+                                                        obj3 = obj2;
+                                                        obj2 = obj;
+                                                    } else {
+                                                        throw methodError("Multiple @Body method annotations found.", new Object[0]);
+                                                    }
+                                                } else if (this.requestType != RequestType.MULTIPART) {
+                                                    throw parameterError(i2, "@PartMap parameters can only be used with multipart encoding.", new Object[0]);
+                                                } else if (Map.class.isAssignableFrom(cls)) {
+                                                    obj2 = obj;
+                                                    obj4 = obj3;
+                                                    i3 = 1;
+                                                } else {
+                                                    throw parameterError(i2, "@PartMap parameter type must be Map.", new Object[0]);
+                                                }
+                                            } else if (this.requestType == RequestType.MULTIPART) {
+                                                obj2 = obj;
+                                                obj4 = obj3;
+                                                i3 = 1;
+                                            } else {
+                                                throw parameterError(i2, "@Part parameters can only be used with multipart encoding.", new Object[0]);
+                                            }
+                                        } else if (this.requestType != RequestType.FORM_URL_ENCODED) {
+                                            throw parameterError(i2, "@FieldMap parameters can only be used with form encoding.", new Object[0]);
+                                        } else if (Map.class.isAssignableFrom(cls)) {
+                                            r17 = obj3;
+                                            obj3 = obj2;
+                                            r5 = 1;
+                                            obj4 = r17;
+                                        } else {
+                                            throw parameterError(i2, "@FieldMap parameter type must be Map.", new Object[0]);
+                                        }
+                                    } else if (this.requestType == RequestType.FORM_URL_ENCODED) {
+                                        r17 = obj3;
+                                        obj3 = obj2;
+                                        r5 = 1;
+                                        obj4 = r17;
+                                    } else {
+                                        throw parameterError(i2, "@Field parameters can only be used with form encoding.", new Object[0]);
+                                    }
+                                } else if (Map.class.isAssignableFrom(cls)) {
+                                    obj4 = obj3;
+                                    obj3 = obj2;
+                                    obj2 = obj;
+                                } else {
+                                    throw parameterError(i2, "@EncodedQueryMap parameter type must be Map.", new Object[0]);
+                                }
+                            } else if (Map.class.isAssignableFrom(cls)) {
+                                obj4 = obj3;
+                                obj3 = obj2;
+                                obj2 = obj;
+                            } else {
+                                throw parameterError(i2, "@QueryMap parameter type must be Map.", new Object[0]);
+                            }
+                            if (annotationArr[i2] == null) {
+                                annotationArr[i2] = annotation;
+                                obj = obj2;
+                                obj2 = obj3;
+                                obj3 = obj4;
+                            } else {
+                                throw parameterError(i2, "Multiple Retrofit annotations found, only one allowed: @%s, @%s.", annotationArr[i2].annotationType().getSimpleName(), annotationType.getSimpleName());
+                            }
+                        }
+                        obj4 = obj3;
+                        obj3 = obj2;
+                        obj2 = obj;
+                        if (annotationArr[i2] == null) {
+                            throw parameterError(i2, "Multiple Retrofit annotations found, only one allowed: @%s, @%s.", annotationArr[i2].annotationType().getSimpleName(), annotationType.getSimpleName());
+                        }
+                        annotationArr[i2] = annotation;
+                        obj = obj2;
+                        obj2 = obj3;
+                        obj3 = obj4;
+                    } else {
+                        validatePathName(i2, ((Path) annotation).value());
+                        obj4 = obj3;
+                        obj3 = obj2;
+                        obj2 = obj;
+                        if (annotationArr[i2] == null) {
+                            annotationArr[i2] = annotation;
+                            obj = obj2;
+                            obj2 = obj3;
+                            obj3 = obj4;
+                        } else {
+                            throw parameterError(i2, "Multiple Retrofit annotations found, only one allowed: @%s, @%s.", annotationArr[i2].annotationType().getSimpleName(), annotationType.getSimpleName());
+                        }
+                    }
+                }
+            }
+            if (annotationArr[i2] != null) {
+                i2++;
+            } else {
+                throw parameterError(i2, "No Retrofit annotation found.", new Object[0]);
             }
         }
-        Set<String> urlParams = parsePathParameters(path);
-        this.requestUrl = url;
-        this.requestUrlParamNames = urlParams;
-        this.requestQuery = query;
+        if (this.requestType == RequestType.SIMPLE && !this.requestHasBody && r4 != null) {
+            throw methodError("Non-body HTTP method cannot contain @Body or @TypedOutput.", new Object[0]);
+        } else if (this.requestType == RequestType.FORM_URL_ENCODED && r6 == null) {
+            throw methodError("Form-encoded method must contain at least one @Field.", new Object[0]);
+        } else if (this.requestType == RequestType.MULTIPART && r5 == null) {
+            throw methodError("Multipart method must contain at least one @Part.", new Object[0]);
+        } else {
+            this.requestParamAnnotations = annotationArr;
+        }
     }
 
-    List<Header> parseHeaders(String[] headers) {
-        List<Header> headerList = new ArrayList();
-        for (String header : headers) {
-            int colon = header.indexOf(58);
-            if (colon == -1 || colon == 0 || colon == header.length() - 1) {
-                throw methodError("@Headers value must be in the form \"Name: Value\". Found: \"%s\"", header);
-            }
-            String headerName = header.substring(0, colon);
-            String headerValue = header.substring(colon + 1).trim();
-            if ("Content-Type".equalsIgnoreCase(headerName)) {
-                this.contentTypeHeader = headerValue;
-            } else {
-                headerList.add(new Header(headerName, headerValue));
+    private void parsePath(String str) {
+        String str2 = null;
+        if (str == null || str.length() == 0 || str.charAt(0) != '/') {
+            throw methodError("URL path \"%s\" must start with '/'.", str);
+        }
+        String substring;
+        int indexOf = str.indexOf(63);
+        if (indexOf != -1 && indexOf < str.length() - 1) {
+            substring = str.substring(0, indexOf);
+            str2 = str.substring(indexOf + 1);
+            if (PARAM_URL_REGEX.matcher(str2).find()) {
+                throw methodError("URL query string \"%s\" must not have replace block. For dynamic query parameters use @Query.", str2);
             }
         }
-        return headerList;
+        substring = str;
+        Set parsePathParameters = parsePathParameters(str);
+        this.requestUrl = substring;
+        this.requestUrlParamNames = parsePathParameters;
+        this.requestQuery = str2;
+    }
+
+    static Set parsePathParameters(String str) {
+        Matcher matcher = PARAM_URL_REGEX.matcher(str);
+        Set linkedHashSet = new LinkedHashSet();
+        while (matcher.find()) {
+            linkedHashSet.add(matcher.group(1));
+        }
+        return linkedHashSet;
     }
 
     private ResponseType parseResponseType() {
-        boolean hasReturnType;
-        Type returnType = this.method.getGenericReturnType();
-        Type lastArgType = null;
-        Class lastArgClass = null;
-        Type[] parameterTypes = this.method.getGenericParameterTypes();
-        if (parameterTypes.length > 0) {
-            Type typeToCheck = parameterTypes[parameterTypes.length - 1];
-            lastArgType = typeToCheck;
-            if (typeToCheck instanceof ParameterizedType) {
-                typeToCheck = ((ParameterizedType) typeToCheck).getRawType();
-            }
-            if (typeToCheck instanceof Class) {
-                lastArgClass = (Class) typeToCheck;
-            }
-        }
-        if (returnType == Void.TYPE) {
-            hasReturnType = false;
+        Class cls;
+        Type type;
+        int i = 1;
+        Type genericReturnType = this.method.getGenericReturnType();
+        Type[] genericParameterTypes = this.method.getGenericParameterTypes();
+        if (genericParameterTypes.length <= 0) {
+            cls = null;
+            type = null;
         } else {
-            hasReturnType = true;
+            type = genericParameterTypes[genericParameterTypes.length - 1];
+            Type rawType = !(type instanceof ParameterizedType) ? type : ((ParameterizedType) type).getRawType();
+            cls = !(rawType instanceof Class) ? null : (Class) rawType;
         }
-        boolean hasCallback = lastArgClass != null && Callback.class.isAssignableFrom(lastArgClass);
-        if (hasReturnType && hasCallback) {
+        int i2 = genericReturnType == Void.TYPE ? 0 : 1;
+        if (cls != null) {
+            if (!Callback.class.isAssignableFrom(cls)) {
+            }
+            if (i2 != 0 && r4 != 0) {
+                throw methodError("Must have return type or Callback as last argument, not both.", new Object[0]);
+            } else if (i2 == 0 && r4 == 0) {
+                throw methodError("Must have either a return type or Callback as last argument.", new Object[0]);
+            } else if (i2 != 0) {
+                rawType = Types.getSupertype(type, Types.getRawType(type), Callback.class);
+                if (rawType instanceof ParameterizedType) {
+                    throw methodError("Last parameter must be of type Callback<X> or Callback<? super X>.", new Object[0]);
+                }
+                this.responseObjectType = getParameterUpperBound((ParameterizedType) rawType);
+                return ResponseType.VOID;
+            } else {
+                if (Platform.HAS_RX_JAVA) {
+                    cls = Types.getRawType(genericReturnType);
+                    if (RxSupport.isObservable(cls)) {
+                        this.responseObjectType = getParameterUpperBound((ParameterizedType) RxSupport.getObservableType(genericReturnType, cls));
+                        return ResponseType.OBSERVABLE;
+                    }
+                }
+                this.responseObjectType = genericReturnType;
+                return ResponseType.OBJECT;
+            }
+        }
+        i = 0;
+        if (i2 != 0) {
             throw methodError("Must have return type or Callback as last argument, not both.", new Object[0]);
-        } else if (!hasReturnType && !hasCallback) {
+        }
+        if (i2 == 0) {
             throw methodError("Must have either a return type or Callback as last argument.", new Object[0]);
-        } else if (hasReturnType) {
+        }
+        if (i2 != 0) {
             if (Platform.HAS_RX_JAVA) {
-                Class rawReturnType = Types.getRawType(returnType);
-                if (RxSupport.isObservable(rawReturnType)) {
-                    this.responseObjectType = getParameterUpperBound((ParameterizedType) RxSupport.getObservableType(returnType, rawReturnType));
+                cls = Types.getRawType(genericReturnType);
+                if (RxSupport.isObservable(cls)) {
+                    this.responseObjectType = getParameterUpperBound((ParameterizedType) RxSupport.getObservableType(genericReturnType, cls));
                     return ResponseType.OBSERVABLE;
                 }
             }
-            this.responseObjectType = returnType;
+            this.responseObjectType = genericReturnType;
             return ResponseType.OBJECT;
-        } else {
-            lastArgType = Types.getSupertype(lastArgType, Types.getRawType(lastArgType), Callback.class);
-            if (lastArgType instanceof ParameterizedType) {
-                this.responseObjectType = getParameterUpperBound((ParameterizedType) lastArgType);
-                return ResponseType.VOID;
-            }
-            throw methodError("Last parameter must be of type Callback<X> or Callback<? super X>.", new Object[0]);
+        }
+        rawType = Types.getSupertype(type, Types.getRawType(type), Callback.class);
+        if (rawType instanceof ParameterizedType) {
+            this.responseObjectType = getParameterUpperBound((ParameterizedType) rawType);
+            return ResponseType.VOID;
+        }
+        throw methodError("Last parameter must be of type Callback<X> or Callback<? super X>.", new Object[0]);
+    }
+
+    private void validatePathName(int i, String str) {
+        if (!PARAM_NAME_REGEX.matcher(str).matches()) {
+            throw parameterError(i, "@Path parameter name must match %s. Found: %s", PARAM_URL_REGEX.pattern(), str);
+        } else if (!this.requestUrlParamNames.contains(str)) {
+            throw parameterError(i, "URL \"%s\" does not contain \"{%s}\".", this.requestUrl, str);
         }
     }
 
-    private static Type getParameterUpperBound(ParameterizedType type) {
-        Type[] types = type.getActualTypeArguments();
-        for (int i = 0; i < types.length; i++) {
-            Type paramType = types[i];
-            if (paramType instanceof WildcardType) {
-                types[i] = ((WildcardType) paramType).getUpperBounds()[0];
-            }
+    synchronized void init() {
+        if (!this.loaded) {
+            parseMethodAnnotations();
+            parseParameters();
+            this.loaded = true;
         }
-        return types[0];
     }
 
-    private void parseParameters() {
-        Class<?>[] methodParameterTypes = this.method.getParameterTypes();
-        Annotation[][] methodParameterAnnotationArrays = this.method.getParameterAnnotations();
-        int count = methodParameterAnnotationArrays.length;
-        if (!(this.isSynchronous || this.isObservable)) {
-            count--;
-        }
-        Annotation[] requestParamAnnotations = new Annotation[count];
-        boolean gotField = false;
-        boolean gotPart = false;
-        boolean gotBody = false;
-        int i = 0;
-        while (i < count) {
-            Class<?> methodParameterType = methodParameterTypes[i];
-            Annotation[] methodParameterAnnotations = methodParameterAnnotationArrays[i];
-            if (methodParameterAnnotations != null) {
-                for (Annotation methodParameterAnnotation : methodParameterAnnotations) {
-                    Class<? extends Annotation> methodAnnotationType = methodParameterAnnotation.annotationType();
-                    if (methodAnnotationType != Path.class) {
-                        if (methodAnnotationType == EncodedPath.class) {
-                            validatePathName(i, ((EncodedPath) methodParameterAnnotation).value());
-                        } else if (!(methodAnnotationType == Query.class || methodAnnotationType == EncodedQuery.class)) {
-                            if (methodAnnotationType != QueryMap.class) {
-                                if (methodAnnotationType != EncodedQueryMap.class) {
-                                    if (methodAnnotationType != retrofit.http.Header.class) {
-                                        if (methodAnnotationType != Field.class) {
-                                            if (methodAnnotationType != FieldMap.class) {
-                                                if (methodAnnotationType != Part.class) {
-                                                    if (methodAnnotationType != PartMap.class) {
-                                                        if (methodAnnotationType != Body.class) {
-                                                            continue;
-                                                        } else if (this.requestType != RequestType.SIMPLE) {
-                                                            throw parameterError(i, "@Body parameters cannot be used with form or multi-part encoding.", new Object[0]);
-                                                        } else if (gotBody) {
-                                                            throw methodError("Multiple @Body method annotations found.", new Object[0]);
-                                                        } else {
-                                                            gotBody = true;
-                                                        }
-                                                    } else if (this.requestType != RequestType.MULTIPART) {
-                                                        throw parameterError(i, "@PartMap parameters can only be used with multipart encoding.", new Object[0]);
-                                                    } else if (Map.class.isAssignableFrom(methodParameterType)) {
-                                                        gotPart = true;
-                                                    } else {
-                                                        throw parameterError(i, "@PartMap parameter type must be Map.", new Object[0]);
-                                                    }
-                                                } else if (this.requestType == RequestType.MULTIPART) {
-                                                    gotPart = true;
-                                                } else {
-                                                    throw parameterError(i, "@Part parameters can only be used with multipart encoding.", new Object[0]);
-                                                }
-                                            } else if (this.requestType != RequestType.FORM_URL_ENCODED) {
-                                                throw parameterError(i, "@FieldMap parameters can only be used with form encoding.", new Object[0]);
-                                            } else if (Map.class.isAssignableFrom(methodParameterType)) {
-                                                gotField = true;
-                                            } else {
-                                                throw parameterError(i, "@FieldMap parameter type must be Map.", new Object[0]);
-                                            }
-                                        } else if (this.requestType == RequestType.FORM_URL_ENCODED) {
-                                            gotField = true;
-                                        } else {
-                                            throw parameterError(i, "@Field parameters can only be used with form encoding.", new Object[0]);
-                                        }
-                                    }
-                                } else if (!Map.class.isAssignableFrom(methodParameterType)) {
-                                    throw parameterError(i, "@EncodedQueryMap parameter type must be Map.", new Object[0]);
-                                }
-                            } else if (!Map.class.isAssignableFrom(methodParameterType)) {
-                                throw parameterError(i, "@QueryMap parameter type must be Map.", new Object[0]);
-                            }
-                        }
-                        if (requestParamAnnotations[i] != null) {
-                            requestParamAnnotations[i] = methodParameterAnnotation;
-                        } else {
-                            throw parameterError(i, "Multiple Retrofit annotations found, only one allowed: @%s, @%s.", requestParamAnnotations[i].annotationType().getSimpleName(), methodAnnotationType.getSimpleName());
-                        }
-                    }
-                    validatePathName(i, ((Path) methodParameterAnnotation).value());
-                    if (requestParamAnnotations[i] != null) {
-                        throw parameterError(i, "Multiple Retrofit annotations found, only one allowed: @%s, @%s.", requestParamAnnotations[i].annotationType().getSimpleName(), methodAnnotationType.getSimpleName());
-                    }
-                    requestParamAnnotations[i] = methodParameterAnnotation;
-                }
+    List parseHeaders(String[] strArr) {
+        List arrayList = new ArrayList();
+        for (String str : strArr) {
+            String str2;
+            int indexOf = str2.indexOf(58);
+            if (indexOf == -1 || indexOf == 0 || indexOf == str2.length() - 1) {
+                throw methodError("@Headers value must be in the form \"Name: Value\". Found: \"%s\"", str2);
             }
-            if (requestParamAnnotations[i] != null) {
-                i++;
+            String substring = str2.substring(0, indexOf);
+            str2 = str2.substring(indexOf + 1).trim();
+            if ("Content-Type".equalsIgnoreCase(substring)) {
+                this.contentTypeHeader = str2;
             } else {
-                throw parameterError(i, "No Retrofit annotation found.", new Object[0]);
+                arrayList.add(new retrofit.client.Header(substring, str2));
             }
         }
-        if (this.requestType == RequestType.SIMPLE && !this.requestHasBody && gotBody) {
-            throw methodError("Non-body HTTP method cannot contain @Body or @TypedOutput.", new Object[0]);
-        } else if (this.requestType == RequestType.FORM_URL_ENCODED && !gotField) {
-            throw methodError("Form-encoded method must contain at least one @Field.", new Object[0]);
-        } else if (this.requestType == RequestType.MULTIPART && !gotPart) {
-            throw methodError("Multipart method must contain at least one @Part.", new Object[0]);
-        } else {
-            this.requestParamAnnotations = requestParamAnnotations;
-        }
-    }
-
-    private void validatePathName(int index, String name) {
-        if (!PARAM_NAME_REGEX.matcher(name).matches()) {
-            throw parameterError(index, "@Path parameter name must match %s. Found: %s", PARAM_URL_REGEX.pattern(), name);
-        } else if (!this.requestUrlParamNames.contains(name)) {
-            throw parameterError(index, "URL \"%s\" does not contain \"{%s}\".", this.requestUrl, name);
-        }
-    }
-
-    static Set<String> parsePathParameters(String path) {
-        Matcher m = PARAM_URL_REGEX.matcher(path);
-        Set<String> patterns = new LinkedHashSet();
-        while (m.find()) {
-            patterns.add(m.group(1));
-        }
-        return patterns;
+        return arrayList;
     }
 }

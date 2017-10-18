@@ -1,29 +1,26 @@
 package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.internal.Util;
-
-import java.io.IOException;
 import java.net.ProtocolException;
+import okio.g;
+import okio.k;
+import okio.n;
 
-import okio.Buffer;
-import okio.Sink;
-import okio.Timeout;
-
-public final class RetryableSink implements Sink {
+public final class RetryableSink implements n {
     private boolean closed;
-    private final Buffer content;
+    private final k content;
     private final int limit;
-
-    public RetryableSink(int limit) {
-        this.content = new Buffer();
-        this.limit = limit;
-    }
 
     public RetryableSink() {
         this(-1);
     }
 
-    public void close() throws IOException {
+    public RetryableSink(int i) {
+        this.content = new k();
+        this.limit = i;
+    }
+
+    public void close() {
         boolean z = true;
         if (!this.closed) {
             this.closed = true;
@@ -36,39 +33,33 @@ public final class RetryableSink implements Sink {
         }
     }
 
-    public void write(Buffer source, long byteCount) throws IOException {
-        if (this.closed) {
-            throw new IllegalStateException("closed");
-        }
-        Util.checkOffsetAndCount(source.size(), 0, byteCount);
-        if (this.limit != -1) {
-            Object obj;
-            if (this.content.size() <= ((long) this.limit) - byteCount) {
-                obj = 1;
-            } else {
-                obj = null;
-            }
-            if (obj == null) {
-                throw new ProtocolException("exceeded content-length limit of " + this.limit + " bytes");
-            }
-        }
-        this.content.write(source, byteCount);
-    }
-
-    public void flush() throws IOException {
-    }
-
-    public Timeout timeout() {
-        return Timeout.NONE;
-    }
-
-    public long contentLength() throws IOException {
+    public long contentLength() {
         return this.content.size();
     }
 
-    public void writeToSocket(Sink socketOut) throws IOException {
-        Buffer buffer = new Buffer();
-        this.content.copyTo(buffer, 0, this.content.size());
-        socketOut.write(buffer, buffer.size());
+    public void flush() {
+    }
+
+    public g timeout() {
+        return g.NONE;
+    }
+
+    public void write(k kVar, long j) {
+        if (this.closed) {
+            throw new IllegalStateException("closed");
+        }
+        Util.checkOffsetAndCount(kVar.size(), 0, j);
+        if (this.limit != -1) {
+            if ((this.content.size() <= ((long) this.limit) - j ? 1 : null) == null) {
+                throw new ProtocolException("exceeded content-length limit of " + this.limit + " bytes");
+            }
+        }
+        this.content.write(kVar, j);
+    }
+
+    public void writeToSocket(n nVar) {
+        k kVar = new k();
+        this.content.AN(kVar, 0, this.content.size());
+        nVar.write(kVar, kVar.size());
     }
 }

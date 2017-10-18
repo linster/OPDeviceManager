@@ -6,33 +6,22 @@ import java.io.Serializable;
 
 /* compiled from: Unknown */
 final class bu implements Serializable {
-    protected int a;
-    protected int b;
-    protected int c;
-    protected int d;
-    protected int e;
-    protected short f;
-    protected byte g;
-    protected byte h;
-    protected long i;
-    protected long j;
-    private byte k;
+    protected int a = 0;
+    protected int b = 0;
+    protected int c = 0;
+    protected int d = 0;
+    protected int e = 0;
+    protected short f = (short) 0;
+    protected byte g = (byte) 0;
+    protected byte h = (byte) 0;
+    protected long i = 0;
+    protected long j = 0;
+    private byte k = (byte) 1;
 
     bu() {
-        this.k = (byte) 1;
-        this.a = 0;
-        this.b = 0;
-        this.c = 0;
-        this.d = 0;
-        this.e = 0;
-        this.f = (short) 0;
-        this.g = (byte) 0;
-        this.h = (byte) 0;
-        this.i = 0;
-        this.j = 0;
     }
 
-    protected final Boolean a(DataOutputStream dataOutputStream) {
+    protected final Boolean ns(DataOutputStream dataOutputStream) {
         Boolean valueOf = Boolean.valueOf(false);
         if (dataOutputStream == null) {
             return valueOf;

@@ -11,24 +11,21 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 final class Types {
-    private static final Type[] EMPTY_TYPE_ARRAY;
+    private static final Type[] EMPTY_TYPE_ARRAY = new Type[0];
 
-    private static final class GenericArrayTypeImpl implements GenericArrayType {
+    final class GenericArrayTypeImpl implements GenericArrayType {
         private final Type componentType;
 
-        public GenericArrayTypeImpl(Type componentType) {
-            this.componentType = componentType;
+        public GenericArrayTypeImpl(Type type) {
+            this.componentType = type;
+        }
+
+        public boolean equals(Object obj) {
+            return (obj instanceof GenericArrayType) && Types.equals(this, (GenericArrayType) obj);
         }
 
         public Type getGenericComponentType() {
             return this.componentType;
-        }
-
-        public boolean equals(Object o) {
-            if ((o instanceof GenericArrayType) && Types.equals(this, (GenericArrayType) o)) {
-                return true;
-            }
-            return false;
         }
 
         public int hashCode() {
@@ -40,37 +37,33 @@ final class Types {
         }
     }
 
-    private static final class ParameterizedTypeImpl implements ParameterizedType {
+    final class ParameterizedTypeImpl implements ParameterizedType {
         private final Type ownerType;
         private final Type rawType;
         private final Type[] typeArguments;
 
-        public ParameterizedTypeImpl(Type ownerType, Type rawType, Type... typeArguments) {
+        public ParameterizedTypeImpl(Type type, Type type2, Type... typeArr) {
             int i;
             int i2 = 1;
             int i3 = 0;
-            if (rawType instanceof Class) {
-                if (ownerType != null) {
-                    i = 0;
-                } else {
-                    i = 1;
-                }
-                if (((Class) rawType).getEnclosingClass() != null) {
+            if (type2 instanceof Class) {
+                i = type != null ? 0 : 1;
+                if (((Class) type2).getEnclosingClass() != null) {
                     i2 = 0;
                 }
                 if (i != i2) {
                     throw new IllegalArgumentException();
                 }
             }
-            this.ownerType = ownerType;
-            this.rawType = rawType;
-            this.typeArguments = (Type[]) typeArguments.clone();
-            Type[] typeArr = this.typeArguments;
-            i = typeArr.length;
+            this.ownerType = type;
+            this.rawType = type2;
+            this.typeArguments = (Type[]) typeArr.clone();
+            Type[] typeArr2 = this.typeArguments;
+            i = typeArr2.length;
             while (i3 < i) {
-                Type typeArgument = typeArr[i3];
-                if (typeArgument != null) {
-                    Types.checkNotPrimitive(typeArgument);
+                Type type3 = typeArr2[i3];
+                if (type3 != null) {
+                    Types.checkNotPrimitive(type3);
                     i3++;
                 } else {
                     throw new NullPointerException();
@@ -78,20 +71,20 @@ final class Types {
             }
         }
 
-        public Type[] getActualTypeArguments() {
-            return (Type[]) this.typeArguments.clone();
+        public boolean equals(Object obj) {
+            return (obj instanceof ParameterizedType) && Types.equals(this, (ParameterizedType) obj);
         }
 
-        public Type getRawType() {
-            return this.rawType;
+        public Type[] getActualTypeArguments() {
+            return (Type[]) this.typeArguments.clone();
         }
 
         public Type getOwnerType() {
             return this.ownerType;
         }
 
-        public boolean equals(Object other) {
-            return (other instanceof ParameterizedType) && Types.equals(this, (ParameterizedType) other);
+        public Type getRawType() {
+            return this.rawType;
         }
 
         public int hashCode() {
@@ -99,40 +92,40 @@ final class Types {
         }
 
         public String toString() {
-            StringBuilder result = new StringBuilder((this.typeArguments.length + 1) * 30);
-            result.append(Types.typeToString(this.rawType));
+            StringBuilder stringBuilder = new StringBuilder((this.typeArguments.length + 1) * 30);
+            stringBuilder.append(Types.typeToString(this.rawType));
             if (this.typeArguments.length == 0) {
-                return result.toString();
+                return stringBuilder.toString();
             }
-            result.append("<").append(Types.typeToString(this.typeArguments[0]));
+            stringBuilder.append("<").append(Types.typeToString(this.typeArguments[0]));
             for (int i = 1; i < this.typeArguments.length; i++) {
-                result.append(", ").append(Types.typeToString(this.typeArguments[i]));
+                stringBuilder.append(", ").append(Types.typeToString(this.typeArguments[i]));
             }
-            return result.append(">").toString();
+            return stringBuilder.append(">").toString();
         }
     }
 
-    private static final class WildcardTypeImpl implements WildcardType {
+    final class WildcardTypeImpl implements WildcardType {
         private final Type lowerBound;
         private final Type upperBound;
 
-        public WildcardTypeImpl(Type[] upperBounds, Type[] lowerBounds) {
-            if (lowerBounds.length > 1) {
+        public WildcardTypeImpl(Type[] typeArr, Type[] typeArr2) {
+            if (typeArr2.length > 1) {
                 throw new IllegalArgumentException();
-            } else if (upperBounds.length != 1) {
+            } else if (typeArr.length != 1) {
                 throw new IllegalArgumentException();
-            } else if (lowerBounds.length != 1) {
-                if (upperBounds[0] != null) {
-                    Types.checkNotPrimitive(upperBounds[0]);
+            } else if (typeArr2.length != 1) {
+                if (typeArr[0] != null) {
+                    Types.checkNotPrimitive(typeArr[0]);
                     this.lowerBound = null;
-                    this.upperBound = upperBounds[0];
+                    this.upperBound = typeArr[0];
                     return;
                 }
                 throw new NullPointerException();
-            } else if (lowerBounds[0] != null) {
-                Types.checkNotPrimitive(lowerBounds[0]);
-                if (upperBounds[0] == Object.class) {
-                    this.lowerBound = lowerBounds[0];
+            } else if (typeArr2[0] != null) {
+                Types.checkNotPrimitive(typeArr2[0]);
+                if (typeArr[0] == Object.class) {
+                    this.lowerBound = typeArr2[0];
                     this.upperBound = Object.class;
                     return;
                 }
@@ -142,8 +135,8 @@ final class Types {
             }
         }
 
-        public Type[] getUpperBounds() {
-            return new Type[]{this.upperBound};
+        public boolean equals(Object obj) {
+            return (obj instanceof WildcardType) && Types.equals(this, (WildcardType) obj);
         }
 
         public Type[] getLowerBounds() {
@@ -153,8 +146,8 @@ final class Types {
             return new Type[]{this.lowerBound};
         }
 
-        public boolean equals(Object other) {
-            return (other instanceof WildcardType) && Types.equals(this, (WildcardType) other);
+        public Type[] getUpperBounds() {
+            return new Type[]{this.upperBound};
         }
 
         public int hashCode() {
@@ -162,24 +155,122 @@ final class Types {
         }
 
         public String toString() {
-            if (this.lowerBound != null) {
-                return "? super " + Types.typeToString(this.lowerBound);
-            }
-            if (this.upperBound != Object.class) {
-                return "? extends " + Types.typeToString(this.upperBound);
-            }
-            return "?";
+            return this.lowerBound == null ? this.upperBound != Object.class ? "? extends " + Types.typeToString(this.upperBound) : "?" : "? super " + Types.typeToString(this.lowerBound);
         }
-    }
-
-    static {
-        EMPTY_TYPE_ARRAY = new Type[0];
     }
 
     private Types() {
     }
 
-    public static Class<?> getRawType(Type type) {
+    private static void checkNotPrimitive(Type type) {
+        if ((type instanceof Class) && ((Class) type).isPrimitive()) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    private static Class declaringClassOf(TypeVariable typeVariable) {
+        GenericDeclaration genericDeclaration = typeVariable.getGenericDeclaration();
+        return !(genericDeclaration instanceof Class) ? null : (Class) genericDeclaration;
+    }
+
+    private static boolean equal(Object obj, Object obj2) {
+        if (obj != obj2) {
+            if (obj == null) {
+                return false;
+            }
+            if (!obj.equals(obj2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean equals(Type type, Type type2) {
+        boolean z = true;
+        if (type == type2) {
+            return true;
+        }
+        if (type instanceof Class) {
+            return type.equals(type2);
+        }
+        if (type instanceof ParameterizedType) {
+            if (!(type2 instanceof ParameterizedType)) {
+                return false;
+            }
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            ParameterizedType parameterizedType2 = (ParameterizedType) type2;
+            if (equal(parameterizedType.getOwnerType(), parameterizedType2.getOwnerType()) && parameterizedType.getRawType().equals(parameterizedType2.getRawType())) {
+                if (!Arrays.equals(parameterizedType.getActualTypeArguments(), parameterizedType2.getActualTypeArguments())) {
+                }
+                return z;
+            }
+            z = false;
+            return z;
+        } else if (type instanceof GenericArrayType) {
+            if (!(type2 instanceof GenericArrayType)) {
+                return false;
+            }
+            return equals(((GenericArrayType) type).getGenericComponentType(), ((GenericArrayType) type2).getGenericComponentType());
+        } else if (type instanceof WildcardType) {
+            if (!(type2 instanceof WildcardType)) {
+                return false;
+            }
+            WildcardType wildcardType = (WildcardType) type;
+            WildcardType wildcardType2 = (WildcardType) type2;
+            if (Arrays.equals(wildcardType.getUpperBounds(), wildcardType2.getUpperBounds())) {
+                if (!Arrays.equals(wildcardType.getLowerBounds(), wildcardType2.getLowerBounds())) {
+                }
+                return z;
+            }
+            z = false;
+            return z;
+        } else if (!(type instanceof TypeVariable) || !(type2 instanceof TypeVariable)) {
+            return false;
+        } else {
+            TypeVariable typeVariable = (TypeVariable) type;
+            TypeVariable typeVariable2 = (TypeVariable) type2;
+            if (typeVariable.getGenericDeclaration() == typeVariable2.getGenericDeclaration()) {
+                if (!typeVariable.getName().equals(typeVariable2.getName())) {
+                }
+                return z;
+            }
+            z = false;
+            return z;
+        }
+    }
+
+    static Type getGenericSupertype(Type type, Class cls, Class cls2) {
+        if (cls2 == cls) {
+            return type;
+        }
+        if (cls2.isInterface()) {
+            Class[] interfaces = cls.getInterfaces();
+            int length = interfaces.length;
+            for (int i = 0; i < length; i++) {
+                if (interfaces[i] == cls2) {
+                    return cls.getGenericInterfaces()[i];
+                }
+                if (cls2.isAssignableFrom(interfaces[i])) {
+                    return getGenericSupertype(cls.getGenericInterfaces()[i], interfaces[i], cls2);
+                }
+            }
+        }
+        if (!cls.isInterface()) {
+            while (cls != Object.class) {
+                Class superclass = cls.getSuperclass();
+                if (superclass == cls2) {
+                    return cls.getGenericSuperclass();
+                }
+                if (cls2.isAssignableFrom(superclass)) {
+                    return getGenericSupertype(cls.getGenericSuperclass(), superclass, cls2);
+                }
+                cls = superclass;
+            }
+        }
+        return cls2;
+    }
+
+    public static Class getRawType(Type type) {
         if (type instanceof Class) {
             return (Class) type;
         }
@@ -198,229 +289,111 @@ final class Types {
             if (type instanceof WildcardType) {
                 return getRawType(((WildcardType) type).getUpperBounds()[0]);
             }
-            String className;
-            if (type != null) {
-                className = type.getClass().getName();
-            } else {
-                className = "null";
-            }
-            throw new IllegalArgumentException("Expected a Class, ParameterizedType, or GenericArrayType, but <" + type + "> is of type " + className);
+            throw new IllegalArgumentException("Expected a Class, ParameterizedType, or GenericArrayType, but <" + type + "> is of type " + (type != null ? type.getClass().getName() : "null"));
         }
     }
 
-    public static boolean equals(Type a, Type b) {
-        boolean z = true;
-        if (a == b) {
-            return true;
+    public static Type getSupertype(Type type, Class cls, Class cls2) {
+        if (cls2.isAssignableFrom(cls)) {
+            return resolve(type, cls, getGenericSupertype(type, cls, cls2));
         }
-        if (a instanceof Class) {
-            return a.equals(b);
-        }
-        if (a instanceof ParameterizedType) {
-            if (!(b instanceof ParameterizedType)) {
-                return false;
-            }
-            ParameterizedType pa = (ParameterizedType) a;
-            ParameterizedType pb = (ParameterizedType) b;
-            if (equal(pa.getOwnerType(), pb.getOwnerType()) && pa.getRawType().equals(pb.getRawType())) {
-                if (!Arrays.equals(pa.getActualTypeArguments(), pb.getActualTypeArguments())) {
-                }
-                return z;
-            }
-            z = false;
-            return z;
-        } else if (a instanceof GenericArrayType) {
-            if (!(b instanceof GenericArrayType)) {
-                return false;
-            }
-            return equals(((GenericArrayType) a).getGenericComponentType(), ((GenericArrayType) b).getGenericComponentType());
-        } else if (a instanceof WildcardType) {
-            if (!(b instanceof WildcardType)) {
-                return false;
-            }
-            WildcardType wa = (WildcardType) a;
-            WildcardType wb = (WildcardType) b;
-            if (Arrays.equals(wa.getUpperBounds(), wb.getUpperBounds())) {
-                if (!Arrays.equals(wa.getLowerBounds(), wb.getLowerBounds())) {
-                }
-                return z;
-            }
-            z = false;
-            return z;
-        } else if (!(a instanceof TypeVariable) || !(b instanceof TypeVariable)) {
-            return false;
-        } else {
-            TypeVariable<?> va = (TypeVariable) a;
-            TypeVariable<?> vb = (TypeVariable) b;
-            if (va.getGenericDeclaration() == vb.getGenericDeclaration()) {
-                if (!va.getName().equals(vb.getName())) {
-                }
-                return z;
-            }
-            z = false;
-            return z;
-        }
+        throw new IllegalArgumentException();
     }
 
-    static Type getGenericSupertype(Type context, Class<?> rawType, Class<?> toResolve) {
-        if (toResolve == rawType) {
-            return context;
-        }
-        if (toResolve.isInterface()) {
-            Class<?>[] interfaces = rawType.getInterfaces();
-            int length = interfaces.length;
-            for (int i = 0; i < length; i++) {
-                if (interfaces[i] == toResolve) {
-                    return rawType.getGenericInterfaces()[i];
-                }
-                if (toResolve.isAssignableFrom(interfaces[i])) {
-                    return getGenericSupertype(rawType.getGenericInterfaces()[i], interfaces[i], toResolve);
-                }
-            }
-        }
-        if (!rawType.isInterface()) {
-            while (rawType != Object.class) {
-                Class<?> rawSupertype = rawType.getSuperclass();
-                if (rawSupertype == toResolve) {
-                    return rawType.getGenericSuperclass();
-                }
-                if (toResolve.isAssignableFrom(rawSupertype)) {
-                    return getGenericSupertype(rawType.getGenericSuperclass(), rawSupertype, toResolve);
-                }
-                rawType = rawSupertype;
-            }
-        }
-        return toResolve;
+    private static int hashCodeOrZero(Object obj) {
+        return obj == null ? 0 : obj.hashCode();
     }
 
-    private static int indexOf(Object[] array, Object toFind) {
-        for (int i = 0; i < array.length; i++) {
-            if (toFind.equals(array[i])) {
+    private static int indexOf(Object[] objArr, Object obj) {
+        for (int i = 0; i < objArr.length; i++) {
+            if (obj.equals(objArr[i])) {
                 return i;
             }
         }
         throw new NoSuchElementException();
     }
 
-    private static boolean equal(Object a, Object b) {
-        if (a != b) {
-            if (a == null) {
-                return false;
+    public static Type resolve(Type type, Class cls, Type type2) {
+        Type type3 = type2;
+        while (type3 instanceof TypeVariable) {
+            type3 = (TypeVariable) type3;
+            type2 = resolveTypeVariable(type, cls, type3);
+            if (type2 == type3) {
+                return type2;
             }
-            if (!a.equals(b)) {
-                return false;
-            }
+            type3 = type2;
         }
-        return true;
+        Type componentType;
+        Type resolve;
+        if ((type3 instanceof Class) && ((Class) type3).isArray()) {
+            type3 = (Class) type3;
+            componentType = type3.getComponentType();
+            resolve = resolve(type, cls, componentType);
+            if (componentType != resolve) {
+                type3 = new GenericArrayTypeImpl(resolve);
+            }
+            return type3;
+        } else if (type3 instanceof GenericArrayType) {
+            type3 = (GenericArrayType) type3;
+            componentType = type3.getGenericComponentType();
+            resolve = resolve(type, cls, componentType);
+            if (componentType != resolve) {
+                type3 = new GenericArrayTypeImpl(resolve);
+            }
+            return type3;
+        } else if (type3 instanceof ParameterizedType) {
+            type3 = (ParameterizedType) type3;
+            componentType = type3.getOwnerType();
+            Type resolve2 = resolve(type, cls, componentType);
+            int i = resolve2 == componentType ? 0 : 1;
+            r4 = type3.getActualTypeArguments();
+            int length = r4.length;
+            int i2 = i;
+            r1 = r4;
+            for (int i3 = 0; i3 < length; i3++) {
+                Type resolve3 = resolve(type, cls, r1[i3]);
+                if (resolve3 != r1[i3]) {
+                    if (i2 == 0) {
+                        r1 = (Type[]) r1.clone();
+                        i2 = 1;
+                    }
+                    r1[i3] = resolve3;
+                }
+            }
+            if (i2 != 0) {
+                Object parameterizedTypeImpl = new ParameterizedTypeImpl(resolve2, type3.getRawType(), r1);
+            }
+            return type3;
+        } else if (!(type3 instanceof WildcardType)) {
+            return type3;
+        } else {
+            WildcardType wildcardType = (WildcardType) type3;
+            r1 = wildcardType.getLowerBounds();
+            r4 = wildcardType.getUpperBounds();
+            if (r1.length == 1) {
+                if (resolve(type, cls, r1[0]) != r1[0]) {
+                    return new WildcardTypeImpl(new Type[]{Object.class}, new Type[]{resolve(type, cls, r1[0])});
+                }
+            } else if (r4.length == 1 && resolve(type, cls, r4[0]) != r4[0]) {
+                return new WildcardTypeImpl(new Type[]{resolve(type, cls, r4[0])}, EMPTY_TYPE_ARRAY);
+            }
+            return wildcardType;
+        }
     }
 
-    private static int hashCodeOrZero(Object o) {
-        return o == null ? 0 : o.hashCode();
+    private static Type resolveTypeVariable(Type type, Class cls, TypeVariable typeVariable) {
+        Class declaringClassOf = declaringClassOf(typeVariable);
+        if (declaringClassOf == null) {
+            return typeVariable;
+        }
+        Type genericSupertype = getGenericSupertype(type, cls, declaringClassOf);
+        if (!(genericSupertype instanceof ParameterizedType)) {
+            return typeVariable;
+        }
+        return ((ParameterizedType) genericSupertype).getActualTypeArguments()[indexOf(declaringClassOf.getTypeParameters(), typeVariable)];
     }
 
     public static String typeToString(Type type) {
         return !(type instanceof Class) ? type.toString() : ((Class) type).getName();
-    }
-
-    public static Type getSupertype(Type context, Class<?> contextRawType, Class<?> supertype) {
-        if (supertype.isAssignableFrom(contextRawType)) {
-            return resolve(context, contextRawType, getGenericSupertype(context, contextRawType, supertype));
-        }
-        throw new IllegalArgumentException();
-    }
-
-    public static Type resolve(Type context, Class<?> contextRawType, Type toResolve) {
-        while (toResolve instanceof TypeVariable) {
-            TypeVariable<?> typeVariable = (TypeVariable) toResolve;
-            toResolve = resolveTypeVariable(context, contextRawType, typeVariable);
-            if (toResolve == typeVariable) {
-                return toResolve;
-            }
-        }
-        Type componentType;
-        Type newComponentType;
-        if ((toResolve instanceof Class) && ((Class) toResolve).isArray()) {
-            Type type = (Class) toResolve;
-            componentType = type.getComponentType();
-            newComponentType = resolve(context, contextRawType, componentType);
-            if (componentType != newComponentType) {
-                type = new GenericArrayTypeImpl(newComponentType);
-            }
-            return type;
-        } else if (toResolve instanceof GenericArrayType) {
-            Type type2 = (GenericArrayType) toResolve;
-            componentType = type2.getGenericComponentType();
-            newComponentType = resolve(context, contextRawType, componentType);
-            if (componentType != newComponentType) {
-                type2 = new GenericArrayTypeImpl(newComponentType);
-            }
-            return type2;
-        } else if (toResolve instanceof ParameterizedType) {
-            boolean changed;
-            ParameterizedType original = (ParameterizedType) toResolve;
-            Type ownerType = original.getOwnerType();
-            Type newOwnerType = resolve(context, contextRawType, ownerType);
-            if (newOwnerType == ownerType) {
-                changed = false;
-            } else {
-                changed = true;
-            }
-            Type[] args = original.getActualTypeArguments();
-            int length = args.length;
-            for (int t = 0; t < length; t++) {
-                Type resolvedTypeArgument = resolve(context, contextRawType, args[t]);
-                if (resolvedTypeArgument != args[t]) {
-                    if (!changed) {
-                        args = (Type[]) args.clone();
-                        changed = true;
-                    }
-                    args[t] = resolvedTypeArgument;
-                }
-            }
-            if (changed) {
-                Object original2 = new ParameterizedTypeImpl(newOwnerType, original.getRawType(), args);
-            }
-            return original;
-        } else if (!(toResolve instanceof WildcardType)) {
-            return toResolve;
-        } else {
-            WildcardType original3 = (WildcardType) toResolve;
-            Type[] originalLowerBound = original3.getLowerBounds();
-            Type[] originalUpperBound = original3.getUpperBounds();
-            int length2 = originalLowerBound.length;
-            if (r0 != 1) {
-                length2 = originalUpperBound.length;
-                if (r0 == 1 && resolve(context, contextRawType, originalUpperBound[0]) != originalUpperBound[0]) {
-                    return new WildcardTypeImpl(new Type[]{resolve(context, contextRawType, originalUpperBound[0])}, EMPTY_TYPE_ARRAY);
-                }
-            }
-            if (resolve(context, contextRawType, originalLowerBound[0]) != originalLowerBound[0]) {
-                return new WildcardTypeImpl(new Type[]{Object.class}, new Type[]{resolve(context, contextRawType, originalLowerBound[0])});
-            }
-            return original3;
-        }
-    }
-
-    private static Type resolveTypeVariable(Type context, Class<?> contextRawType, TypeVariable<?> unknown) {
-        Class<?> declaredByRaw = declaringClassOf(unknown);
-        if (declaredByRaw == null) {
-            return unknown;
-        }
-        Type declaredBy = getGenericSupertype(context, contextRawType, declaredByRaw);
-        if (!(declaredBy instanceof ParameterizedType)) {
-            return unknown;
-        }
-        return ((ParameterizedType) declaredBy).getActualTypeArguments()[indexOf(declaredByRaw.getTypeParameters(), unknown)];
-    }
-
-    private static Class<?> declaringClassOf(TypeVariable<?> typeVariable) {
-        GenericDeclaration genericDeclaration = typeVariable.getGenericDeclaration();
-        return !(genericDeclaration instanceof Class) ? null : (Class) genericDeclaration;
-    }
-
-    private static void checkNotPrimitive(Type type) {
-        if ((type instanceof Class) && ((Class) type).isPrimitive()) {
-            throw new IllegalArgumentException();
-        }
     }
 }

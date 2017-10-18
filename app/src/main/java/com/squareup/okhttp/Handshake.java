@@ -1,94 +1,57 @@
 package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.Util;
-
 import java.security.Principal;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
-
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 
 public final class Handshake {
     private final String cipherSuite;
-    private final List<Certificate> localCertificates;
-    private final List<Certificate> peerCertificates;
+    private final List localCertificates;
+    private final List peerCertificates;
 
-    private Handshake(String cipherSuite, List<Certificate> peerCertificates, List<Certificate> localCertificates) {
-        this.cipherSuite = cipherSuite;
-        this.peerCertificates = peerCertificates;
-        this.localCertificates = localCertificates;
+    private Handshake(String str, List list, List list2) {
+        this.cipherSuite = str;
+        this.peerCertificates = list;
+        this.localCertificates = list2;
     }
 
-    public static Handshake get(SSLSession session) {
-        String cipherSuite = session.getCipherSuite();
-        if (cipherSuite != null) {
-            Object[] peerCertificates;
-            List<Certificate> peerCertificatesList;
-            List<Certificate> localCertificatesList;
-            try {
-                peerCertificates = session.getPeerCertificates();
-            } catch (SSLPeerUnverifiedException e) {
-                peerCertificates = null;
-            }
-            if (peerCertificates == null) {
-                peerCertificatesList = Collections.emptyList();
-            } else {
-                peerCertificatesList = Util.immutableList(peerCertificates);
-            }
-            Object[] localCertificates = session.getLocalCertificates();
-            if (localCertificates == null) {
-                localCertificatesList = Collections.emptyList();
-            } else {
-                localCertificatesList = Util.immutableList(localCertificates);
-            }
-            return new Handshake(cipherSuite, peerCertificatesList, localCertificatesList);
-        }
-        throw new IllegalStateException("cipherSuite == null");
-    }
-
-    public static Handshake get(String cipherSuite, List<Certificate> peerCertificates, List<Certificate> localCertificates) {
-        if (cipherSuite != null) {
-            return new Handshake(cipherSuite, Util.immutableList((List) peerCertificates), Util.immutableList((List) localCertificates));
+    public static Handshake get(String str, List list, List list2) {
+        if (str != null) {
+            return new Handshake(str, Util.immutableList(list), Util.immutableList(list2));
         }
         throw new IllegalArgumentException("cipherSuite == null");
+    }
+
+    public static Handshake get(SSLSession sSLSession) {
+        Object[] objArr = null;
+        String cipherSuite = sSLSession.getCipherSuite();
+        if (cipherSuite != null) {
+            try {
+                objArr = sSLSession.getPeerCertificates();
+            } catch (SSLPeerUnverifiedException e) {
+            }
+            List emptyList = objArr == null ? Collections.emptyList() : Util.immutableList(objArr);
+            Object[] localCertificates = sSLSession.getLocalCertificates();
+            return new Handshake(cipherSuite, emptyList, localCertificates == null ? Collections.emptyList() : Util.immutableList(localCertificates));
+        }
+        throw new IllegalStateException("cipherSuite == null");
     }
 
     public String cipherSuite() {
         return this.cipherSuite;
     }
 
-    public List<Certificate> peerCertificates() {
-        return this.peerCertificates;
-    }
-
-    public Principal peerPrincipal() {
-        if (this.peerCertificates.isEmpty()) {
-            return null;
-        }
-        return ((X509Certificate) this.peerCertificates.get(0)).getSubjectX500Principal();
-    }
-
-    public List<Certificate> localCertificates() {
-        return this.localCertificates;
-    }
-
-    public Principal localPrincipal() {
-        if (this.localCertificates.isEmpty()) {
-            return null;
-        }
-        return ((X509Certificate) this.localCertificates.get(0)).getSubjectX500Principal();
-    }
-
-    public boolean equals(Object other) {
+    public boolean equals(Object obj) {
         boolean z = false;
-        if (!(other instanceof Handshake)) {
+        if (!(obj instanceof Handshake)) {
             return false;
         }
-        Handshake that = (Handshake) other;
-        if (this.cipherSuite.equals(that.cipherSuite) && this.peerCertificates.equals(that.peerCertificates) && this.localCertificates.equals(that.localCertificates)) {
+        Handshake handshake = (Handshake) obj;
+        if (this.cipherSuite.equals(handshake.cipherSuite) && this.peerCertificates.equals(handshake.peerCertificates) && this.localCertificates.equals(handshake.localCertificates)) {
             z = true;
         }
         return z;
@@ -96,5 +59,21 @@ public final class Handshake {
 
     public int hashCode() {
         return ((((this.cipherSuite.hashCode() + 527) * 31) + this.peerCertificates.hashCode()) * 31) + this.localCertificates.hashCode();
+    }
+
+    public List localCertificates() {
+        return this.localCertificates;
+    }
+
+    public Principal localPrincipal() {
+        return this.localCertificates.isEmpty() ? null : ((X509Certificate) this.localCertificates.get(0)).getSubjectX500Principal();
+    }
+
+    public List peerCertificates() {
+        return this.peerCertificates;
+    }
+
+    public Principal peerPrincipal() {
+        return this.peerCertificates.isEmpty() ? null : ((X509Certificate) this.peerCertificates.get(0)).getSubjectX500Principal();
     }
 }

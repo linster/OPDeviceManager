@@ -1,135 +1,116 @@
 package retrofit.converter;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-
+import com.google.gson.i;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-
 import retrofit.mime.MimeUtil;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
 
 public class GsonConverter implements Converter {
     private String charset;
-    private final Gson gson;
+    private final i gson;
 
-    private static class JsonTypedOutput implements TypedOutput {
+    class JsonTypedOutput implements TypedOutput {
         private final byte[] jsonBytes;
         private final String mimeType;
 
-        JsonTypedOutput(byte[] jsonBytes, String encode) {
-            this.jsonBytes = jsonBytes;
-            this.mimeType = "application/json; charset=" + encode;
+        JsonTypedOutput(byte[] bArr, String str) {
+            this.jsonBytes = bArr;
+            this.mimeType = "application/json; charset=" + str;
         }
 
         public String fileName() {
             return null;
         }
 
-        public String mimeType() {
-            return this.mimeType;
-        }
-
         public long length() {
             return (long) this.jsonBytes.length;
         }
 
-        public void writeTo(OutputStream out) throws IOException {
-            out.write(this.jsonBytes);
+        public String mimeType() {
+            return this.mimeType;
+        }
+
+        public void writeTo(OutputStream outputStream) {
+            outputStream.write(this.jsonBytes);
         }
     }
 
-    public GsonConverter(Gson gson) {
-        this(gson, "UTF-8");
+    public GsonConverter(i iVar) {
+        this(iVar, "UTF-8");
     }
 
-    public GsonConverter(Gson gson, String charset) {
-        this.gson = gson;
-        this.charset = charset;
+    public GsonConverter(i iVar, String str) {
+        this.gson = iVar;
+        this.charset = str;
     }
 
-    public Object fromBody(TypedInput body, Type type) throws ConversionException {
+    public Object fromBody(TypedInput typedInput, Type type) {
         Throwable e;
-        Reader reader;
-        Throwable th;
-        Throwable e2;
-        String charset = this.charset;
-        if (body.mimeType() != null) {
-            charset = MimeUtil.parseCharset(body.mimeType(), charset);
-        }
         InputStreamReader inputStreamReader = null;
+        String str = this.charset;
+        if (typedInput.mimeType() != null) {
+            str = MimeUtil.parseCharset(typedInput.mimeType(), str);
+        }
+        Reader inputStreamReader2;
         try {
-            Reader isr = new InputStreamReader(body.in(), charset);
+            inputStreamReader2 = new InputStreamReader(typedInput.in(), str);
             try {
-                try {
-                    Object fromJson = this.gson.fromJson(isr, type);
-                    if (isr != null) {
-                        try {
-                            isr.close();
-                        } catch (IOException e3) {
-                        }
-                    }
-                    return fromJson;
-                } catch (IOException e4) {
-                    e = e4;
-                    reader = isr;
+                Object he = this.gson.he(inputStreamReader2, type);
+                if (inputStreamReader2 != null) {
                     try {
-                        throw new ConversionException(e);
-                    } catch (Throwable th2) {
-                        th = th2;
-                        if (inputStreamReader != null) {
-                            try {
-                                inputStreamReader.close();
-                            } catch (IOException e5) {
-                            }
-                        }
-                        throw th;
+                        inputStreamReader2.close();
+                    } catch (IOException e2) {
                     }
-                } catch (JsonParseException e6) {
-                    e2 = e6;
-                    reader = isr;
-                    throw new ConversionException(e2);
-                } catch (Throwable th3) {
-                    th = th3;
-                    reader = isr;
+                }
+                return he;
+            } catch (IOException e3) {
+                e = e3;
+                try {
+                    throw new ConversionException(e);
+                } catch (Throwable th) {
+                    e = th;
+                    inputStreamReader = inputStreamReader2;
+                    if (inputStreamReader != null) {
+                        try {
+                            inputStreamReader.close();
+                        } catch (IOException e4) {
+                        }
+                    }
+                    throw e;
+                }
+            } catch (JsonParseException e5) {
+                e = e5;
+                Reader reader = inputStreamReader2;
+                try {
+                    throw new ConversionException(e);
+                } catch (Throwable th2) {
+                    e = th2;
                     if (inputStreamReader != null) {
                         inputStreamReader.close();
                     }
-                    throw th;
+                    throw e;
                 }
-            } catch (IOException e7) {
-                e = e7;
-                reader = isr;
-                throw new ConversionException(e);
-            } catch (JsonParseException e8) {
-                e2 = e8;
-                reader = isr;
-                throw new ConversionException(e2);
-            } catch (Throwable th4) {
-                th = th4;
-                reader = isr;
-                if (inputStreamReader != null) {
-                    inputStreamReader.close();
-                }
-                throw th;
             }
-        } catch (IOException e9) {
-            e = e9;
+        } catch (IOException e6) {
+            e = e6;
+            inputStreamReader2 = null;
             throw new ConversionException(e);
-        } catch (JsonParseException e10) {
-            e2 = e10;
-            throw new ConversionException(e2);
+        } catch (JsonParseException e7) {
+            e = e7;
+            throw new ConversionException(e);
         }
     }
 
-    public TypedOutput toBody(Object object) {
+    public TypedOutput toBody(Object obj) {
         try {
-            return new JsonTypedOutput(this.gson.toJson(object).getBytes(this.charset), this.charset);
+            return new JsonTypedOutput(this.gson.gW(obj).getBytes(this.charset), this.charset);
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError(e);
         }

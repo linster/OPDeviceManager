@@ -1,38 +1,32 @@
 package com.squareup.okhttp.internal.spdy;
 
-import java.io.IOException;
 import java.util.List;
-
-import okio.BufferedSource;
+import okio.a;
 
 public interface PushObserver {
-    public static final PushObserver CANCEL;
+    public static final PushObserver CANCEL = new PushObserver() {
+        public boolean onData(int i, a aVar, int i2, boolean z) {
+            aVar.skip((long) i2);
+            return true;
+        }
 
-    boolean onData(int i, BufferedSource bufferedSource, int i2, boolean z) throws IOException;
+        public boolean onHeaders(int i, List list, boolean z) {
+            return true;
+        }
 
-    boolean onHeaders(int i, List<Header> list, boolean z);
+        public boolean onRequest(int i, List list) {
+            return true;
+        }
 
-    boolean onRequest(int i, List<Header> list);
+        public void onReset(int i, ErrorCode errorCode) {
+        }
+    };
+
+    boolean onData(int i, a aVar, int i2, boolean z);
+
+    boolean onHeaders(int i, List list, boolean z);
+
+    boolean onRequest(int i, List list);
 
     void onReset(int i, ErrorCode errorCode);
-
-    static {
-        CANCEL = new PushObserver() {
-            public boolean onRequest(int streamId, List<Header> list) {
-                return true;
-            }
-
-            public boolean onHeaders(int streamId, List<Header> list, boolean last) {
-                return true;
-            }
-
-            public boolean onData(int streamId, BufferedSource source, int byteCount, boolean last) throws IOException {
-                source.skip((long) byteCount);
-                return true;
-            }
-
-            public void onReset(int streamId, ErrorCode errorCode) {
-            }
-        };
-    }
 }

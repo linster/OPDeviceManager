@@ -1,46 +1,25 @@
 package com.loc;
 
-import java.util.Map;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
-/* compiled from: LocationRequest */
-public class bm extends aq {
-    Map<String, String> d;
-    Map<String, String> e;
-    String f;
-    byte[] g;
-
-    public bm() {
-        this.d = null;
-        this.e = null;
-        this.f = "";
-        this.g = null;
+class bm extends DefaultHandler {
+    bm() {
     }
 
-    public void a(Map<String, String> map) {
-        this.d = map;
+    public void characters(char[] cArr, int i, int i2) {
+        if (bK.tF) {
+            bK.a = new String(cArr, i, i2);
+        }
     }
 
-    public Map<String, String> a() {
-        return this.d;
+    public void endElement(String str, String str2, String str3) {
+        bK.tF = false;
     }
 
-    public Map<String, String> b() {
-        return this.e;
-    }
-
-    public String c() {
-        return this.f;
-    }
-
-    public void a(String str) {
-        this.f = str;
-    }
-
-    public void a(byte[] bArr) {
-        this.g = bArr;
-    }
-
-    public byte[] f() {
-        return this.g;
+    public void startElement(String str, String str2, String str3, Attributes attributes) {
+        if (str2.equals("string") && "UTDID".equals(attributes.getValue("name"))) {
+            bK.tF = true;
+        }
     }
 }

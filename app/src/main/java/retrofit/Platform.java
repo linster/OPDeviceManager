@@ -2,13 +2,10 @@ package retrofit;
 
 import android.os.Build.VERSION;
 import android.os.Process;
-
-import com.google.gson.Gson;
-
+import com.google.gson.i;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-
 import retrofit.RestAdapter.Log;
 import retrofit.android.AndroidApacheClient;
 import retrofit.android.AndroidLog;
@@ -22,68 +19,41 @@ import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
 
 abstract class Platform {
-    static final boolean HAS_RX_JAVA;
-    private static final Platform PLATFORM;
+    static final boolean HAS_RX_JAVA = hasRxJavaOnClasspath();
+    private static final Platform PLATFORM = findPlatform();
 
-    private static class Android extends Platform {
-
-        /* renamed from: retrofit.Platform.Android.1 */
-        class AnonymousClass1 implements Provider {
-            final /* synthetic */ Client val$client;
-
-            AnonymousClass1(Client client) {
-                this.val$client = client;
-            }
-
-            public Client get() {
-                return this.val$client;
-            }
-        }
-
+    class Android extends Platform {
         private Android() {
-        }
-
-        Converter defaultConverter() {
-            return new GsonConverter(new Gson());
-        }
-
-        Provider defaultClient() {
-            Client client;
-            if (Platform.hasOkHttpOnClasspath()) {
-                client = OkClientInstantiator.instantiate();
-            } else if (VERSION.SDK_INT >= 9) {
-                client = new UrlConnectionClient();
-            } else {
-                client = new AndroidApacheClient();
-            }
-            return new AnonymousClass1(client);
-        }
-
-        Executor defaultHttpExecutor() {
-            return Executors.newCachedThreadPool(new ThreadFactory() {
-
-                /* renamed from: retrofit.Platform.Android.2.1 */
-                class AnonymousClass1 implements Runnable {
-                    final /* synthetic */ Runnable val$r;
-
-                    AnonymousClass1(Runnable runnable) {
-                        this.val$r = runnable;
-                    }
-
-                    public void run() {
-                        Process.setThreadPriority(10);
-                        this.val$r.run();
-                    }
-                }
-
-                public Thread newThread(Runnable r) {
-                    return new Thread(new AnonymousClass1(r), "Retrofit-Idle");
-                }
-            });
         }
 
         Executor defaultCallbackExecutor() {
             return new MainThreadExecutor();
+        }
+
+        Provider defaultClient() {
+            Client urlConnectionClient = !Platform.hasOkHttpOnClasspath() ? VERSION.SDK_INT >= 9 ? new UrlConnectionClient() : new AndroidApacheClient() : OkClientInstantiator.instantiate();
+            return new Provider() {
+                public Client get() {
+                    return urlConnectionClient;
+                }
+            };
+        }
+
+        Converter defaultConverter() {
+            return new GsonConverter(new i());
+        }
+
+        Executor defaultHttpExecutor() {
+            return Executors.newCachedThreadPool(new ThreadFactory() {
+                public Thread newThread(final Runnable runnable) {
+                    return new Thread(new Runnable() {
+                        public void run() {
+                            Process.setThreadPriority(10);
+                            runnable.run();
+                        }
+                    }, "Retrofit-Idle");
+                }
+            });
         }
 
         Log defaultLog() {
@@ -91,99 +61,65 @@ abstract class Platform {
         }
     }
 
-    private static class Base extends Platform {
-
-        /* renamed from: retrofit.Platform.Base.1 */
-        class AnonymousClass1 implements Provider {
-            final /* synthetic */ Client val$client;
-
-            AnonymousClass1(Client client) {
-                this.val$client = client;
-            }
-
-            public Client get() {
-                return this.val$client;
-            }
-        }
-
+    class Base extends Platform {
         private Base() {
-        }
-
-        Converter defaultConverter() {
-            return new GsonConverter(new Gson());
-        }
-
-        Provider defaultClient() {
-            Client client;
-            if (Platform.hasOkHttpOnClasspath()) {
-                client = OkClientInstantiator.instantiate();
-            } else {
-                client = new UrlConnectionClient();
-            }
-            return new AnonymousClass1(client);
-        }
-
-        Executor defaultHttpExecutor() {
-            return Executors.newCachedThreadPool(new ThreadFactory() {
-
-                /* renamed from: retrofit.Platform.Base.2.1 */
-                class AnonymousClass1 implements Runnable {
-                    final /* synthetic */ Runnable val$r;
-
-                    AnonymousClass1(Runnable runnable) {
-                        this.val$r = runnable;
-                    }
-
-                    public void run() {
-                        Thread.currentThread().setPriority(1);
-                        this.val$r.run();
-                    }
-                }
-
-                public Thread newThread(Runnable r) {
-                    return new Thread(new AnonymousClass1(r), "Retrofit-Idle");
-                }
-            });
         }
 
         Executor defaultCallbackExecutor() {
             return new SynchronousExecutor();
         }
 
+        Provider defaultClient() {
+            final Client urlConnectionClient = !Platform.hasOkHttpOnClasspath() ? new UrlConnectionClient() : OkClientInstantiator.instantiate();
+            return new Provider() {
+                public Client get() {
+                    return urlConnectionClient;
+                }
+            };
+        }
+
+        Converter defaultConverter() {
+            return new GsonConverter(new i());
+        }
+
+        Executor defaultHttpExecutor() {
+            return Executors.newCachedThreadPool(new ThreadFactory() {
+                public Thread newThread(final Runnable runnable) {
+                    return new Thread(new Runnable() {
+                        public void run() {
+                            Thread.currentThread().setPriority(1);
+                            runnable.run();
+                        }
+                    }, "Retrofit-Idle");
+                }
+            });
+        }
+
         Log defaultLog() {
             return new Log() {
-                public void log(String message) {
-                    System.out.println(message);
+                public void log(String str) {
+                    System.out.println(str);
                 }
             };
         }
     }
 
-    private static class AppEngine extends Base {
-
-        /* renamed from: retrofit.Platform.AppEngine.1 */
-        class AnonymousClass1 implements Provider {
-            final /* synthetic */ UrlFetchClient val$client;
-
-            AnonymousClass1(UrlFetchClient urlFetchClient) {
-                this.val$client = urlFetchClient;
-            }
-
-            public Client get() {
-                return this.val$client;
-            }
-        }
-
+    class AppEngine extends Base {
         private AppEngine() {
             super();
         }
 
         Provider defaultClient() {
-            return new AnonymousClass1(new UrlFetchClient());
+            final UrlFetchClient urlFetchClient = new UrlFetchClient();
+            return new Provider() {
+                public Client get() {
+                    return urlFetchClient;
+                }
+            };
         }
     }
 
-    private static class OkClientInstantiator {
+    class OkClientInstantiator {
         private OkClientInstantiator() {
         }
 
@@ -192,26 +128,7 @@ abstract class Platform {
         }
     }
 
-    abstract Executor defaultCallbackExecutor();
-
-    abstract Provider defaultClient();
-
-    abstract Converter defaultConverter();
-
-    abstract Executor defaultHttpExecutor();
-
-    abstract Log defaultLog();
-
     Platform() {
-    }
-
-    static {
-        PLATFORM = findPlatform();
-        HAS_RX_JAVA = hasRxJavaOnClasspath();
-    }
-
-    static Platform get() {
-        return PLATFORM;
     }
 
     private static Platform findPlatform() {
@@ -222,10 +139,11 @@ abstract class Platform {
             }
         } catch (ClassNotFoundException e) {
         }
-        if (System.getProperty("com.google.appengine.runtime.version") == null) {
-            return new Base();
-        }
-        return new AppEngine();
+        return System.getProperty("com.google.appengine.runtime.version") == null ? new Base() : new AppEngine();
+    }
+
+    static Platform get() {
+        return PLATFORM;
     }
 
     private static boolean hasOkHttpOnClasspath() {
@@ -245,4 +163,14 @@ abstract class Platform {
             return false;
         }
     }
+
+    abstract Executor defaultCallbackExecutor();
+
+    abstract Provider defaultClient();
+
+    abstract Converter defaultConverter();
+
+    abstract Executor defaultHttpExecutor();
+
+    abstract Log defaultLog();
 }

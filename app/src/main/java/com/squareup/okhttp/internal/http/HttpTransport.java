@@ -4,12 +4,9 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.Response.Builder;
 import com.squareup.okhttp.ResponseBody;
-
-import java.io.IOException;
-
-import okio.Okio;
-import okio.Sink;
-import okio.Source;
+import okio.j;
+import okio.n;
+import okio.v;
 
 public final class HttpTransport implements Transport {
     private final HttpConnection httpConnection;
@@ -20,53 +17,7 @@ public final class HttpTransport implements Transport {
         this.httpConnection = httpConnection;
     }
 
-    public Sink createRequestBody(Request request, long contentLength) throws IOException {
-        if ("chunked".equalsIgnoreCase(request.header("Transfer-Encoding"))) {
-            return this.httpConnection.newChunkedSink();
-        }
-        if (contentLength != -1) {
-            return this.httpConnection.newFixedLengthSink(contentLength);
-        }
-        throw new IllegalStateException("Cannot stream a request body without chunked encoding or a known content length!");
-    }
-
-    public void finishRequest() throws IOException {
-        this.httpConnection.flush();
-    }
-
-    public void writeRequestBody(RetryableSink requestBody) throws IOException {
-        this.httpConnection.writeRequestBody(requestBody);
-    }
-
-    public void writeRequestHeaders(Request request) throws IOException {
-        this.httpEngine.writingRequestHeaders();
-        this.httpConnection.writeRequest(request.headers(), RequestLine.get(request, this.httpEngine.getConnection().getRoute().getProxy().type(), this.httpEngine.getConnection().getProtocol()));
-    }
-
-    public Builder readResponseHeaders() throws IOException {
-        return this.httpConnection.readResponse();
-    }
-
-    public void releaseConnectionOnIdle() throws IOException {
-        if (canReuseConnection()) {
-            this.httpConnection.poolOnIdle();
-        } else {
-            this.httpConnection.closeOnIdle();
-        }
-    }
-
-    public boolean canReuseConnection() {
-        if ("close".equalsIgnoreCase(this.httpEngine.getRequest().header("Connection")) || "close".equalsIgnoreCase(this.httpEngine.getResponse().header("Connection")) || this.httpConnection.isClosed()) {
-            return false;
-        }
-        return true;
-    }
-
-    public ResponseBody openResponseBody(Response response) throws IOException {
-        return new RealResponseBody(response.headers(), Okio.buffer(getTransferStream(response)));
-    }
-
-    private Source getTransferStream(Response response) throws IOException {
+    private v getTransferStream(Response response) {
         if (!HttpEngine.hasBody(response)) {
             return this.httpConnection.newFixedLengthSource(0);
         }
@@ -74,13 +25,53 @@ public final class HttpTransport implements Transport {
             return this.httpConnection.newChunkedSource(this.httpEngine);
         }
         long contentLength = OkHeaders.contentLength(response);
-        if (contentLength != -1) {
-            return this.httpConnection.newFixedLengthSource(contentLength);
-        }
-        return this.httpConnection.newUnknownLengthSource();
+        return contentLength != -1 ? this.httpConnection.newFixedLengthSource(contentLength) : this.httpConnection.newUnknownLengthSource();
     }
 
-    public void disconnect(HttpEngine engine) throws IOException {
-        this.httpConnection.closeIfOwnedBy(engine);
+    public boolean canReuseConnection() {
+        return ("close".equalsIgnoreCase(this.httpEngine.getRequest().header("Connection")) || "close".equalsIgnoreCase(this.httpEngine.getResponse().header("Connection")) || this.httpConnection.isClosed()) ? false : true;
+    }
+
+    public n createRequestBody(Request request, long j) {
+        if ("chunked".equalsIgnoreCase(request.header("Transfer-Encoding"))) {
+            return this.httpConnection.newChunkedSink();
+        }
+        if (j != -1) {
+            return this.httpConnection.newFixedLengthSink(j);
+        }
+        throw new IllegalStateException("Cannot stream a request body without chunked encoding or a known content length!");
+    }
+
+    public void disconnect(HttpEngine httpEngine) {
+        this.httpConnection.closeIfOwnedBy(httpEngine);
+    }
+
+    public void finishRequest() {
+        this.httpConnection.flush();
+    }
+
+    public ResponseBody openResponseBody(Response response) {
+        return new RealResponseBody(response.headers(), j.AE(getTransferStream(response)));
+    }
+
+    public Builder readResponseHeaders() {
+        return this.httpConnection.readResponse();
+    }
+
+    public void releaseConnectionOnIdle() {
+        if (canReuseConnection()) {
+            this.httpConnection.poolOnIdle();
+        } else {
+            this.httpConnection.closeOnIdle();
+        }
+    }
+
+    public void writeRequestBody(RetryableSink retryableSink) {
+        this.httpConnection.writeRequestBody(retryableSink);
+    }
+
+    public void writeRequestHeaders(Request request) {
+        this.httpEngine.writingRequestHeaders();
+        this.httpConnection.writeRequest(request.headers(), RequestLine.get(request, this.httpEngine.getConnection().getRoute().getProxy().type(), this.httpEngine.getConnection().getProtocol()));
     }
 }

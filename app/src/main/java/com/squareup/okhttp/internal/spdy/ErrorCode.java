@@ -19,38 +19,38 @@ public enum ErrorCode {
     INADEQUATE_SECURITY(12, -1, -1),
     HTTP_1_1_REQUIRED(13, -1, -1),
     INVALID_CREDENTIALS(-1, 10, -1);
-
+    
     public final int httpCode;
     public final int spdyGoAwayCode;
     public final int spdyRstCode;
 
-    private ErrorCode(int httpCode, int spdyRstCode, int spdyGoAwayCode) {
-        this.httpCode = httpCode;
-        this.spdyRstCode = spdyRstCode;
-        this.spdyGoAwayCode = spdyGoAwayCode;
+    private ErrorCode(int i, int i2, int i3) {
+        this.httpCode = i;
+        this.spdyRstCode = i2;
+        this.spdyGoAwayCode = i3;
     }
 
-    public static ErrorCode fromSpdy3Rst(int code) {
+    public static ErrorCode fromHttp2(int i) {
         for (ErrorCode errorCode : values()) {
-            if (errorCode.spdyRstCode == code) {
+            if (errorCode.httpCode == i) {
                 return errorCode;
             }
         }
         return null;
     }
 
-    public static ErrorCode fromHttp2(int code) {
+    public static ErrorCode fromSpdy3Rst(int i) {
         for (ErrorCode errorCode : values()) {
-            if (errorCode.httpCode == code) {
+            if (errorCode.spdyRstCode == i) {
                 return errorCode;
             }
         }
         return null;
     }
 
-    public static ErrorCode fromSpdyGoAway(int code) {
+    public static ErrorCode fromSpdyGoAway(int i) {
         for (ErrorCode errorCode : values()) {
-            if (errorCode.spdyGoAwayCode == code) {
+            if (errorCode.spdyGoAwayCode == i) {
                 return errorCode;
             }
         }

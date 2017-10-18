@@ -1,48 +1,85 @@
 package com.loc;
 
-import android.content.Context;
-import android.text.TextUtils;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-import java.lang.Thread.UncaughtExceptionHandler;
+class ag {
+    private ArrayList b;
+    final /* synthetic */ bg mR;
 
-/* compiled from: DynamicExceptionHandler */
-public class ag implements UncaughtExceptionHandler {
-    private static ag a;
-    private UncaughtExceptionHandler b;
-    private Context c;
-    private s d;
-
-    private ag(Context context, s sVar) {
-        this.c = context.getApplicationContext();
-        this.d = sVar;
-        this.b = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(this);
+    public ag(bg bgVar) {
+        this.mR = bgVar;
+        this.b = null;
+        this.b = new ArrayList();
     }
 
-    static synchronized ag a(Context context, s sVar) {
-        ag agVar;
-        synchronized (ag.class) {
-            if (a == null) {
-                a = new ag(context, sVar);
+    private void oh(int i, int i2) {
+        ArrayList arrayList = new ArrayList();
+        arrayList.add(Integer.valueOf(i));
+        arrayList.add(Integer.valueOf(i2));
+        this.mR.sn[i][i2] = (short) -1;
+        this.mR.sn[i2][i] = (short) -1;
+        ArrayList arrayList2 = new ArrayList();
+        int i3 = 0;
+        while (i3 < this.mR.sm.size()) {
+            if (!(this.mR.sn[i][i3] == (short) 0 || this.mR.sn[i2][i3] == (short) 0)) {
+                arrayList2.add(Integer.valueOf(i3));
             }
-            agVar = a;
+            i3++;
         }
-        return agVar;
+        while (!arrayList2.isEmpty()) {
+            int intValue = ((Integer) arrayList2.get(0)).intValue();
+            arrayList2.remove(0);
+            Iterator it = arrayList.iterator();
+            while (it.hasNext()) {
+                Integer num = (Integer) it.next();
+                this.mR.sn[intValue][num.intValue()] = (short) -1;
+                this.mR.sn[num.intValue()][intValue] = (short) -1;
+            }
+            arrayList.add(Integer.valueOf(intValue));
+            int i4 = 0;
+            while (i4 < arrayList2.size()) {
+                if (this.mR.sn[intValue][((Integer) arrayList2.get(i4)).intValue()] != (short) 0) {
+                    i3 = i4 + 1;
+                } else {
+                    arrayList2.remove(i4);
+                    i3 = i4;
+                }
+                i4 = i3;
+            }
+        }
+        this.b.add(arrayList);
     }
 
-    public void uncaughtException(Thread thread, Throwable th) {
-        String a = t.a(th);
-        try {
-            if (!TextUtils.isEmpty(a)) {
-                if (a.contains("amapdynamic") && a.contains("com.amap.api")) {
-                    ae.a(new x(this.c, ah.c()), this.c, this.d);
+    public void oi() {
+        int i;
+        int size = this.mR.sm.size();
+        for (i = 0; i < size; i++) {
+            for (int i2 = 0; i2 < size; i2++) {
+                if (this.mR.sn[i][i2] > (short) 0) {
+                    oh(i, i2);
                 }
             }
-        } catch (Throwable th2) {
-            th2.printStackTrace();
         }
-        if (this.b != null) {
-            this.b.uncaughtException(thread, th);
+        for (int i3 = 0; i3 < size; i3++) {
+            Object obj = 1;
+            i = 0;
+            while (i < size) {
+                if (this.mR.sn[i3][i] <= (short) 0) {
+                    if (this.mR.sn[i3][i] < (short) 0) {
+                        obj = null;
+                        break;
+                    }
+                    i++;
+                } else {
+                    throw new Exception("non visited edge");
+                }
+            }
+            if (obj != null) {
+                ArrayList arrayList = new ArrayList();
+                arrayList.add(Integer.valueOf(i3));
+                this.b.add(arrayList);
+            }
         }
     }
 }

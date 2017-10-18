@@ -15,7 +15,7 @@ public final class Route {
         this(address, proxy, inetSocketAddress, connectionSpec, false);
     }
 
-    public Route(Address address, Proxy proxy, InetSocketAddress inetSocketAddress, ConnectionSpec connectionSpec, boolean shouldSendTlsFallbackIndicator) {
+    public Route(Address address, Proxy proxy, InetSocketAddress inetSocketAddress, ConnectionSpec connectionSpec, boolean z) {
         if (address == null) {
             throw new NullPointerException("address == null");
         } else if (proxy == null) {
@@ -27,34 +27,10 @@ public final class Route {
             this.proxy = proxy;
             this.inetSocketAddress = inetSocketAddress;
             this.connectionSpec = connectionSpec;
-            this.shouldSendTlsFallbackIndicator = shouldSendTlsFallbackIndicator;
+            this.shouldSendTlsFallbackIndicator = z;
         } else {
             throw new NullPointerException("connectionConfiguration == null");
         }
-    }
-
-    public Address getAddress() {
-        return this.address;
-    }
-
-    public Proxy getProxy() {
-        return this.proxy;
-    }
-
-    public InetSocketAddress getSocketAddress() {
-        return this.inetSocketAddress;
-    }
-
-    public ConnectionSpec getConnectionSpec() {
-        return this.connectionSpec;
-    }
-
-    public boolean getShouldSendTlsFallbackIndicator() {
-        return this.shouldSendTlsFallbackIndicator;
-    }
-
-    public boolean requiresTunnel() {
-        return this.address.sslSocketFactory != null && this.proxy.type() == Type.HTTP;
     }
 
     public boolean equals(Object obj) {
@@ -62,11 +38,31 @@ public final class Route {
         if (!(obj instanceof Route)) {
             return false;
         }
-        Route other = (Route) obj;
-        if (this.address.equals(other.address) && this.proxy.equals(other.proxy) && this.inetSocketAddress.equals(other.inetSocketAddress) && this.connectionSpec.equals(other.connectionSpec) && this.shouldSendTlsFallbackIndicator == other.shouldSendTlsFallbackIndicator) {
+        Route route = (Route) obj;
+        if (this.address.equals(route.address) && this.proxy.equals(route.proxy) && this.inetSocketAddress.equals(route.inetSocketAddress) && this.connectionSpec.equals(route.connectionSpec) && this.shouldSendTlsFallbackIndicator == route.shouldSendTlsFallbackIndicator) {
             z = true;
         }
         return z;
+    }
+
+    public Address getAddress() {
+        return this.address;
+    }
+
+    public ConnectionSpec getConnectionSpec() {
+        return this.connectionSpec;
+    }
+
+    public Proxy getProxy() {
+        return this.proxy;
+    }
+
+    public boolean getShouldSendTlsFallbackIndicator() {
+        return this.shouldSendTlsFallbackIndicator;
+    }
+
+    public InetSocketAddress getSocketAddress() {
+        return this.inetSocketAddress;
     }
 
     public int hashCode() {
@@ -75,6 +71,10 @@ public final class Route {
         if (this.shouldSendTlsFallbackIndicator) {
             i = 1;
         }
-        return hashCode + i;
+        return i + hashCode;
+    }
+
+    public boolean requiresTunnel() {
+        return this.address.sslSocketFactory != null && this.proxy.type() == Type.HTTP;
     }
 }

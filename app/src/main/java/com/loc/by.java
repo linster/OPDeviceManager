@@ -7,17 +7,14 @@ import java.util.ArrayList;
 
 /* compiled from: Unknown */
 final class by implements Serializable {
-    protected byte a;
-    protected ArrayList b;
-    private byte c;
+    protected byte a = (byte) 0;
+    protected ArrayList b = new ArrayList();
+    private byte c = (byte) 3;
 
     by() {
-        this.c = (byte) 3;
-        this.a = (byte) 0;
-        this.b = new ArrayList();
     }
 
-    protected final Boolean a(DataOutputStream dataOutputStream) {
+    protected final Boolean mD(DataOutputStream dataOutputStream) {
         try {
             dataOutputStream.writeByte(this.c);
             dataOutputStream.writeByte(this.a);

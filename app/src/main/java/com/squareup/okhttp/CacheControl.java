@@ -1,12 +1,11 @@
 package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.http.HeaderParser;
-
 import java.util.concurrent.TimeUnit;
 
 public final class CacheControl {
     public static final CacheControl FORCE_CACHE;
-    public static final CacheControl FORCE_NETWORK;
+    public static final CacheControl FORCE_NETWORK = new Builder();
     String headerValue;
     private final boolean isPrivate;
     private final boolean isPublic;
@@ -20,19 +19,56 @@ public final class CacheControl {
     private final boolean onlyIfCached;
     private final int sMaxAgeSeconds;
 
-    public static final class Builder {
-        int maxAgeSeconds;
-        int maxStaleSeconds;
-        int minFreshSeconds;
+    public final class Builder {
+        int maxAgeSeconds = -1;
+        int maxStaleSeconds = -1;
+        int minFreshSeconds = -1;
         boolean noCache;
         boolean noStore;
         boolean noTransform;
         boolean onlyIfCached;
 
-        public Builder() {
-            this.maxAgeSeconds = -1;
-            this.maxStaleSeconds = -1;
-            this.minFreshSeconds = -1;
+        public CacheControl build() {
+            return new CacheControl();
+        }
+
+        public Builder maxAge(int i, TimeUnit timeUnit) {
+            Object obj = null;
+            if (i >= 0) {
+                long toSeconds = timeUnit.toSeconds((long) i);
+                if (toSeconds <= 2147483647L) {
+                    obj = 1;
+                }
+                this.maxAgeSeconds = obj == null ? Integer.MAX_VALUE : (int) toSeconds;
+                return this;
+            }
+            throw new IllegalArgumentException("maxAge < 0: " + i);
+        }
+
+        public Builder maxStale(int i, TimeUnit timeUnit) {
+            Object obj = null;
+            if (i >= 0) {
+                long toSeconds = timeUnit.toSeconds((long) i);
+                if (toSeconds <= 2147483647L) {
+                    obj = 1;
+                }
+                this.maxStaleSeconds = obj == null ? Integer.MAX_VALUE : (int) toSeconds;
+                return this;
+            }
+            throw new IllegalArgumentException("maxStale < 0: " + i);
+        }
+
+        public Builder minFresh(int i, TimeUnit timeUnit) {
+            Object obj = null;
+            if (i >= 0) {
+                long toSeconds = timeUnit.toSeconds((long) i);
+                if (toSeconds <= 2147483647L) {
+                    obj = 1;
+                }
+                this.minFreshSeconds = obj == null ? Integer.MAX_VALUE : (int) toSeconds;
+                return this;
+            }
+            throw new IllegalArgumentException("minFresh < 0: " + i);
         }
 
         public Builder noCache() {
@@ -45,80 +81,21 @@ public final class CacheControl {
             return this;
         }
 
-        public Builder maxAge(int maxAge, TimeUnit timeUnit) {
-            Object obj = null;
-            if (maxAge >= 0) {
-                long maxAgeSecondsLong = timeUnit.toSeconds((long) maxAge);
-                if (maxAgeSecondsLong <= 2147483647L) {
-                    obj = 1;
-                }
-                this.maxAgeSeconds = obj == null ? Integer.MAX_VALUE : (int) maxAgeSecondsLong;
-                return this;
-            }
-            throw new IllegalArgumentException("maxAge < 0: " + maxAge);
-        }
-
-        public Builder maxStale(int maxStale, TimeUnit timeUnit) {
-            Object obj = null;
-            if (maxStale >= 0) {
-                long maxStaleSecondsLong = timeUnit.toSeconds((long) maxStale);
-                if (maxStaleSecondsLong <= 2147483647L) {
-                    obj = 1;
-                }
-                this.maxStaleSeconds = obj == null ? Integer.MAX_VALUE : (int) maxStaleSecondsLong;
-                return this;
-            }
-            throw new IllegalArgumentException("maxStale < 0: " + maxStale);
-        }
-
-        public Builder minFresh(int minFresh, TimeUnit timeUnit) {
-            Object obj = null;
-            if (minFresh >= 0) {
-                long minFreshSecondsLong = timeUnit.toSeconds((long) minFresh);
-                if (minFreshSecondsLong <= 2147483647L) {
-                    obj = 1;
-                }
-                this.minFreshSeconds = obj == null ? Integer.MAX_VALUE : (int) minFreshSecondsLong;
-                return this;
-            }
-            throw new IllegalArgumentException("minFresh < 0: " + minFresh);
+        public Builder noTransform() {
+            this.noTransform = true;
+            return this;
         }
 
         public Builder onlyIfCached() {
             this.onlyIfCached = true;
             return this;
         }
-
-        public Builder noTransform() {
-            this.noTransform = true;
-            return this;
-        }
-
-        public CacheControl build() {
-            return new CacheControl();
-        }
     }
 
     static {
-        FORCE_NETWORK = new Builder();
         Object builder = new Builder();
         TimeUnit timeUnit = TimeUnit.SECONDS;
         FORCE_CACHE = builder;
-    }
-
-    private CacheControl(boolean noCache, boolean noStore, int maxAgeSeconds, int sMaxAgeSeconds, boolean isPrivate, boolean isPublic, boolean mustRevalidate, int maxStaleSeconds, int minFreshSeconds, boolean onlyIfCached, boolean noTransform, String headerValue) {
-        this.noCache = noCache;
-        this.noStore = noStore;
-        this.maxAgeSeconds = maxAgeSeconds;
-        this.sMaxAgeSeconds = sMaxAgeSeconds;
-        this.isPrivate = isPrivate;
-        this.isPublic = isPublic;
-        this.mustRevalidate = mustRevalidate;
-        this.maxStaleSeconds = maxStaleSeconds;
-        this.minFreshSeconds = minFreshSeconds;
-        this.onlyIfCached = onlyIfCached;
-        this.noTransform = noTransform;
-        this.headerValue = headerValue;
     }
 
     private CacheControl(Builder builder) {
@@ -135,20 +112,238 @@ public final class CacheControl {
         this.noTransform = builder.noTransform;
     }
 
-    public boolean noCache() {
-        return this.noCache;
+    private CacheControl(boolean z, boolean z2, int i, int i2, boolean z3, boolean z4, boolean z5, int i3, int i4, boolean z6, boolean z7, String str) {
+        this.noCache = z;
+        this.noStore = z2;
+        this.maxAgeSeconds = i;
+        this.sMaxAgeSeconds = i2;
+        this.isPrivate = z3;
+        this.isPublic = z4;
+        this.mustRevalidate = z5;
+        this.maxStaleSeconds = i3;
+        this.minFreshSeconds = i4;
+        this.onlyIfCached = z6;
+        this.noTransform = z7;
+        this.headerValue = str;
     }
 
-    public boolean noStore() {
-        return this.noStore;
+    private String headerValue() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (this.noCache) {
+            stringBuilder.append("no-cache, ");
+        }
+        if (this.noStore) {
+            stringBuilder.append("no-store, ");
+        }
+        if (this.maxAgeSeconds != -1) {
+            stringBuilder.append("max-age=").append(this.maxAgeSeconds).append(", ");
+        }
+        if (this.sMaxAgeSeconds != -1) {
+            stringBuilder.append("s-maxage=").append(this.sMaxAgeSeconds).append(", ");
+        }
+        if (this.isPrivate) {
+            stringBuilder.append("private, ");
+        }
+        if (this.isPublic) {
+            stringBuilder.append("public, ");
+        }
+        if (this.mustRevalidate) {
+            stringBuilder.append("must-revalidate, ");
+        }
+        if (this.maxStaleSeconds != -1) {
+            stringBuilder.append("max-stale=").append(this.maxStaleSeconds).append(", ");
+        }
+        if (this.minFreshSeconds != -1) {
+            stringBuilder.append("min-fresh=").append(this.minFreshSeconds).append(", ");
+        }
+        if (this.onlyIfCached) {
+            stringBuilder.append("only-if-cached, ");
+        }
+        if (this.noTransform) {
+            stringBuilder.append("no-transform, ");
+        }
+        if (stringBuilder.length() == 0) {
+            return "";
+        }
+        stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
+        return stringBuilder.toString();
     }
 
-    public int maxAgeSeconds() {
-        return this.maxAgeSeconds;
-    }
-
-    public int sMaxAgeSeconds() {
-        return this.sMaxAgeSeconds;
+    public static CacheControl parse(Headers headers) {
+        boolean z = false;
+        int i = -1;
+        int i2 = -1;
+        boolean z2 = false;
+        boolean z3 = false;
+        boolean z4 = false;
+        int i3 = -1;
+        int i4 = -1;
+        boolean z5 = false;
+        boolean z6 = false;
+        Object obj = 1;
+        int size = headers.size();
+        String str = null;
+        boolean z7 = false;
+        for (int i5 = 0; i5 < size; i5++) {
+            String name = headers.name(i5);
+            String value = headers.value(i5);
+            boolean z8;
+            int i6;
+            int skipUntil;
+            String trim;
+            String substring;
+            String str2;
+            if (name.equalsIgnoreCase("Cache-Control")) {
+                if (str == null) {
+                    str = value;
+                } else {
+                    obj = null;
+                }
+                z8 = z7;
+                i6 = 0;
+                while (i6 < value.length()) {
+                    skipUntil = HeaderParser.skipUntil(value, i6, "=,;");
+                    trim = value.substring(i6, skipUntil).trim();
+                    if (skipUntil == value.length()) {
+                        i6 = HeaderParser.skipWhitespace(value, skipUntil + 1);
+                        if (i6 < value.length()) {
+                            i6++;
+                            skipUntil = HeaderParser.skipUntil(value, i6, "\"");
+                            substring = value.substring(i6, skipUntil);
+                            i6 = skipUntil + 1;
+                            str2 = substring;
+                            if ("no-cache".equalsIgnoreCase(trim)) {
+                                z8 = true;
+                            } else if ("no-store".equalsIgnoreCase(trim)) {
+                                z = true;
+                            } else if ("max-age".equalsIgnoreCase(trim)) {
+                                i = HeaderParser.parseSeconds(str2, -1);
+                            } else if ("s-maxage".equalsIgnoreCase(trim)) {
+                                i2 = HeaderParser.parseSeconds(str2, -1);
+                            } else if ("private".equalsIgnoreCase(trim)) {
+                                z2 = true;
+                            } else if ("public".equalsIgnoreCase(trim)) {
+                                z3 = true;
+                            } else if ("must-revalidate".equalsIgnoreCase(trim)) {
+                                z4 = true;
+                            } else if ("max-stale".equalsIgnoreCase(trim)) {
+                                i3 = HeaderParser.parseSeconds(str2, Integer.MAX_VALUE);
+                            } else if ("min-fresh".equalsIgnoreCase(trim)) {
+                                i4 = HeaderParser.parseSeconds(str2, -1);
+                            } else if ("only-if-cached".equalsIgnoreCase(trim)) {
+                                z5 = true;
+                            } else if (!"no-transform".equalsIgnoreCase(trim)) {
+                                z6 = true;
+                            }
+                        }
+                        skipUntil = HeaderParser.skipUntil(value, i6, ",;");
+                        substring = value.substring(i6, skipUntil).trim();
+                        i6 = skipUntil;
+                        str2 = substring;
+                        if ("no-cache".equalsIgnoreCase(trim)) {
+                            z8 = true;
+                        } else if ("no-store".equalsIgnoreCase(trim)) {
+                            z = true;
+                        } else if ("max-age".equalsIgnoreCase(trim)) {
+                            i = HeaderParser.parseSeconds(str2, -1);
+                        } else if ("s-maxage".equalsIgnoreCase(trim)) {
+                            i2 = HeaderParser.parseSeconds(str2, -1);
+                        } else if ("private".equalsIgnoreCase(trim)) {
+                            z2 = true;
+                        } else if ("public".equalsIgnoreCase(trim)) {
+                            z3 = true;
+                        } else if ("must-revalidate".equalsIgnoreCase(trim)) {
+                            z4 = true;
+                        } else if ("max-stale".equalsIgnoreCase(trim)) {
+                            i3 = HeaderParser.parseSeconds(str2, Integer.MAX_VALUE);
+                        } else if ("min-fresh".equalsIgnoreCase(trim)) {
+                            i4 = HeaderParser.parseSeconds(str2, -1);
+                        } else if ("only-if-cached".equalsIgnoreCase(trim)) {
+                            z5 = true;
+                        } else if (!"no-transform".equalsIgnoreCase(trim)) {
+                            z6 = true;
+                        }
+                    }
+                    i6 = skipUntil + 1;
+                    str2 = null;
+                    if ("no-cache".equalsIgnoreCase(trim)) {
+                        z8 = true;
+                    } else if ("no-store".equalsIgnoreCase(trim)) {
+                        z = true;
+                    } else if ("max-age".equalsIgnoreCase(trim)) {
+                        i = HeaderParser.parseSeconds(str2, -1);
+                    } else if ("s-maxage".equalsIgnoreCase(trim)) {
+                        i2 = HeaderParser.parseSeconds(str2, -1);
+                    } else if ("private".equalsIgnoreCase(trim)) {
+                        z2 = true;
+                    } else if ("public".equalsIgnoreCase(trim)) {
+                        z3 = true;
+                    } else if ("must-revalidate".equalsIgnoreCase(trim)) {
+                        z4 = true;
+                    } else if ("max-stale".equalsIgnoreCase(trim)) {
+                        i3 = HeaderParser.parseSeconds(str2, Integer.MAX_VALUE);
+                    } else if ("min-fresh".equalsIgnoreCase(trim)) {
+                        i4 = HeaderParser.parseSeconds(str2, -1);
+                    } else if ("only-if-cached".equalsIgnoreCase(trim)) {
+                        z5 = true;
+                    } else if (!"no-transform".equalsIgnoreCase(trim)) {
+                        z6 = true;
+                    }
+                }
+                z7 = z8;
+            } else if (name.equalsIgnoreCase("Pragma")) {
+                obj = null;
+                z8 = z7;
+                i6 = 0;
+                while (i6 < value.length()) {
+                    skipUntil = HeaderParser.skipUntil(value, i6, "=,;");
+                    trim = value.substring(i6, skipUntil).trim();
+                    if (skipUntil == value.length() || value.charAt(skipUntil) == ',' || value.charAt(skipUntil) == ';') {
+                        i6 = skipUntil + 1;
+                        str2 = null;
+                    } else {
+                        i6 = HeaderParser.skipWhitespace(value, skipUntil + 1);
+                        if (i6 < value.length() && value.charAt(i6) == '\"') {
+                            i6++;
+                            skipUntil = HeaderParser.skipUntil(value, i6, "\"");
+                            substring = value.substring(i6, skipUntil);
+                            i6 = skipUntil + 1;
+                            str2 = substring;
+                        } else {
+                            skipUntil = HeaderParser.skipUntil(value, i6, ",;");
+                            substring = value.substring(i6, skipUntil).trim();
+                            i6 = skipUntil;
+                            str2 = substring;
+                        }
+                    }
+                    if ("no-cache".equalsIgnoreCase(trim)) {
+                        z8 = true;
+                    } else if ("no-store".equalsIgnoreCase(trim)) {
+                        z = true;
+                    } else if ("max-age".equalsIgnoreCase(trim)) {
+                        i = HeaderParser.parseSeconds(str2, -1);
+                    } else if ("s-maxage".equalsIgnoreCase(trim)) {
+                        i2 = HeaderParser.parseSeconds(str2, -1);
+                    } else if ("private".equalsIgnoreCase(trim)) {
+                        z2 = true;
+                    } else if ("public".equalsIgnoreCase(trim)) {
+                        z3 = true;
+                    } else if ("must-revalidate".equalsIgnoreCase(trim)) {
+                        z4 = true;
+                    } else if ("max-stale".equalsIgnoreCase(trim)) {
+                        i3 = HeaderParser.parseSeconds(str2, Integer.MAX_VALUE);
+                    } else if ("min-fresh".equalsIgnoreCase(trim)) {
+                        i4 = HeaderParser.parseSeconds(str2, -1);
+                    } else if ("only-if-cached".equalsIgnoreCase(trim)) {
+                        z5 = true;
+                    } else if (!"no-transform".equalsIgnoreCase(trim)) {
+                        z6 = true;
+                    }
+                }
+                z7 = z8;
+            }
+        }
+        return new CacheControl(z7, z, i, i2, z2, z3, z4, i3, i4, z5, z6, obj != null ? str : null);
     }
 
     public boolean isPrivate() {
@@ -159,8 +354,8 @@ public final class CacheControl {
         return this.isPublic;
     }
 
-    public boolean mustRevalidate() {
-        return this.mustRevalidate;
+    public int maxAgeSeconds() {
+        return this.maxAgeSeconds;
     }
 
     public int maxStaleSeconds() {
@@ -171,189 +366,28 @@ public final class CacheControl {
         return this.minFreshSeconds;
     }
 
-    public boolean onlyIfCached() {
-        return this.onlyIfCached;
+    public boolean mustRevalidate() {
+        return this.mustRevalidate;
+    }
+
+    public boolean noCache() {
+        return this.noCache;
+    }
+
+    public boolean noStore() {
+        return this.noStore;
     }
 
     public boolean noTransform() {
         return this.noTransform;
     }
 
-    public static CacheControl parse(Headers headers) {
-        boolean noCache = false;
-        boolean noStore = false;
-        int maxAgeSeconds = -1;
-        int sMaxAgeSeconds = -1;
-        boolean isPrivate = false;
-        boolean isPublic = false;
-        boolean mustRevalidate = false;
-        int maxStaleSeconds = -1;
-        int minFreshSeconds = -1;
-        boolean onlyIfCached = false;
-        boolean noTransform = false;
-        boolean canUseHeaderValue = true;
-        String headerValue = null;
-        int size = headers.size();
-        for (int i = 0; i < size; i++) {
-            String name = headers.name(i);
-            String value = headers.value(i);
-            int pos;
-            int tokenStart;
-            String directive;
-            int parameterStart;
-            String substring;
-            if (name.equalsIgnoreCase("Cache-Control")) {
-                if (headerValue == null) {
-                    headerValue = value;
-                } else {
-                    canUseHeaderValue = false;
-                }
-                pos = 0;
-                while (pos < value.length()) {
-                    tokenStart = pos;
-                    pos = HeaderParser.skipUntil(value, pos, "=,;");
-                    directive = value.substring(tokenStart, pos).trim();
-                    if (pos == value.length()) {
-                        pos = HeaderParser.skipWhitespace(value, pos + 1);
-                        if (pos < value.length()) {
-                            pos++;
-                            parameterStart = pos;
-                            pos = HeaderParser.skipUntil(value, pos, "\"");
-                            substring = value.substring(parameterStart, pos);
-                            pos++;
-                            if ("no-cache".equalsIgnoreCase(directive)) {
-                                noCache = true;
-                            } else if ("no-store".equalsIgnoreCase(directive)) {
-                                noStore = true;
-                            } else if ("max-age".equalsIgnoreCase(directive)) {
-                                maxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                            } else if ("s-maxage".equalsIgnoreCase(directive)) {
-                                sMaxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                            } else if ("private".equalsIgnoreCase(directive)) {
-                                isPrivate = true;
-                            } else if ("public".equalsIgnoreCase(directive)) {
-                                isPublic = true;
-                            } else if ("must-revalidate".equalsIgnoreCase(directive)) {
-                                mustRevalidate = true;
-                            } else if ("max-stale".equalsIgnoreCase(directive)) {
-                                maxStaleSeconds = HeaderParser.parseSeconds(substring, Integer.MAX_VALUE);
-                            } else if ("min-fresh".equalsIgnoreCase(directive)) {
-                                minFreshSeconds = HeaderParser.parseSeconds(substring, -1);
-                            } else if ("only-if-cached".equalsIgnoreCase(directive)) {
-                                onlyIfCached = true;
-                            } else if (!"no-transform".equalsIgnoreCase(directive)) {
-                                noTransform = true;
-                            }
-                        }
-                        parameterStart = pos;
-                        pos = HeaderParser.skipUntil(value, pos, ",;");
-                        substring = value.substring(parameterStart, pos).trim();
-                        if ("no-cache".equalsIgnoreCase(directive)) {
-                            noCache = true;
-                        } else if ("no-store".equalsIgnoreCase(directive)) {
-                            noStore = true;
-                        } else if ("max-age".equalsIgnoreCase(directive)) {
-                            maxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                        } else if ("s-maxage".equalsIgnoreCase(directive)) {
-                            sMaxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                        } else if ("private".equalsIgnoreCase(directive)) {
-                            isPrivate = true;
-                        } else if ("public".equalsIgnoreCase(directive)) {
-                            isPublic = true;
-                        } else if ("must-revalidate".equalsIgnoreCase(directive)) {
-                            mustRevalidate = true;
-                        } else if ("max-stale".equalsIgnoreCase(directive)) {
-                            maxStaleSeconds = HeaderParser.parseSeconds(substring, Integer.MAX_VALUE);
-                        } else if ("min-fresh".equalsIgnoreCase(directive)) {
-                            minFreshSeconds = HeaderParser.parseSeconds(substring, -1);
-                        } else if ("only-if-cached".equalsIgnoreCase(directive)) {
-                            onlyIfCached = true;
-                        } else if (!"no-transform".equalsIgnoreCase(directive)) {
-                            noTransform = true;
-                        }
-                    }
-                    pos++;
-                    substring = null;
-                    if ("no-cache".equalsIgnoreCase(directive)) {
-                        noCache = true;
-                    } else if ("no-store".equalsIgnoreCase(directive)) {
-                        noStore = true;
-                    } else if ("max-age".equalsIgnoreCase(directive)) {
-                        maxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                    } else if ("s-maxage".equalsIgnoreCase(directive)) {
-                        sMaxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                    } else if ("private".equalsIgnoreCase(directive)) {
-                        isPrivate = true;
-                    } else if ("public".equalsIgnoreCase(directive)) {
-                        isPublic = true;
-                    } else if ("must-revalidate".equalsIgnoreCase(directive)) {
-                        mustRevalidate = true;
-                    } else if ("max-stale".equalsIgnoreCase(directive)) {
-                        maxStaleSeconds = HeaderParser.parseSeconds(substring, Integer.MAX_VALUE);
-                    } else if ("min-fresh".equalsIgnoreCase(directive)) {
-                        minFreshSeconds = HeaderParser.parseSeconds(substring, -1);
-                    } else if ("only-if-cached".equalsIgnoreCase(directive)) {
-                        onlyIfCached = true;
-                    } else if (!"no-transform".equalsIgnoreCase(directive)) {
-                        noTransform = true;
-                    }
-                }
-            } else {
-                if (name.equalsIgnoreCase("Pragma")) {
-                    canUseHeaderValue = false;
-                    pos = 0;
-                    while (pos < value.length()) {
-                        tokenStart = pos;
-                        pos = HeaderParser.skipUntil(value, pos, "=,;");
-                        directive = value.substring(tokenStart, pos).trim();
-                        if (pos == value.length() || value.charAt(pos) == ',' || value.charAt(pos) == ';') {
-                            pos++;
-                            substring = null;
-                        } else {
-                            pos = HeaderParser.skipWhitespace(value, pos + 1);
-                            if (pos < value.length() && value.charAt(pos) == '\"') {
-                                pos++;
-                                parameterStart = pos;
-                                pos = HeaderParser.skipUntil(value, pos, "\"");
-                                substring = value.substring(parameterStart, pos);
-                                pos++;
-                            } else {
-                                parameterStart = pos;
-                                pos = HeaderParser.skipUntil(value, pos, ",;");
-                                substring = value.substring(parameterStart, pos).trim();
-                            }
-                        }
-                        if ("no-cache".equalsIgnoreCase(directive)) {
-                            noCache = true;
-                        } else if ("no-store".equalsIgnoreCase(directive)) {
-                            noStore = true;
-                        } else if ("max-age".equalsIgnoreCase(directive)) {
-                            maxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                        } else if ("s-maxage".equalsIgnoreCase(directive)) {
-                            sMaxAgeSeconds = HeaderParser.parseSeconds(substring, -1);
-                        } else if ("private".equalsIgnoreCase(directive)) {
-                            isPrivate = true;
-                        } else if ("public".equalsIgnoreCase(directive)) {
-                            isPublic = true;
-                        } else if ("must-revalidate".equalsIgnoreCase(directive)) {
-                            mustRevalidate = true;
-                        } else if ("max-stale".equalsIgnoreCase(directive)) {
-                            maxStaleSeconds = HeaderParser.parseSeconds(substring, Integer.MAX_VALUE);
-                        } else if ("min-fresh".equalsIgnoreCase(directive)) {
-                            minFreshSeconds = HeaderParser.parseSeconds(substring, -1);
-                        } else if ("only-if-cached".equalsIgnoreCase(directive)) {
-                            onlyIfCached = true;
-                        } else if (!"no-transform".equalsIgnoreCase(directive)) {
-                            noTransform = true;
-                        }
-                    }
-                }
-            }
-        }
-        if (!canUseHeaderValue) {
-            headerValue = null;
-        }
-        return new CacheControl(noCache, noStore, maxAgeSeconds, sMaxAgeSeconds, isPrivate, isPublic, mustRevalidate, maxStaleSeconds, minFreshSeconds, onlyIfCached, noTransform, headerValue);
+    public boolean onlyIfCached() {
+        return this.onlyIfCached;
+    }
+
+    public int sMaxAgeSeconds() {
+        return this.sMaxAgeSeconds;
     }
 
     public String toString() {
@@ -364,47 +398,5 @@ public final class CacheControl {
         str = headerValue();
         this.headerValue = str;
         return str;
-    }
-
-    private String headerValue() {
-        StringBuilder result = new StringBuilder();
-        if (this.noCache) {
-            result.append("no-cache, ");
-        }
-        if (this.noStore) {
-            result.append("no-store, ");
-        }
-        if (this.maxAgeSeconds != -1) {
-            result.append("max-age=").append(this.maxAgeSeconds).append(", ");
-        }
-        if (this.sMaxAgeSeconds != -1) {
-            result.append("s-maxage=").append(this.sMaxAgeSeconds).append(", ");
-        }
-        if (this.isPrivate) {
-            result.append("private, ");
-        }
-        if (this.isPublic) {
-            result.append("public, ");
-        }
-        if (this.mustRevalidate) {
-            result.append("must-revalidate, ");
-        }
-        if (this.maxStaleSeconds != -1) {
-            result.append("max-stale=").append(this.maxStaleSeconds).append(", ");
-        }
-        if (this.minFreshSeconds != -1) {
-            result.append("min-fresh=").append(this.minFreshSeconds).append(", ");
-        }
-        if (this.onlyIfCached) {
-            result.append("only-if-cached, ");
-        }
-        if (this.noTransform) {
-            result.append("no-transform, ");
-        }
-        if (result.length() == 0) {
-            return "";
-        }
-        result.delete(result.length() - 2, result.length());
-        return result.toString();
     }
 }

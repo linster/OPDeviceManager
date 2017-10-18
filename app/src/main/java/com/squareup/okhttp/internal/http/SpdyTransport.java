@@ -11,8 +11,6 @@ import com.squareup.okhttp.internal.spdy.ErrorCode;
 import com.squareup.okhttp.internal.spdy.Header;
 import com.squareup.okhttp.internal.spdy.SpdyConnection;
 import com.squareup.okhttp.internal.spdy.SpdyStream;
-
-import java.io.IOException;
 import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -20,149 +18,143 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import okio.ByteString;
-import okio.Okio;
-import okio.Sink;
+import okio.j;
+import okio.n;
 
 public final class SpdyTransport implements Transport {
-    private static final List<ByteString> HTTP_2_PROHIBITED_HEADERS;
-    private static final List<ByteString> SPDY_3_PROHIBITED_HEADERS;
+    private static final List HTTP_2_PROHIBITED_HEADERS = Util.immutableList(ByteString.As("connection"), ByteString.As("host"), ByteString.As("keep-alive"), ByteString.As("proxy-connection"), ByteString.As("te"), ByteString.As("transfer-encoding"), ByteString.As("encoding"), ByteString.As("upgrade"));
+    private static final List SPDY_3_PROHIBITED_HEADERS = Util.immutableList(ByteString.As("connection"), ByteString.As("host"), ByteString.As("keep-alive"), ByteString.As("proxy-connection"), ByteString.As("transfer-encoding"));
     private final HttpEngine httpEngine;
     private final SpdyConnection spdyConnection;
     private SpdyStream stream;
-
-    static {
-        SPDY_3_PROHIBITED_HEADERS = Util.immutableList(ByteString.encodeUtf8("connection"), ByteString.encodeUtf8("host"), ByteString.encodeUtf8("keep-alive"), ByteString.encodeUtf8("proxy-connection"), ByteString.encodeUtf8("transfer-encoding"));
-        HTTP_2_PROHIBITED_HEADERS = Util.immutableList(ByteString.encodeUtf8("connection"), ByteString.encodeUtf8("host"), ByteString.encodeUtf8("keep-alive"), ByteString.encodeUtf8("proxy-connection"), ByteString.encodeUtf8("te"), ByteString.encodeUtf8("transfer-encoding"), ByteString.encodeUtf8("encoding"), ByteString.encodeUtf8("upgrade"));
-    }
 
     public SpdyTransport(HttpEngine httpEngine, SpdyConnection spdyConnection) {
         this.httpEngine = httpEngine;
         this.spdyConnection = spdyConnection;
     }
 
-    public Sink createRequestBody(Request request, long contentLength) throws IOException {
-        return this.stream.getSink();
-    }
-
-    public void writeRequestHeaders(Request request) throws IOException {
-        if (this.stream == null) {
-            this.httpEngine.writingRequestHeaders();
-            this.stream = this.spdyConnection.newStream(writeNameValueBlock(request, this.spdyConnection.getProtocol(), RequestLine.version(this.httpEngine.getConnection().getProtocol())), this.httpEngine.permitsRequestBody(), true);
-            this.stream.readTimeout().timeout((long) this.httpEngine.client.getReadTimeout(), TimeUnit.MILLISECONDS);
+    private static boolean isProhibitedHeader(Protocol protocol, ByteString byteString) {
+        if (protocol == Protocol.SPDY_3) {
+            return SPDY_3_PROHIBITED_HEADERS.contains(byteString);
         }
-    }
-
-    public void writeRequestBody(RetryableSink requestBody) throws IOException {
-        requestBody.writeToSocket(this.stream.getSink());
-    }
-
-    public void finishRequest() throws IOException {
-        this.stream.getSink().close();
-    }
-
-    public Builder readResponseHeaders() throws IOException {
-        return readNameValueBlock(this.stream.getResponseHeaders(), this.spdyConnection.getProtocol());
-    }
-
-    public static List<Header> writeNameValueBlock(Request request, Protocol protocol, String version) {
-        Headers headers = request.headers();
-        List<Header> result = new ArrayList(headers.size() + 10);
-        result.add(new Header(Header.TARGET_METHOD, request.method()));
-        result.add(new Header(Header.TARGET_PATH, RequestLine.requestPath(request.url())));
-        String host = HttpEngine.hostHeader(request.url());
-        if (Protocol.SPDY_3 == protocol) {
-            result.add(new Header(Header.VERSION, version));
-            result.add(new Header(Header.TARGET_HOST, host));
-        } else if (Protocol.HTTP_2 != protocol) {
-            throw new AssertionError();
-        } else {
-            result.add(new Header(Header.TARGET_AUTHORITY, host));
+        if (protocol == Protocol.HTTP_2) {
+            return HTTP_2_PROHIBITED_HEADERS.contains(byteString);
         }
-        result.add(new Header(Header.TARGET_SCHEME, request.url().getProtocol()));
-        Set<ByteString> names = new LinkedHashSet();
-        int size = headers.size();
+        throw new AssertionError(protocol);
+    }
+
+    private static String joinOnNull(String str, String str2) {
+        return '\u0000' + str2;
+    }
+
+    public static Builder readNameValueBlock(List list, Protocol protocol) {
+        String str = null;
+        String str2 = "HTTP/1.1";
+        Headers.Builder builder = new Headers.Builder();
+        builder.set(OkHeaders.SELECTED_PROTOCOL, protocol.toString());
+        int size = list.size();
         for (int i = 0; i < size; i++) {
-            ByteString name = ByteString.encodeUtf8(headers.name(i).toLowerCase(Locale.US));
-            String value = headers.value(i);
-            if (!(isProhibitedHeader(protocol, name) || name.equals(Header.TARGET_METHOD) || name.equals(Header.TARGET_PATH) || name.equals(Header.TARGET_SCHEME) || name.equals(Header.TARGET_AUTHORITY) || name.equals(Header.TARGET_HOST) || name.equals(Header.VERSION))) {
-                if (!names.add(name)) {
-                    for (int j = 0; j < result.size(); j++) {
-                        if (((Header) result.get(j)).name.equals(name)) {
-                            result.set(j, new Header(name, joinOnNull(((Header) result.get(j)).value.utf8(), value)));
-                            break;
-                        }
-                    }
-                } else {
-                    result.add(new Header(name, value));
+            ByteString byteString = ((Header) list.get(i)).name;
+            String At = ((Header) list.get(i)).value.At();
+            int i2 = 0;
+            while (i2 < At.length()) {
+                int indexOf = At.indexOf(0, i2);
+                if (indexOf == -1) {
+                    indexOf = At.length();
                 }
+                String substring = At.substring(i2, indexOf);
+                if (byteString.equals(Header.RESPONSE_STATUS)) {
+                    str = substring;
+                } else if (byteString.equals(Header.VERSION)) {
+                    str2 = substring;
+                } else if (!isProhibitedHeader(protocol, byteString)) {
+                    builder.add(byteString.At(), substring);
+                }
+                i2 = indexOf + 1;
             }
         }
-        return result;
-    }
-
-    private static String joinOnNull(String first, String second) {
-        return '\u0000' + second;
-    }
-
-    public static Builder readNameValueBlock(List<Header> headerBlock, Protocol protocol) throws IOException {
-        String status = null;
-        String version = "HTTP/1.1";
-        Headers.Builder headersBuilder = new Headers.Builder();
-        headersBuilder.set(OkHeaders.SELECTED_PROTOCOL, protocol.toString());
-        int size = headerBlock.size();
-        for (int i = 0; i < size; i++) {
-            ByteString name = ((Header) headerBlock.get(i)).name;
-            String values = ((Header) headerBlock.get(i)).value.utf8();
-            int start = 0;
-            while (start < values.length()) {
-                int end = values.indexOf(0, start);
-                if (end == -1) {
-                    end = values.length();
-                }
-                String value = values.substring(start, end);
-                if (name.equals(Header.RESPONSE_STATUS)) {
-                    status = value;
-                } else if (name.equals(Header.VERSION)) {
-                    version = value;
-                } else if (!isProhibitedHeader(protocol, name)) {
-                    headersBuilder.add(name.utf8(), value);
-                }
-                start = end + 1;
-            }
-        }
-        if (status != null) {
-            StatusLine statusLine = StatusLine.parse(version + " " + status);
-            return new Builder().protocol(protocol).code(statusLine.code).message(statusLine.message).headers(headersBuilder.build());
+        if (str != null) {
+            StatusLine parse = StatusLine.parse(str2 + " " + str);
+            return new Builder().protocol(protocol).code(parse.code).message(parse.message).headers(builder.build());
         }
         throw new ProtocolException("Expected ':status' header not present");
     }
 
-    public ResponseBody openResponseBody(Response response) throws IOException {
-        return new RealResponseBody(response.headers(), Okio.buffer(this.stream.getSource()));
-    }
-
-    public void releaseConnectionOnIdle() {
-    }
-
-    public void disconnect(HttpEngine engine) throws IOException {
-        if (this.stream != null) {
-            this.stream.close(ErrorCode.CANCEL);
+    public static List writeNameValueBlock(Request request, Protocol protocol, String str) {
+        Headers headers = request.headers();
+        List arrayList = new ArrayList(headers.size() + 10);
+        arrayList.add(new Header(Header.TARGET_METHOD, request.method()));
+        arrayList.add(new Header(Header.TARGET_PATH, RequestLine.requestPath(request.url())));
+        String hostHeader = HttpEngine.hostHeader(request.url());
+        if (Protocol.SPDY_3 == protocol) {
+            arrayList.add(new Header(Header.VERSION, str));
+            arrayList.add(new Header(Header.TARGET_HOST, hostHeader));
+        } else if (Protocol.HTTP_2 != protocol) {
+            throw new AssertionError();
+        } else {
+            arrayList.add(new Header(Header.TARGET_AUTHORITY, hostHeader));
         }
+        arrayList.add(new Header(Header.TARGET_SCHEME, request.url().getProtocol()));
+        Set linkedHashSet = new LinkedHashSet();
+        int size = headers.size();
+        for (int i = 0; i < size; i++) {
+            ByteString As = ByteString.As(headers.name(i).toLowerCase(Locale.US));
+            String value = headers.value(i);
+            if (!isProhibitedHeader(protocol, As) && !As.equals(Header.TARGET_METHOD) && !As.equals(Header.TARGET_PATH) && !As.equals(Header.TARGET_SCHEME) && !As.equals(Header.TARGET_AUTHORITY) && !As.equals(Header.TARGET_HOST) && !As.equals(Header.VERSION)) {
+                if (!linkedHashSet.add(As)) {
+                    for (int i2 = 0; i2 < arrayList.size(); i2++) {
+                        if (((Header) arrayList.get(i2)).name.equals(As)) {
+                            arrayList.set(i2, new Header(As, joinOnNull(((Header) arrayList.get(i2)).value.At(), value)));
+                            break;
+                        }
+                    }
+                } else {
+                    arrayList.add(new Header(As, value));
+                }
+            }
+        }
+        return arrayList;
     }
 
     public boolean canReuseConnection() {
         return true;
     }
 
-    private static boolean isProhibitedHeader(Protocol protocol, ByteString name) {
-        if (protocol == Protocol.SPDY_3) {
-            return SPDY_3_PROHIBITED_HEADERS.contains(name);
+    public n createRequestBody(Request request, long j) {
+        return this.stream.getSink();
+    }
+
+    public void disconnect(HttpEngine httpEngine) {
+        if (this.stream != null) {
+            this.stream.close(ErrorCode.CANCEL);
         }
-        if (protocol == Protocol.HTTP_2) {
-            return HTTP_2_PROHIBITED_HEADERS.contains(name);
+    }
+
+    public void finishRequest() {
+        this.stream.getSink().close();
+    }
+
+    public ResponseBody openResponseBody(Response response) {
+        return new RealResponseBody(response.headers(), j.AE(this.stream.getSource()));
+    }
+
+    public Builder readResponseHeaders() {
+        return readNameValueBlock(this.stream.getResponseHeaders(), this.spdyConnection.getProtocol());
+    }
+
+    public void releaseConnectionOnIdle() {
+    }
+
+    public void writeRequestBody(RetryableSink retryableSink) {
+        retryableSink.writeToSocket(this.stream.getSink());
+    }
+
+    public void writeRequestHeaders(Request request) {
+        if (this.stream == null) {
+            this.httpEngine.writingRequestHeaders();
+            this.stream = this.spdyConnection.newStream(writeNameValueBlock(request, this.spdyConnection.getProtocol(), RequestLine.version(this.httpEngine.getConnection().getProtocol())), this.httpEngine.permitsRequestBody(), true);
+            this.stream.readTimeout().timeout((long) this.httpEngine.client.getReadTimeout(), TimeUnit.MILLISECONDS);
         }
-        throw new AssertionError(protocol);
     }
 }

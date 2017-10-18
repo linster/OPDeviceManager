@@ -2,8 +2,8 @@ package retrofit;
 
 import retrofit.client.Response;
 
-public interface Callback<T> {
+public interface Callback {
     void failure(RetrofitError retrofitError);
 
-    void success(T t, Response response);
+    void success(Object obj, Response response);
 }

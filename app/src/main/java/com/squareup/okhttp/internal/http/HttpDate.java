@@ -8,60 +8,53 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public final class HttpDate {
-    private static final DateFormat[] BROWSER_COMPATIBLE_DATE_FORMATS;
-    private static final String[] BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS;
-    private static final TimeZone GMT;
-    private static final ThreadLocal<DateFormat> STANDARD_DATE_FORMAT;
-
-    static {
-        GMT = TimeZone.getTimeZone("GMT");
-        STANDARD_DATE_FORMAT = new ThreadLocal<DateFormat>() {
-            protected DateFormat initialValue() {
-                DateFormat rfc1123 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
-                rfc1123.setLenient(false);
-                rfc1123.setTimeZone(HttpDate.GMT);
-                return rfc1123;
-            }
-        };
-        BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS = new String[]{"EEE, dd MMM yyyy HH:mm:ss zzz", "EEEE, dd-MMM-yy HH:mm:ss zzz", "EEE MMM d HH:mm:ss yyyy", "EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd-MMM-yyyy HH-mm-ss z", "EEE, dd MMM yy HH:mm:ss z", "EEE dd-MMM-yyyy HH:mm:ss z", "EEE dd MMM yyyy HH:mm:ss z", "EEE dd-MMM-yyyy HH-mm-ss z", "EEE dd-MMM-yy HH:mm:ss z", "EEE dd MMM yy HH:mm:ss z", "EEE,dd-MMM-yy HH:mm:ss z", "EEE,dd-MMM-yyyy HH:mm:ss z", "EEE, dd-MM-yyyy HH:mm:ss z", "EEE MMM d yyyy HH:mm:ss z"};
-        BROWSER_COMPATIBLE_DATE_FORMATS = new DateFormat[BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS.length];
-    }
-
-    public static Date parse(String value) {
-        if (value.length() == 0) {
-            return null;
+    private static final DateFormat[] BROWSER_COMPATIBLE_DATE_FORMATS = new DateFormat[BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS.length];
+    private static final String[] BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS = new String[]{"EEE, dd MMM yyyy HH:mm:ss zzz", "EEEE, dd-MMM-yy HH:mm:ss zzz", "EEE MMM d HH:mm:ss yyyy", "EEE, dd-MMM-yyyy HH:mm:ss z", "EEE, dd-MMM-yyyy HH-mm-ss z", "EEE, dd MMM yy HH:mm:ss z", "EEE dd-MMM-yyyy HH:mm:ss z", "EEE dd MMM yyyy HH:mm:ss z", "EEE dd-MMM-yyyy HH-mm-ss z", "EEE dd-MMM-yy HH:mm:ss z", "EEE dd MMM yy HH:mm:ss z", "EEE,dd-MMM-yy HH:mm:ss z", "EEE,dd-MMM-yyyy HH:mm:ss z", "EEE, dd-MM-yyyy HH:mm:ss z", "EEE MMM d yyyy HH:mm:ss z"};
+    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+    private static final ThreadLocal STANDARD_DATE_FORMAT = new ThreadLocal() {
+        protected DateFormat initialValue() {
+            DateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+            simpleDateFormat.setLenient(false);
+            simpleDateFormat.setTimeZone(HttpDate.GMT);
+            return simpleDateFormat;
         }
-        ParsePosition position = new ParsePosition(0);
-        Date result = ((DateFormat) STANDARD_DATE_FORMAT.get()).parse(value, position);
-        if (position.getIndex() == value.length()) {
-            return result;
-        }
-        synchronized (BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS) {
-            int i = 0;
-            int count = BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS.length;
-            while (i < count) {
-                DateFormat format = BROWSER_COMPATIBLE_DATE_FORMATS[i];
-                if (format == null) {
-                    format = new SimpleDateFormat(BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS[i], Locale.US);
-                    format.setTimeZone(GMT);
-                    BROWSER_COMPATIBLE_DATE_FORMATS[i] = format;
-                }
-                position.setIndex(0);
-                result = format.parse(value, position);
-                if (position.getIndex() == 0) {
-                    i++;
-                } else {
-                    return result;
-                }
-            }
-            return null;
-        }
-    }
-
-    public static String format(Date value) {
-        return ((DateFormat) STANDARD_DATE_FORMAT.get()).format(value);
-    }
+    };
 
     private HttpDate() {
+    }
+
+    public static String format(Date date) {
+        return ((DateFormat) STANDARD_DATE_FORMAT.get()).format(date);
+    }
+
+    public static Date parse(String str) {
+        int i = 0;
+        if (str.length() == 0) {
+            return null;
+        }
+        ParsePosition parsePosition = new ParsePosition(0);
+        Date parse = ((DateFormat) STANDARD_DATE_FORMAT.get()).parse(str, parsePosition);
+        if (parsePosition.getIndex() == str.length()) {
+            return parse;
+        }
+        synchronized (BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS) {
+            int length = BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS.length;
+            while (i < length) {
+                DateFormat dateFormat = BROWSER_COMPATIBLE_DATE_FORMATS[i];
+                if (dateFormat == null) {
+                    dateFormat = new SimpleDateFormat(BROWSER_COMPATIBLE_DATE_FORMAT_STRINGS[i], Locale.US);
+                    dateFormat.setTimeZone(GMT);
+                    BROWSER_COMPATIBLE_DATE_FORMATS[i] = dateFormat;
+                }
+                parsePosition.setIndex(0);
+                parse = dateFormat.parse(str, parsePosition);
+                if (parsePosition.getIndex() == 0) {
+                    i++;
+                } else {
+                    return parse;
+                }
+            }
+            return null;
+        }
     }
 }

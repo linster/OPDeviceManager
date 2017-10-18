@@ -1,10 +1,12 @@
 package com.loc;
 
-/* compiled from: Const */
-public final class av {
-    public static boolean a;
+import android.location.Location;
 
-    static {
-        a = true;
+/* compiled from: Unknown */
+public final class av {
+    aH nB = new aH(null);
+    Location nC;
+
+    protected av(Z z) {
     }
 }

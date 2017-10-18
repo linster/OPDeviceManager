@@ -6,24 +6,23 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.text.TextUtils;
-
-import com.loc.ac;
-import com.loc.b;
-import com.loc.c;
-import com.loc.k;
+import com.loc.H;
+import com.loc.au;
+import com.loc.bB;
+import com.loc.br;
 
 public class APSService extends Service {
-    Messenger a;
-    APSServiceBase b;
+    Messenger iG;
+    f iH;
 
     public IBinder onBind(Intent intent) {
         try {
-            String stringExtra = intent.getStringExtra("apiKey");
+            Object stringExtra = intent.getStringExtra("apiKey");
             if (!TextUtils.isEmpty(stringExtra)) {
-                k.a(stringExtra);
+                au.pb(stringExtra);
             }
-            this.a = new Messenger(this.b.getHandler());
-            return this.a.getBinder();
+            this.iG = new Messenger(this.iH.iq());
+            return this.iG.getBinder();
         } catch (Throwable th) {
             th.printStackTrace();
             return null;
@@ -32,30 +31,30 @@ public class APSService extends Service {
 
     public void onCreate() {
         try {
-            this.b = (APSServiceBase) ac.a(this, c.a("2.2.0"), "com.amap.api.location.APSServiceWrapper", b.class, new Class[]{Context.class}, new Object[]{this});
-            this.b.onCreate();
+            this.iH = (f) bB.xi(this, H.mY("2.2.0"), "com.amap.api.location.APSServiceWrapper", br.class, new Class[]{Context.class}, new Object[]{this});
+            this.iH.onCreate();
             super.onCreate();
         } catch (Throwable th) {
             th.printStackTrace();
-            this.b = new b(this);
+            this.iH = new br(this);
         }
-    }
-
-    public int onStartCommand(Intent intent, int i, int i2) {
-        try {
-            this.b.onStartCommand(intent, i, i2);
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
-        return super.onStartCommand(intent, i, i2);
     }
 
     public void onDestroy() {
         try {
-            this.b.onDestroy();
+            this.iH.onDestroy();
         } catch (Throwable th) {
             th.printStackTrace();
         }
         super.onDestroy();
+    }
+
+    public int onStartCommand(Intent intent, int i, int i2) {
+        try {
+            this.iH.onStartCommand(intent, i, i2);
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+        return super.onStartCommand(intent, i, i2);
     }
 }

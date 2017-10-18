@@ -3,8 +3,8 @@ package retrofit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.Executor;
-
 import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.mime.TypedByteArray;
@@ -14,7 +14,7 @@ import retrofit.mime.TypedOutput;
 final class Utils {
     private static final int BUFFER_SIZE = 4096;
 
-    static class SynchronousExecutor implements Executor {
+    class SynchronousExecutor implements Executor {
         SynchronousExecutor() {
         }
 
@@ -23,83 +23,70 @@ final class Utils {
         }
     }
 
-    static byte[] streamToBytes(InputStream stream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        if (stream != null) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            while (true) {
-                int r = stream.read(buf);
-                if (r == -1) {
-                    break;
-                }
-                baos.write(buf, 0, r);
-            }
-        }
-        return baos.toByteArray();
+    private Utils() {
     }
 
-    static Request readBodyToBytesIfNecessary(Request request) throws IOException {
+    static Request readBodyToBytesIfNecessary(Request request) {
         TypedOutput body = request.getBody();
         if (body == null || (body instanceof TypedByteArray)) {
             return request;
         }
-        String bodyMime = body.mimeType();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        body.writeTo(baos);
-        return new Request(request.getMethod(), request.getUrl(), request.getHeaders(), new TypedByteArray(bodyMime, baos.toByteArray()));
+        String mimeType = body.mimeType();
+        OutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        body.writeTo(byteArrayOutputStream);
+        return new Request(request.getMethod(), request.getUrl(), request.getHeaders(), new TypedByteArray(mimeType, byteArrayOutputStream.toByteArray()));
     }
 
-    static Response readBodyToBytesIfNecessary(Response response) throws IOException {
-        Throwable th;
+    static Response readBodyToBytesIfNecessary(Response response) {
         TypedInput body = response.getBody();
         if (body == null || (body instanceof TypedByteArray)) {
             return response;
         }
-        String bodyMime = body.mimeType();
-        InputStream is = body.in();
+        String mimeType = body.mimeType();
+        InputStream in = body.in();
         try {
-            TypedInput body2 = new TypedByteArray(bodyMime, streamToBytes(is));
-            try {
-                Response replaceResponseBody = replaceResponseBody(response, body2);
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                    }
+            Response replaceResponseBody = replaceResponseBody(response, new TypedByteArray(mimeType, streamToBytes(in)));
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
                 }
-                return replaceResponseBody;
-            } catch (Throwable th2) {
-                th = th2;
-                body = body2;
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e2) {
-                    }
+            }
+            return replaceResponseBody;
+        } catch (Throwable th) {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e2) {
                 }
-                throw th;
             }
-        } catch (Throwable th3) {
-            th = th3;
-            if (is != null) {
-                is.close();
-            }
-            throw th;
         }
     }
 
-    static Response replaceResponseBody(Response response, TypedInput body) {
-        return new Response(response.getUrl(), response.getStatus(), response.getReason(), response.getHeaders(), body);
+    static Response replaceResponseBody(Response response, TypedInput typedInput) {
+        return new Response(response.getUrl(), response.getStatus(), response.getReason(), response.getHeaders(), typedInput);
     }
 
-    static <T> void validateServiceClass(Class<T> service) {
-        if (!service.isInterface()) {
+    static byte[] streamToBytes(InputStream inputStream) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        if (inputStream != null) {
+            byte[] bArr = new byte[BUFFER_SIZE];
+            while (true) {
+                int read = inputStream.read(bArr);
+                if (read == -1) {
+                    break;
+                }
+                byteArrayOutputStream.write(bArr, 0, read);
+            }
+        }
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    static void validateServiceClass(Class cls) {
+        if (!cls.isInterface()) {
             throw new IllegalArgumentException("Only interface endpoint definitions are supported.");
-        } else if (service.getInterfaces().length > 0) {
+        } else if (cls.getInterfaces().length > 0) {
             throw new IllegalArgumentException("Interface definitions must not extend other interfaces.");
         }
-    }
-
-    private Utils() {
     }
 }

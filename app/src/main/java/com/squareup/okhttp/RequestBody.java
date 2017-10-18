@@ -1,19 +1,15 @@
 package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.Util;
-
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
-
-import okio.BufferedSink;
-import okio.Okio;
+import okio.b;
+import okio.j;
 
 public abstract class RequestBody {
 
-    /* renamed from: com.squareup.okhttp.RequestBody.1 */
-    static class AnonymousClass1 extends RequestBody {
+    class AnonymousClass1 extends RequestBody {
         final /* synthetic */ int val$byteCount;
         final /* synthetic */ byte[] val$content;
         final /* synthetic */ MediaType val$contentType;
@@ -26,21 +22,20 @@ public abstract class RequestBody {
             this.val$offset = i2;
         }
 
-        public MediaType contentType() {
-            return this.val$contentType;
-        }
-
         public long contentLength() {
             return (long) this.val$byteCount;
         }
 
-        public void writeTo(BufferedSink sink) throws IOException {
-            sink.write(this.val$content, this.val$offset, this.val$byteCount);
+        public MediaType contentType() {
+            return this.val$contentType;
+        }
+
+        public void writeTo(b bVar) {
+            bVar.write(this.val$content, this.val$offset, this.val$byteCount);
         }
     }
 
-    /* renamed from: com.squareup.okhttp.RequestBody.2 */
-    static class AnonymousClass2 extends RequestBody {
+    class AnonymousClass2 extends RequestBody {
         final /* synthetic */ MediaType val$contentType;
         final /* synthetic */ File val$file;
 
@@ -49,61 +44,61 @@ public abstract class RequestBody {
             this.val$file = file;
         }
 
-        public MediaType contentType() {
-            return this.val$contentType;
-        }
-
         public long contentLength() {
             return this.val$file.length();
         }
 
-        public void writeTo(BufferedSink sink) throws IOException {
+        public MediaType contentType() {
+            return this.val$contentType;
+        }
+
+        public void writeTo(b bVar) {
             Closeable closeable = null;
             try {
-                closeable = Okio.source(this.val$file);
-                sink.writeAll(closeable);
+                closeable = j.source(this.val$file);
+                bVar.Ab(closeable);
             } finally {
                 Util.closeQuietly(closeable);
             }
         }
     }
 
-    public abstract MediaType contentType();
+    public static RequestBody create(MediaType mediaType, File file) {
+        if (file != null) {
+            return new AnonymousClass2(mediaType, file);
+        }
+        throw new NullPointerException("content == null");
+    }
 
-    public abstract void writeTo(BufferedSink bufferedSink) throws IOException;
+    public static RequestBody create(MediaType mediaType, String str) {
+        Charset charset = Util.UTF_8;
+        if (mediaType != null) {
+            charset = mediaType.charset();
+            if (charset == null) {
+                charset = Util.UTF_8;
+                mediaType = MediaType.parse(mediaType + "; charset=utf-8");
+            }
+        }
+        return create(mediaType, str.getBytes(charset));
+    }
 
-    public long contentLength() throws IOException {
+    public static RequestBody create(MediaType mediaType, byte[] bArr) {
+        return create(mediaType, bArr, 0, bArr.length);
+    }
+
+    public static RequestBody create(MediaType mediaType, byte[] bArr, int i, int i2) {
+        if (bArr != null) {
+            Util.checkOffsetAndCount((long) bArr.length, (long) i, (long) i2);
+            return new AnonymousClass1(mediaType, i2, bArr, i);
+        }
+        throw new NullPointerException("content == null");
+    }
+
+    public long contentLength() {
         return -1;
     }
 
-    public static RequestBody create(MediaType contentType, String content) {
-        Charset charset = Util.UTF_8;
-        if (contentType != null) {
-            charset = contentType.charset();
-            if (charset == null) {
-                charset = Util.UTF_8;
-                contentType = MediaType.parse(contentType + "; charset=utf-8");
-            }
-        }
-        return create(contentType, content.getBytes(charset));
-    }
+    public abstract MediaType contentType();
 
-    public static RequestBody create(MediaType contentType, byte[] content) {
-        return create(contentType, content, 0, content.length);
-    }
-
-    public static RequestBody create(MediaType contentType, byte[] content, int offset, int byteCount) {
-        if (content != null) {
-            Util.checkOffsetAndCount((long) content.length, (long) offset, (long) byteCount);
-            return new AnonymousClass1(contentType, byteCount, content, offset);
-        }
-        throw new NullPointerException("content == null");
-    }
-
-    public static RequestBody create(MediaType contentType, File file) {
-        if (file != null) {
-            return new AnonymousClass2(contentType, file);
-        }
-        throw new NullPointerException("content == null");
-    }
+    public abstract void writeTo(b bVar);
 }

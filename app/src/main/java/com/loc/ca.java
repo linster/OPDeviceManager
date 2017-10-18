@@ -7,17 +7,14 @@ import java.util.ArrayList;
 
 /* compiled from: Unknown */
 final class ca implements Serializable {
-    protected byte a;
-    protected ArrayList b;
-    private byte c;
+    protected byte a = (byte) 0;
+    protected ArrayList b = new ArrayList();
+    private byte c = (byte) 8;
 
     ca() {
-        this.c = (byte) 8;
-        this.a = (byte) 0;
-        this.b = new ArrayList();
     }
 
-    protected final Boolean a(DataOutputStream dataOutputStream) {
+    protected final Boolean rC(DataOutputStream dataOutputStream) {
         try {
             dataOutputStream.writeByte(this.c);
             dataOutputStream.writeByte(this.a);
@@ -25,7 +22,7 @@ final class ca implements Serializable {
                 cb cbVar = (cb) this.b.get(b);
                 dataOutputStream.write(cbVar.a);
                 dataOutputStream.writeShort(cbVar.b);
-                dataOutputStream.write(cd.a(cbVar.c, cbVar.c.length));
+                dataOutputStream.write(aW.sL(cbVar.c, cbVar.c.length));
             }
             return Boolean.valueOf(true);
         } catch (IOException e) {

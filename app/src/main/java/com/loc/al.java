@@ -1,241 +1,75 @@
 package com.loc;
 
-import android.os.Environment;
-
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
+import android.text.TextUtils;
+import java.util.Hashtable;
 import java.util.Locale;
 
-/* compiled from: FileLogUtils */
 public class al {
-    private static String a;
+    private static final char[] mZ = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    private static final int[] na = new int[]{16, 8, 4, 2, 1};
 
-    public static String a() {
-        if (a == null) {
-            a = Environment.getExternalStorageDirectory().getAbsolutePath();
-        }
-        return a;
+    public static final String ov(double d, double d2) {
+        return ow(d, d2, 6);
     }
 
-    public static synchronized void a(String str, byte[] bArr, boolean z) {
-        DataOutputStream dataOutputStream;
-        Throwable th;
-        OutputStream outputStream;
-        DataOutputStream dataOutputStream2;
-        boolean z2 = true;
-        FileOutputStream fileOutputStream = null;
-        synchronized (al.class) {
-            try {
-                if (b() || z) {
-                    File file = new File(str);
-                    File parentFile = file.getParentFile();
-                    if (!parentFile.exists()) {
-                        z2 = parentFile.mkdirs();
-                    }
-                    if (z2) {
-                        if (!file.exists()) {
-                            z2 = file.createNewFile();
-                        }
-                        if (z2) {
-                            OutputStream fileOutputStream2 = new FileOutputStream(str, true);
-                            try {
-                                dataOutputStream = new DataOutputStream(fileOutputStream2);
-                                try {
-                                    dataOutputStream.write(bArr);
-                                    dataOutputStream.flush();
-                                    fileOutputStream2.flush();
-                                    if (dataOutputStream != null) {
-                                        try {
-                                            dataOutputStream.close();
-                                        } catch (Throwable th2) {
-                                            v.a(th2, "FileLogUtils", "writeLog1");
-                                        }
-                                    }
-                                    if (fileOutputStream2 != null) {
-                                        try {
-                                            fileOutputStream2.close();
-                                        } catch (Throwable th22) {
-                                            v.a(th22, "FileLogUtils", "writeLog2");
-                                        }
-                                    }
-                                } catch (FileNotFoundException e) {
-                                    th22 = e;
-                                    outputStream = fileOutputStream2;
-                                    dataOutputStream2 = dataOutputStream;
-                                    try {
-                                        v.a(th22, "FileLogUtils", "writeLog");
-                                        if (dataOutputStream2 != null) {
-                                            try {
-                                                dataOutputStream2.close();
-                                            } catch (Throwable th222) {
-                                                v.a(th222, "FileLogUtils", "writeLog1");
-                                            }
-                                        }
-                                        if (fileOutputStream != null) {
-                                            try {
-                                                fileOutputStream.close();
-                                            } catch (Throwable th2222) {
-                                                v.a(th2222, "FileLogUtils", "writeLog2");
-                                            }
-                                        }
-                                    } catch (Throwable th3) {
-                                        th2222 = th3;
-                                        dataOutputStream = dataOutputStream2;
-                                        if (dataOutputStream != null) {
-                                            try {
-                                                dataOutputStream.close();
-                                            } catch (Throwable th4) {
-                                                v.a(th4, "FileLogUtils", "writeLog1");
-                                            }
-                                        }
-                                        if (fileOutputStream != null) {
-                                            try {
-                                                fileOutputStream.close();
-                                            } catch (Throwable th5) {
-                                                v.a(th5, "FileLogUtils", "writeLog2");
-                                            }
-                                        }
-                                        throw th2222;
-                                    }
-                                } catch (IOException e2) {
-                                    th2222 = e2;
-                                    outputStream = fileOutputStream2;
-                                    try {
-                                        v.a(th2222, "FileLogUtils", "writeLog");
-                                        if (dataOutputStream != null) {
-                                            try {
-                                                dataOutputStream.close();
-                                            } catch (Throwable th22222) {
-                                                v.a(th22222, "FileLogUtils", "writeLog1");
-                                            }
-                                        }
-                                        if (fileOutputStream != null) {
-                                            try {
-                                                fileOutputStream.close();
-                                            } catch (Throwable th222222) {
-                                                v.a(th222222, "FileLogUtils", "writeLog2");
-                                            }
-                                        }
-                                    } catch (Throwable th6) {
-                                        th222222 = th6;
-                                        if (dataOutputStream != null) {
-                                            dataOutputStream.close();
-                                        }
-                                        if (fileOutputStream != null) {
-                                            fileOutputStream.close();
-                                        }
-                                        throw th222222;
-                                    }
-                                } catch (Throwable th7) {
-                                    th222222 = th7;
-                                    outputStream = fileOutputStream2;
-                                    if (dataOutputStream != null) {
-                                        dataOutputStream.close();
-                                    }
-                                    if (fileOutputStream != null) {
-                                        fileOutputStream.close();
-                                    }
-                                    throw th222222;
-                                }
-                            } catch (FileNotFoundException e3) {
-                                th222222 = e3;
-                                OutputStream outputStream2 = fileOutputStream2;
-                                dataOutputStream2 = null;
-                                outputStream = outputStream2;
-                                v.a(th222222, "FileLogUtils", "writeLog");
-                                if (dataOutputStream2 != null) {
-                                    dataOutputStream2.close();
-                                }
-                                if (fileOutputStream != null) {
-                                    fileOutputStream.close();
-                                }
-                            } catch (IOException e4) {
-                                th222222 = e4;
-                                dataOutputStream = null;
-                                outputStream = fileOutputStream2;
-                                v.a(th222222, "FileLogUtils", "writeLog");
-                                if (dataOutputStream != null) {
-                                    dataOutputStream.close();
-                                }
-                                if (fileOutputStream != null) {
-                                    fileOutputStream.close();
-                                }
-                            } catch (Throwable th8) {
-                                th222222 = th8;
-                                dataOutputStream = null;
-                                outputStream = fileOutputStream2;
-                                if (dataOutputStream != null) {
-                                    dataOutputStream.close();
-                                }
-                                if (fileOutputStream != null) {
-                                    fileOutputStream.close();
-                                }
-                                throw th222222;
-                            }
-                        }
-                        return;
-                    }
-                    return;
+    public static final String ow(double d, double d2, int i) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Object obj = 1;
+        int i2 = 0;
+        int i3 = 0;
+        double[] dArr = new double[]{-90.0d, 90.0d};
+        double[] dArr2 = new double[]{-180.0d, 180.0d};
+        while (stringBuilder.length() < i) {
+            double d3;
+            if (obj == null) {
+                d3 = (dArr[0] + dArr[1]) / 2.0d;
+                if (d > d3) {
+                    i3 |= na[i2];
+                    dArr[0] = d3;
+                } else {
+                    dArr[1] = d3;
                 }
-            } catch (FileNotFoundException e5) {
-                th222222 = e5;
-                dataOutputStream2 = null;
-                v.a(th222222, "FileLogUtils", "writeLog");
-                if (dataOutputStream2 != null) {
-                    dataOutputStream2.close();
+            } else {
+                d3 = (dArr2[0] + dArr2[1]) / 2.0d;
+                if (d2 > d3) {
+                    i3 |= na[i2];
+                    dArr2[0] = d3;
+                } else {
+                    dArr2[1] = d3;
                 }
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
-                }
-            } catch (IOException e6) {
-                th222222 = e6;
-                dataOutputStream = null;
-                v.a(th222222, "FileLogUtils", "writeLog");
-                if (dataOutputStream != null) {
-                    dataOutputStream.close();
-                }
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
-                }
-            } catch (Throwable th9) {
-                th222222 = th9;
-                dataOutputStream = null;
-                if (dataOutputStream != null) {
-                    dataOutputStream.close();
-                }
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
-                }
-                throw th222222;
+            }
+            obj = obj != null ? null : 1;
+            if (i2 >= 4) {
+                stringBuilder.append(mZ[i3]);
+                i2 = 0;
+                i3 = 0;
+            } else {
+                i2++;
             }
         }
+        return stringBuilder.toString();
     }
 
-    public static synchronized void a(String str, String str2, boolean z) {
-        synchronized (al.class) {
-            try {
-                StringBuilder stringBuilder = new StringBuilder(200);
-                stringBuilder.delete(0, stringBuilder.length());
-                stringBuilder.append(a(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss"));
-                stringBuilder.append("#");
-                stringBuilder.append(str2).append("\r\n");
-                a(str, stringBuilder.toString().getBytes("UTF-8"), z);
-            } catch (Throwable th) {
-                v.a(th, "FileLogUtils", "writeLog3");
-            }
+    public static final String[] ox(String str) {
+        return new String[]{oy(str, "right"), oy(str, "btm"), oy(str, "left"), oy(str, "top"), oy(r0[0], "top"), oy(r0[0], "btm"), oy(r0[2], "top"), oy(r0[2], "btm"), oy(r0[0], "right"), oy(r0[8], "top"), oy(r0[9], "top"), oy(r0[10], "left"), oy(r0[11], "left"), oy(r0[12], "left"), oy(r0[13], "left"), oy(r0[14], "btm"), oy(r0[15], "btm"), oy(r0[16], "btm"), oy(r0[17], "btm"), oy(r0[18], "right"), oy(r0[19], "right"), oy(r0[20], "right"), oy(r0[21], "right"), oy(r0[22], "top")};
+    }
+
+    private static final String oy(String str, String str2) {
+        if (TextUtils.isEmpty(str) || TextUtils.isEmpty(str2)) {
+            return null;
         }
-    }
-
-    private static boolean b() {
-        return Environment.getExternalStorageState().equals("mounted");
-    }
-
-    private static String a(long j, String str) {
-        return ((j > 0 ? 1 : (j == 0 ? 0 : -1)) <= 0 ? 1 : null) == null ? new SimpleDateFormat(str, Locale.US).format(Long.valueOf(j)) : "0000-00-00-00-00-00";
+        Object obj;
+        String toLowerCase = str.toLowerCase(Locale.US);
+        char charAt = toLowerCase.charAt(toLowerCase.length() - 1);
+        if (toLowerCase.length() % 2 != 0) {
+            obj = "even";
+        } else {
+            String str3 = "odd";
+        }
+        toLowerCase = toLowerCase.substring(0, toLowerCase.length() - 1);
+        if (!(((String) ((Hashtable) aM.pJ.get(str2)).get(obj)).indexOf(charAt) == -1 || TextUtils.isEmpty(toLowerCase))) {
+            toLowerCase = oy(toLowerCase, str2);
+        }
+        return toLowerCase + mZ[((String) ((Hashtable) K.lY.get(str2)).get(obj)).indexOf(charAt)];
     }
 }

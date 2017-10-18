@@ -4,29 +4,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public final class Ping {
-    private final CountDownLatch latch;
-    private long received;
-    private long sent;
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private long received = -1;
+    private long sent = -1;
 
     Ping() {
-        this.latch = new CountDownLatch(1);
-        this.sent = -1;
-        this.received = -1;
-    }
-
-    void send() {
-        if (this.sent != -1) {
-            throw new IllegalStateException();
-        }
-        this.sent = System.nanoTime();
-    }
-
-    void receive() {
-        if (this.received != -1 || this.sent == -1) {
-            throw new IllegalStateException();
-        }
-        this.received = System.nanoTime();
-        this.latch.countDown();
     }
 
     void cancel() {
@@ -37,15 +19,27 @@ public final class Ping {
         this.latch.countDown();
     }
 
-    public long roundTripTime() throws InterruptedException {
+    void receive() {
+        if (this.received != -1 || this.sent == -1) {
+            throw new IllegalStateException();
+        }
+        this.received = System.nanoTime();
+        this.latch.countDown();
+    }
+
+    public long roundTripTime() {
         this.latch.await();
         return this.received - this.sent;
     }
 
-    public long roundTripTime(long timeout, TimeUnit unit) throws InterruptedException {
-        if (this.latch.await(timeout, unit)) {
-            return this.received - this.sent;
+    public long roundTripTime(long j, TimeUnit timeUnit) {
+        return !this.latch.await(j, timeUnit) ? -2 : this.received - this.sent;
+    }
+
+    void send() {
+        if (this.sent != -1) {
+            throw new IllegalStateException();
         }
-        return -2;
+        this.sent = System.nanoTime();
     }
 }

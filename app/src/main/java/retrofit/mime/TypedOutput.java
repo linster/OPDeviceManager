@@ -1,6 +1,5 @@
 package retrofit.mime;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 public interface TypedOutput {
@@ -10,5 +9,5 @@ public interface TypedOutput {
 
     String mimeType();
 
-    void writeTo(OutputStream outputStream) throws IOException;
+    void writeTo(OutputStream outputStream);
 }

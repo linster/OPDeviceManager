@@ -2,81 +2,79 @@ package retrofit;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import retrofit.RequestInterceptor.RequestFacade;
 
 final class RequestInterceptorTape implements RequestFacade, RequestInterceptor {
-    private final List<CommandWithParams> tape;
+    private final List tape = new ArrayList();
 
-    private enum Command {
+    enum Command {
         ADD_HEADER {
-            public void intercept(RequestFacade facade, String name, String value) {
-                facade.addHeader(name, value);
+            public void intercept(RequestFacade requestFacade, String str, String str2) {
+                requestFacade.addHeader(str, str2);
             }
         },
         ADD_PATH_PARAM {
-            public void intercept(RequestFacade facade, String name, String value) {
-                facade.addPathParam(name, value);
+            public void intercept(RequestFacade requestFacade, String str, String str2) {
+                requestFacade.addPathParam(str, str2);
             }
         },
         ADD_ENCODED_PATH_PARAM {
-            public void intercept(RequestFacade facade, String name, String value) {
-                facade.addEncodedPathParam(name, value);
+            public void intercept(RequestFacade requestFacade, String str, String str2) {
+                requestFacade.addEncodedPathParam(str, str2);
             }
         },
         ADD_QUERY_PARAM {
-            public void intercept(RequestFacade facade, String name, String value) {
-                facade.addQueryParam(name, value);
+            public void intercept(RequestFacade requestFacade, String str, String str2) {
+                requestFacade.addQueryParam(str, str2);
             }
         },
         ADD_ENCODED_QUERY_PARAM {
-            public void intercept(RequestFacade facade, String name, String value) {
-                facade.addEncodedQueryParam(name, value);
+            public void intercept(RequestFacade requestFacade, String str, String str2) {
+                requestFacade.addEncodedQueryParam(str, str2);
             }
         };
 
         abstract void intercept(RequestFacade requestFacade, String str, String str2);
     }
 
-    private static final class CommandWithParams {
+    final class CommandWithParams {
         final Command command;
         final String name;
         final String value;
 
-        CommandWithParams(Command command, String name, String value) {
+        CommandWithParams(Command command, String str, String str2) {
             this.command = command;
-            this.name = name;
-            this.value = value;
+            this.name = str;
+            this.value = str2;
         }
     }
 
     RequestInterceptorTape() {
-        this.tape = new ArrayList();
     }
 
-    public void addHeader(String name, String value) {
-        this.tape.add(new CommandWithParams(Command.ADD_HEADER, name, value));
+    public void addEncodedPathParam(String str, String str2) {
+        this.tape.add(new CommandWithParams(Command.ADD_ENCODED_PATH_PARAM, str, str2));
     }
 
-    public void addPathParam(String name, String value) {
-        this.tape.add(new CommandWithParams(Command.ADD_PATH_PARAM, name, value));
+    public void addEncodedQueryParam(String str, String str2) {
+        this.tape.add(new CommandWithParams(Command.ADD_ENCODED_QUERY_PARAM, str, str2));
     }
 
-    public void addEncodedPathParam(String name, String value) {
-        this.tape.add(new CommandWithParams(Command.ADD_ENCODED_PATH_PARAM, name, value));
+    public void addHeader(String str, String str2) {
+        this.tape.add(new CommandWithParams(Command.ADD_HEADER, str, str2));
     }
 
-    public void addQueryParam(String name, String value) {
-        this.tape.add(new CommandWithParams(Command.ADD_QUERY_PARAM, name, value));
+    public void addPathParam(String str, String str2) {
+        this.tape.add(new CommandWithParams(Command.ADD_PATH_PARAM, str, str2));
     }
 
-    public void addEncodedQueryParam(String name, String value) {
-        this.tape.add(new CommandWithParams(Command.ADD_ENCODED_QUERY_PARAM, name, value));
+    public void addQueryParam(String str, String str2) {
+        this.tape.add(new CommandWithParams(Command.ADD_QUERY_PARAM, str, str2));
     }
 
-    public void intercept(RequestFacade request) {
-        for (CommandWithParams cwp : this.tape) {
-            cwp.command.intercept(request, cwp.name, cwp.value);
+    public void intercept(RequestFacade requestFacade) {
+        for (CommandWithParams commandWithParams : this.tape) {
+            commandWithParams.command.intercept(requestFacade, commandWithParams.name, commandWithParams.value);
         }
     }
 }

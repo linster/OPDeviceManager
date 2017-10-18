@@ -1,8 +1,6 @@
 package retrofit;
 
-import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.net.URLEncoder;
@@ -11,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import retrofit.RequestInterceptor.RequestFacade;
 import retrofit.client.Header;
 import retrofit.client.Request;
@@ -38,7 +35,7 @@ final class RequestBuilder implements RequestFacade {
     private String contentTypeHeader;
     private final Converter converter;
     private final FormUrlEncodedTypedOutput formBody;
-    private List<Header> headers;
+    private List headers;
     private final boolean isObservable;
     private final boolean isSynchronous;
     private final MultipartTypedOutput multipartBody;
@@ -47,25 +44,24 @@ final class RequestBuilder implements RequestFacade {
     private String relativeUrl;
     private final String requestMethod;
 
-    /* renamed from: retrofit.RequestBuilder.1 */
-    static /* synthetic */ class AnonymousClass1 {
+    /* synthetic */ class AnonymousClass1 {
         static final /* synthetic */ int[] $SwitchMap$retrofit$RestMethodInfo$RequestType = null;
 
         static {
             /* JADX: method processing error */
 /*
-            Error: jadx.core.utils.exceptions.DecodeException: Load method exception in method: retrofit.RequestBuilder.1.<clinit>():void
-	at jadx.core.dex.nodes.MethodNode.load(MethodNode.java:113)
+Error: jadx.core.utils.exceptions.DecodeException: Load method exception in method: retrofit.RequestBuilder.1.<clinit>():void
+	at jadx.core.dex.nodes.MethodNode.load(MethodNode.java:116)
+	at jadx.core.dex.nodes.ClassNode.load(ClassNode.java:249)
 	at jadx.core.dex.nodes.ClassNode.load(ClassNode.java:256)
-	at jadx.core.dex.nodes.ClassNode.load(ClassNode.java:263)
 	at jadx.core.ProcessClass.process(ProcessClass.java:34)
-	at jadx.api.JadxDecompiler.processClass(JadxDecompiler.java:281)
-	at jadx.api.JavaClass.decompile(JavaClass.java:59)
-	at jadx.api.JadxDecompiler$1.run(JadxDecompiler.java:161)
+	at jadx.api.JadxDecompiler.processClass(JadxDecompiler.java:306)
+	at jadx.api.JavaClass.decompile(JavaClass.java:62)
+	at jadx.api.JadxDecompiler$1.run(JadxDecompiler.java:199)
 Caused by: java.lang.NullPointerException
-	at jadx.core.dex.nodes.MethodNode.addJump(MethodNode.java:367)
-	at jadx.core.dex.nodes.MethodNode.initJumps(MethodNode.java:357)
-	at jadx.core.dex.nodes.MethodNode.load(MethodNode.java:103)
+	at jadx.core.dex.nodes.MethodNode.addJump(MethodNode.java:370)
+	at jadx.core.dex.nodes.MethodNode.initJumps(MethodNode.java:360)
+	at jadx.core.dex.nodes.MethodNode.load(MethodNode.java:106)
 	... 6 more
 */
             /*
@@ -99,371 +95,367 @@ Caused by: java.lang.NullPointerException
         }
     }
 
-    private static class MimeOverridingTypedOutput implements TypedOutput {
+    class MimeOverridingTypedOutput implements TypedOutput {
         private final TypedOutput delegate;
         private final String mimeType;
 
-        MimeOverridingTypedOutput(TypedOutput delegate, String mimeType) {
-            this.delegate = delegate;
-            this.mimeType = mimeType;
+        MimeOverridingTypedOutput(TypedOutput typedOutput, String str) {
+            this.delegate = typedOutput;
+            this.mimeType = str;
         }
 
         public String fileName() {
             return this.delegate.fileName();
         }
 
-        public String mimeType() {
-            return this.mimeType;
-        }
-
         public long length() {
             return this.delegate.length();
         }
 
-        public void writeTo(OutputStream out) throws IOException {
-            this.delegate.writeTo(out);
+        public String mimeType() {
+            return this.mimeType;
+        }
+
+        public void writeTo(OutputStream outputStream) {
+            this.delegate.writeTo(outputStream);
         }
     }
 
-    RequestBuilder(String apiUrl, RestMethodInfo methodInfo, Converter converter) {
-        this.apiUrl = apiUrl;
+    RequestBuilder(String str, RestMethodInfo restMethodInfo, Converter converter) {
+        this.apiUrl = str;
         this.converter = converter;
-        this.paramAnnotations = methodInfo.requestParamAnnotations;
-        this.requestMethod = methodInfo.requestMethod;
-        this.isSynchronous = methodInfo.isSynchronous;
-        this.isObservable = methodInfo.isObservable;
-        if (methodInfo.headers != null) {
-            this.headers = new ArrayList(methodInfo.headers);
+        this.paramAnnotations = restMethodInfo.requestParamAnnotations;
+        this.requestMethod = restMethodInfo.requestMethod;
+        this.isSynchronous = restMethodInfo.isSynchronous;
+        this.isObservable = restMethodInfo.isObservable;
+        if (restMethodInfo.headers != null) {
+            this.headers = new ArrayList(restMethodInfo.headers);
         }
-        this.contentTypeHeader = methodInfo.contentTypeHeader;
-        this.relativeUrl = methodInfo.requestUrl;
-        String requestQuery = methodInfo.requestQuery;
-        if (requestQuery != null) {
-            this.queryParams = new StringBuilder().append('?').append(requestQuery);
+        this.contentTypeHeader = restMethodInfo.contentTypeHeader;
+        this.relativeUrl = restMethodInfo.requestUrl;
+        String str2 = restMethodInfo.requestQuery;
+        if (str2 != null) {
+            this.queryParams = new StringBuilder().append('?').append(str2);
         }
-        switch (AnonymousClass1.$SwitchMap$retrofit$RestMethodInfo$RequestType[methodInfo.requestType.ordinal()]) {
+        switch (AnonymousClass1.$SwitchMap$retrofit$RestMethodInfo$RequestType[restMethodInfo.requestType.ordinal()]) {
             case 1:
                 this.formBody = new FormUrlEncodedTypedOutput();
                 this.multipartBody = null;
                 this.body = this.formBody;
+                return;
             case 2:
                 this.formBody = null;
                 this.multipartBody = new MultipartTypedOutput();
                 this.body = this.multipartBody;
+                return;
             case 3:
                 this.formBody = null;
                 this.multipartBody = null;
+                return;
             default:
-                throw new IllegalArgumentException("Unknown request type: " + methodInfo.requestType);
+                throw new IllegalArgumentException("Unknown request type: " + restMethodInfo.requestType);
         }
     }
 
-    public void addHeader(String name, String value) {
-        if (name == null) {
-            throw new IllegalArgumentException("Header name must not be null.");
-        } else if ("Content-Type".equalsIgnoreCase(name)) {
-            this.contentTypeHeader = value;
-        } else {
-            List<Header> headers = this.headers;
-            if (headers == null) {
-                headers = new ArrayList(2);
-                this.headers = headers;
-            }
-            headers.add(new Header(name, value));
-        }
-    }
-
-    public void addPathParam(String name, String value) {
-        addPathParam(name, value, true);
-    }
-
-    public void addEncodedPathParam(String name, String value) {
-        addPathParam(name, value, false);
-    }
-
-    private void addPathParam(String name, String value, boolean urlEncodeValue) {
-        if (name == null) {
+    private void addPathParam(String str, String str2, boolean z) {
+        if (str == null) {
             throw new IllegalArgumentException("Path replacement name must not be null.");
-        } else if (value == null) {
-            throw new IllegalArgumentException("Path replacement \"" + name + "\" value must not be null.");
-        } else if (urlEncodeValue) {
-            this.relativeUrl = this.relativeUrl.replace("{" + name + "}", URLEncoder.encode(String.valueOf(value), "UTF-8").replace("+", "%20"));
+        } else if (str2 == null) {
+            throw new IllegalArgumentException("Path replacement \"" + str + "\" value must not be null.");
+        } else if (z) {
+            this.relativeUrl = this.relativeUrl.replace("{" + str + "}", URLEncoder.encode(String.valueOf(str2), "UTF-8").replace("+", "%20"));
         } else {
             try {
-                this.relativeUrl = this.relativeUrl.replace("{" + name + "}", String.valueOf(value));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("Unable to convert path parameter \"" + name + "\" value to UTF-8:" + value, e);
+                this.relativeUrl = this.relativeUrl.replace("{" + str + "}", String.valueOf(str2));
+            } catch (Throwable e) {
+                throw new RuntimeException("Unable to convert path parameter \"" + str + "\" value to UTF-8:" + str2, e);
             }
         }
     }
 
-    public void addQueryParam(String name, String value) {
-        addQueryParam(name, value, false, true);
-    }
-
-    public void addEncodedQueryParam(String name, String value) {
-        addQueryParam(name, value, false, false);
-    }
-
-    private void addQueryParam(String name, Object value, boolean encodeName, boolean encodeValue) {
-        if (value instanceof Iterable) {
-            for (Object iterableValue : (Iterable) value) {
-                if (iterableValue != null) {
-                    addQueryParam(name, iterableValue.toString(), encodeName, encodeValue);
+    private void addQueryParam(String str, Object obj, boolean z, boolean z2) {
+        if (obj instanceof Iterable) {
+            for (Object next : (Iterable) obj) {
+                if (next != null) {
+                    addQueryParam(str, next.toString(), z, z2);
                 }
             }
-        } else if (value.getClass().isArray()) {
-            int arrayLength = Array.getLength(value);
-            for (int x = 0; x < arrayLength; x++) {
-                Object arrayValue = Array.get(value, x);
-                if (arrayValue != null) {
-                    addQueryParam(name, arrayValue.toString(), encodeName, encodeValue);
+        } else if (obj.getClass().isArray()) {
+            int length = Array.getLength(obj);
+            for (int i = 0; i < length; i++) {
+                Object obj2 = Array.get(obj, i);
+                if (obj2 != null) {
+                    addQueryParam(str, obj2.toString(), z, z2);
                 }
             }
         } else {
-            addQueryParam(name, value.toString(), encodeName, encodeValue);
+            addQueryParam(str, obj.toString(), z, z2);
         }
     }
 
-    private void addQueryParam(String name, String value, boolean encodeName, boolean encodeValue) {
-        if (name == null) {
+    private void addQueryParam(String str, String str2, boolean z, boolean z2) {
+        if (str == null) {
             throw new IllegalArgumentException("Query param name must not be null.");
-        } else if (value != null) {
+        } else if (str2 != null) {
             try {
-                char c;
-                StringBuilder queryParams = this.queryParams;
-                if (queryParams == null) {
-                    queryParams = new StringBuilder();
-                    this.queryParams = queryParams;
-                }
-                if (queryParams.length() <= 0) {
-                    c = '?';
+                StringBuilder stringBuilder;
+                StringBuilder stringBuilder2 = this.queryParams;
+                if (stringBuilder2 != null) {
+                    stringBuilder = stringBuilder2;
                 } else {
-                    c = '&';
+                    stringBuilder2 = new StringBuilder();
+                    this.queryParams = stringBuilder2;
+                    stringBuilder = stringBuilder2;
                 }
-                queryParams.append(c);
-                if (encodeName) {
-                    name = URLEncoder.encode(name, "UTF-8");
+                stringBuilder.append(stringBuilder.length() <= 0 ? '?' : '&');
+                if (z) {
+                    str = URLEncoder.encode(str, "UTF-8");
                 }
-                if (encodeValue) {
-                    value = URLEncoder.encode(value, "UTF-8");
+                if (z2) {
+                    str2 = URLEncoder.encode(str2, "UTF-8");
                 }
-                queryParams.append(name).append('=').append(value);
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("Unable to convert query parameter \"" + name + "\" value to UTF-8: " + value, e);
+                stringBuilder.append(str).append('=').append(str2);
+            } catch (Throwable e) {
+                throw new RuntimeException("Unable to convert query parameter \"" + str + "\" value to UTF-8: " + str2, e);
             }
         } else {
-            throw new IllegalArgumentException("Query param \"" + name + "\" value must not be null.");
+            throw new IllegalArgumentException("Query param \"" + str + "\" value must not be null.");
         }
     }
 
-    private void addQueryParamMap(int parameterNumber, Map<?, ?> map, boolean encodeNames, boolean encodeValues) {
-        for (Entry<?, ?> entry : map.entrySet()) {
-            Object entryKey = entry.getKey();
-            if (entryKey != null) {
-                Object entryValue = entry.getValue();
-                if (entryValue != null) {
-                    addQueryParam(entryKey.toString(), entryValue.toString(), encodeNames, encodeValues);
+    private void addQueryParamMap(int i, Map map, boolean z, boolean z2) {
+        for (Entry entry : map.entrySet()) {
+            Object key = entry.getKey();
+            if (key != null) {
+                Object value = entry.getValue();
+                if (value != null) {
+                    addQueryParam(key.toString(), value.toString(), z, z2);
                 }
             } else {
-                throw new IllegalArgumentException("Parameter #" + (parameterNumber + 1) + " query map contained null key.");
+                throw new IllegalArgumentException("Parameter #" + (i + 1) + " query map contained null key.");
             }
         }
     }
 
-    void setArguments(Object[] args) {
-        if (args != null) {
-            int count = args.length;
-            if (!(this.isSynchronous || this.isObservable)) {
-                count--;
+    public void addEncodedPathParam(String str, String str2) {
+        addPathParam(str, str2, false);
+    }
+
+    public void addEncodedQueryParam(String str, String str2) {
+        addQueryParam(str, str2, false, false);
+    }
+
+    public void addHeader(String str, String str2) {
+        if (str == null) {
+            throw new IllegalArgumentException("Header name must not be null.");
+        } else if ("Content-Type".equalsIgnoreCase(str)) {
+            this.contentTypeHeader = str2;
+        } else {
+            List list = this.headers;
+            if (list == null) {
+                list = new ArrayList(2);
+                this.headers = list;
             }
-            for (int i = 0; i < count; i++) {
-                Object value = args[i];
-                Annotation annotation = this.paramAnnotations[i];
-                Class<? extends Annotation> annotationType = annotation.annotationType();
-                String name;
+            list.add(new Header(str, str2));
+        }
+    }
+
+    public void addPathParam(String str, String str2) {
+        addPathParam(str, str2, true);
+    }
+
+    public void addQueryParam(String str, String str2) {
+        addQueryParam(str, str2, false, true);
+    }
+
+    Request build() {
+        if (this.multipartBody != null && this.multipartBody.getPartCount() == 0) {
+            throw new IllegalStateException("Multipart requests must contain at least one part.");
+        }
+        String str = this.apiUrl;
+        StringBuilder stringBuilder = new StringBuilder(str);
+        if (str.endsWith("/")) {
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+        stringBuilder.append(this.relativeUrl);
+        CharSequence charSequence = this.queryParams;
+        if (charSequence != null) {
+            stringBuilder.append(charSequence);
+        }
+        TypedOutput typedOutput = this.body;
+        List list = this.headers;
+        if (this.contentTypeHeader != null) {
+            if (typedOutput == null) {
+                Header header = new Header("Content-Type", this.contentTypeHeader);
+                if (list != null) {
+                    list.add(header);
+                } else {
+                    list = Collections.singletonList(header);
+                }
+            } else {
+                Object mimeOverridingTypedOutput = new MimeOverridingTypedOutput(typedOutput, this.contentTypeHeader);
+            }
+        }
+        return new Request(this.requestMethod, stringBuilder.toString(), list, typedOutput);
+    }
+
+    void setArguments(Object[] objArr) {
+        if (objArr != null) {
+            int length = objArr.length;
+            int i = (this.isSynchronous || this.isObservable) ? length : length - 1;
+            for (int i2 = 0; i2 < i; i2++) {
+                Object obj = objArr[i2];
+                Annotation annotation = this.paramAnnotations[i2];
+                Class annotationType = annotation.annotationType();
+                String value;
                 if (annotationType == Path.class) {
                     Path path = (Path) annotation;
-                    name = path.value();
-                    if (value != null) {
-                        addPathParam(name, value.toString(), path.encode());
+                    value = path.value();
+                    if (obj != null) {
+                        addPathParam(value, obj.toString(), path.encode());
                     } else {
-                        throw new IllegalArgumentException("Path parameter \"" + name + "\" value must not be null.");
+                        throw new IllegalArgumentException("Path parameter \"" + value + "\" value must not be null.");
                     }
                 } else if (annotationType == EncodedPath.class) {
-                    name = ((EncodedPath) annotation).value();
-                    if (value != null) {
-                        addPathParam(name, value.toString(), false);
+                    r0 = ((EncodedPath) annotation).value();
+                    if (obj != null) {
+                        addPathParam(r0, obj.toString(), false);
                     } else {
-                        throw new IllegalArgumentException("Path parameter \"" + name + "\" value must not be null.");
+                        throw new IllegalArgumentException("Path parameter \"" + r0 + "\" value must not be null.");
                     }
                 } else if (annotationType != Query.class) {
                     if (annotationType != EncodedQuery.class) {
                         if (annotationType != QueryMap.class) {
                             if (annotationType != EncodedQueryMap.class) {
-                                int arrayLength;
-                                int x;
-                                Object arrayValue;
+                                Object key;
                                 if (annotationType != retrofit.http.Header.class) {
+                                    boolean encodeValues;
                                     if (annotationType != Field.class) {
-                                        Object entryKey;
-                                        Object entryValue;
+                                        Object value2;
                                         if (annotationType != FieldMap.class) {
-                                            String transferEncoding;
                                             if (annotationType != Part.class) {
                                                 if (annotationType != PartMap.class) {
                                                     if (annotationType != Body.class) {
                                                         throw new IllegalArgumentException("Unknown annotation: " + annotationType.getCanonicalName());
-                                                    } else if (value == null) {
+                                                    } else if (obj == null) {
                                                         throw new IllegalArgumentException("Body parameter value must not be null.");
-                                                    } else if (value instanceof TypedOutput) {
-                                                        this.body = (TypedOutput) value;
+                                                    } else if (obj instanceof TypedOutput) {
+                                                        this.body = (TypedOutput) obj;
                                                     } else {
-                                                        this.body = this.converter.toBody(value);
+                                                        this.body = this.converter.toBody(obj);
                                                     }
-                                                } else if (value != null) {
-                                                    transferEncoding = ((PartMap) annotation).encoding();
-                                                    for (Entry<?, ?> entry : ((Map) value).entrySet()) {
-                                                        entryKey = entry.getKey();
-                                                        if (entryKey != null) {
-                                                            String entryName = entryKey.toString();
-                                                            entryValue = entry.getValue();
-                                                            if (entryValue != null) {
-                                                                if (entryValue instanceof TypedOutput) {
-                                                                    this.multipartBody.addPart(entryName, transferEncoding, (TypedOutput) entryValue);
-                                                                } else if (entryValue instanceof String) {
-                                                                    this.multipartBody.addPart(entryName, transferEncoding, new TypedString((String) entryValue));
+                                                } else if (obj != null) {
+                                                    value = ((PartMap) annotation).encoding();
+                                                    for (Entry entry : ((Map) obj).entrySet()) {
+                                                        Object key2 = entry.getKey();
+                                                        if (key2 != null) {
+                                                            String obj2 = key2.toString();
+                                                            value2 = entry.getValue();
+                                                            if (value2 != null) {
+                                                                if (value2 instanceof TypedOutput) {
+                                                                    this.multipartBody.addPart(obj2, value, (TypedOutput) value2);
+                                                                } else if (value2 instanceof String) {
+                                                                    this.multipartBody.addPart(obj2, value, new TypedString((String) value2));
                                                                 } else {
-                                                                    this.multipartBody.addPart(entryName, transferEncoding, this.converter.toBody(entryValue));
+                                                                    this.multipartBody.addPart(obj2, value, this.converter.toBody(value2));
                                                                 }
                                                             }
                                                         } else {
-                                                            throw new IllegalArgumentException("Parameter #" + (i + 1) + " part map contained null key.");
+                                                            throw new IllegalArgumentException("Parameter #" + (i2 + 1) + " part map contained null key.");
                                                         }
                                                     }
                                                     continue;
                                                 } else {
                                                     continue;
                                                 }
-                                            } else if (value != null) {
-                                                name = ((Part) annotation).value();
-                                                transferEncoding = ((Part) annotation).encoding();
-                                                if (value instanceof TypedOutput) {
-                                                    this.multipartBody.addPart(name, transferEncoding, (TypedOutput) value);
-                                                } else if (value instanceof String) {
-                                                    this.multipartBody.addPart(name, transferEncoding, new TypedString((String) value));
+                                            } else if (obj != null) {
+                                                value = ((Part) annotation).value();
+                                                r0 = ((Part) annotation).encoding();
+                                                if (obj instanceof TypedOutput) {
+                                                    this.multipartBody.addPart(value, r0, (TypedOutput) obj);
+                                                } else if (obj instanceof String) {
+                                                    this.multipartBody.addPart(value, r0, new TypedString((String) obj));
                                                 } else {
-                                                    this.multipartBody.addPart(name, transferEncoding, this.converter.toBody(value));
+                                                    this.multipartBody.addPart(value, r0, this.converter.toBody(obj));
                                                 }
                                             }
-                                        } else if (value != null) {
+                                        } else if (obj != null) {
                                             FieldMap fieldMap = (FieldMap) annotation;
                                             boolean encodeNames = fieldMap.encodeNames();
-                                            boolean encodeValues = fieldMap.encodeValues();
-                                            for (Entry<?, ?> entry2 : ((Map) value).entrySet()) {
-                                                entryKey = entry2.getKey();
-                                                if (entryKey != null) {
-                                                    entryValue = entry2.getValue();
-                                                    if (entryValue != null) {
-                                                        this.formBody.addField(entryKey.toString(), encodeNames, entryValue.toString(), encodeValues);
+                                            encodeValues = fieldMap.encodeValues();
+                                            for (Entry entry2 : ((Map) obj).entrySet()) {
+                                                key = entry2.getKey();
+                                                if (key != null) {
+                                                    value2 = entry2.getValue();
+                                                    if (value2 != null) {
+                                                        this.formBody.addField(key.toString(), encodeNames, value2.toString(), encodeValues);
                                                     }
                                                 } else {
-                                                    throw new IllegalArgumentException("Parameter #" + (i + 1) + " field map contained null key.");
+                                                    throw new IllegalArgumentException("Parameter #" + (i2 + 1) + " field map contained null key.");
                                                 }
                                             }
                                             continue;
                                         } else {
                                             continue;
                                         }
-                                    } else if (value != null) {
+                                    } else if (obj != null) {
                                         Field field = (Field) annotation;
-                                        name = field.value();
-                                        boolean encodeName = field.encodeName();
+                                        value = field.value();
+                                        encodeValues = field.encodeName();
                                         boolean encodeValue = field.encodeValue();
-                                        if (value instanceof Iterable) {
-                                            for (Object iterableValue : (Iterable) value) {
-                                                if (iterableValue != null) {
-                                                    this.formBody.addField(name, encodeName, iterableValue.toString(), encodeValue);
+                                        if (obj instanceof Iterable) {
+                                            for (Object obj3 : (Iterable) obj3) {
+                                                if (obj3 != null) {
+                                                    this.formBody.addField(value, encodeValues, obj3.toString(), encodeValue);
                                                 }
                                             }
-                                        } else if (value.getClass().isArray()) {
-                                            arrayLength = Array.getLength(value);
-                                            for (x = 0; x < arrayLength; x++) {
-                                                arrayValue = Array.get(value, x);
-                                                if (arrayValue != null) {
-                                                    this.formBody.addField(name, encodeName, arrayValue.toString(), encodeValue);
+                                        } else if (obj3.getClass().isArray()) {
+                                            int length2 = Array.getLength(obj3);
+                                            for (length = 0; length < length2; length++) {
+                                                Object obj4 = Array.get(obj3, length);
+                                                if (obj4 != null) {
+                                                    this.formBody.addField(value, encodeValues, obj4.toString(), encodeValue);
                                                 }
                                             }
                                         } else {
-                                            this.formBody.addField(name, encodeName, value.toString(), encodeValue);
+                                            this.formBody.addField(value, encodeValues, obj3.toString(), encodeValue);
                                         }
                                     }
-                                } else if (value != null) {
-                                    name = ((retrofit.http.Header) annotation).value();
-                                    if (value instanceof Iterable) {
-                                        for (Object iterableValue2 : (Iterable) value) {
-                                            if (iterableValue2 != null) {
-                                                addHeader(name, iterableValue2.toString());
+                                } else if (obj3 != null) {
+                                    value = ((retrofit.http.Header) annotation).value();
+                                    if (obj3 instanceof Iterable) {
+                                        for (Object obj32 : (Iterable) obj32) {
+                                            if (obj32 != null) {
+                                                addHeader(value, obj32.toString());
                                             }
                                         }
-                                    } else if (value.getClass().isArray()) {
-                                        arrayLength = Array.getLength(value);
-                                        for (x = 0; x < arrayLength; x++) {
-                                            arrayValue = Array.get(value, x);
-                                            if (arrayValue != null) {
-                                                addHeader(name, arrayValue.toString());
+                                    } else if (obj32.getClass().isArray()) {
+                                        int length3 = Array.getLength(obj32);
+                                        for (length = 0; length < length3; length++) {
+                                            key = Array.get(obj32, length);
+                                            if (key != null) {
+                                                addHeader(value, key.toString());
                                             }
                                         }
                                     } else {
-                                        addHeader(name, value.toString());
+                                        addHeader(value, obj32.toString());
                                     }
                                 }
-                            } else if (value != null) {
-                                addQueryParamMap(i, (Map) value, false, false);
+                            } else if (obj32 != null) {
+                                addQueryParamMap(i2, (Map) obj32, false, false);
                             }
-                        } else if (value != null) {
+                        } else if (obj32 != null) {
                             QueryMap queryMap = (QueryMap) annotation;
-                            addQueryParamMap(i, (Map) value, queryMap.encodeNames(), queryMap.encodeValues());
+                            addQueryParamMap(i2, (Map) obj32, queryMap.encodeNames(), queryMap.encodeValues());
                         }
-                    } else if (value != null) {
-                        addQueryParam(((EncodedQuery) annotation).value(), value, false, false);
+                    } else if (obj32 != null) {
+                        addQueryParam(((EncodedQuery) annotation).value(), obj32, false, false);
                     }
-                } else if (value != null) {
+                } else if (obj32 != null) {
                     Query query = (Query) annotation;
-                    addQueryParam(query.value(), value, query.encodeName(), query.encodeValue());
+                    addQueryParam(query.value(), obj32, query.encodeName(), query.encodeValue());
                 }
             }
         }
-    }
-
-    Request build() throws UnsupportedEncodingException {
-        if (this.multipartBody != null && this.multipartBody.getPartCount() == 0) {
-            throw new IllegalStateException("Multipart requests must contain at least one part.");
-        }
-        String apiUrl = this.apiUrl;
-        StringBuilder url = new StringBuilder(apiUrl);
-        if (apiUrl.endsWith("/")) {
-            url.deleteCharAt(url.length() - 1);
-        }
-        url.append(this.relativeUrl);
-        StringBuilder queryParams = this.queryParams;
-        if (queryParams != null) {
-            url.append(queryParams);
-        }
-        TypedOutput body = this.body;
-        List<Header> headers = this.headers;
-        if (this.contentTypeHeader != null) {
-            if (body == null) {
-                Header header = new Header("Content-Type", this.contentTypeHeader);
-                if (headers != null) {
-                    headers.add(header);
-                } else {
-                    headers = Collections.singletonList(header);
-                }
-            } else {
-                body = new MimeOverridingTypedOutput(body, this.contentTypeHeader);
-            }
-        }
-        return new Request(this.requestMethod, url.toString(), headers, body);
     }
 }

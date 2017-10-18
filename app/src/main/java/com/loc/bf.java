@@ -1,707 +1,973 @@
 package com.loc;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.location.GpsStatus.NmeaListener;
+import android.location.LocationManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.Looper;
+import android.provider.Settings.Secure;
+import android.provider.Settings.System;
+import android.telephony.CellLocation;
+import android.telephony.NeighboringCellInfo;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
+import android.telephony.cdma.CdmaCellLocation;
+import android.telephony.gsm.GsmCellLocation;
 import android.text.TextUtils;
-
-import com.autonavi.aps.amapapi.model.AmapLoc;
-
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Timer;
+import java.util.TreeMap;
 
-/* compiled from: Cache */
-public class bf {
-    private static bf a;
-    private Hashtable<String, ArrayList<a>> b;
-    private long c;
-    private boolean d;
+/* compiled from: Unknown */
+public final class bf {
+    static String a = "";
+    private static bf rZ = null;
+    private static int si = 10000;
+    protected static boolean sj = true;
+    protected static boolean sk = false;
+    private static String[] sl = new String[]{"android.permission.READ_PHONE_STATE", "android.permission.ACCESS_WIFI_STATE", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION", "android.permission.CHANGE_WIFI_STATE", "android.permission.ACCESS_NETWORK_STATE"};
+    private Context rF = null;
+    private TelephonyManager rG = null;
+    private LocationManager rH = null;
+    private WifiManager rI = null;
+    private SensorManager rJ = null;
+    private String rK = "";
+    private String rL = "";
+    private String rM = "";
+    private boolean rN = false;
+    private int rO = 0;
+    private boolean rP = false;
+    private long rQ = -1;
+    private String rR = "";
+    private String rS = "";
+    private int rT = 0;
+    private int rU = 0;
+    private int rV = 0;
+    private String rW = "";
+    private long rX = 0;
+    private long rY = 0;
+    private at sa = null;
+    private X sb = null;
+    private CellLocation sc = null;
+    private F sd = null;
+    private List se = new ArrayList();
+    private Timer sf = null;
+    private Thread sg = null;
+    private Looper sh = null;
 
-    /* compiled from: Cache */
-    public class a {
-        final /* synthetic */ bf a;
-        private AmapLoc b;
-        private String c;
-
-        protected a(bf bfVar) {
-            this.a = bfVar;
-            this.b = null;
-            this.c = null;
-        }
-
-        public AmapLoc a() {
-            return this.b;
-        }
-
-        public void a(AmapLoc amapLoc) {
-            this.b = amapLoc;
-        }
-
-        public String b() {
-            return this.c;
-        }
-
-        public void a(String str) {
-            if (TextUtils.isEmpty(str)) {
-                this.c = null;
-            } else {
-                this.c = str.replace("##", "#");
-            }
-        }
-    }
-
-    static {
-        a = null;
-    }
-
-    private bf() {
-        this.b = new Hashtable();
-        this.c = 0;
-        this.d = false;
-    }
-
-    public static synchronized bf a() {
-        bf bfVar;
-        synchronized (bf.class) {
-            if (a == null) {
-                a = new bf();
-            }
-            bfVar = a;
-        }
-        return bfVar;
-    }
-
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    public synchronized void a(java.lang.String r7, java.lang.StringBuilder r8, com.autonavi.aps.amapapi.model.AmapLoc r9, android.content.Context r10, boolean r11) {
-        /*
-        r6 = this;
-        r0 = 0;
-        monitor-enter(r6);
-        r1 = r6.a(r7, r9);	 Catch:{ all -> 0x009e }
-        if (r1 == 0) goto L_0x0092;
-    L_0x0008:
-        r1 = r9.j();	 Catch:{ all -> 0x009e }
-        r2 = "mem";
-        r1 = r1.equals(r2);	 Catch:{ all -> 0x009e }
-        if (r1 != 0) goto L_0x0094;
-    L_0x0015:
-        r1 = r9.j();	 Catch:{ all -> 0x009e }
-        r2 = "file";
-        r1 = r1.equals(r2);	 Catch:{ all -> 0x009e }
-        if (r1 != 0) goto L_0x0096;
-    L_0x0022:
-        r1 = r9.k();	 Catch:{ all -> 0x009e }
-        r2 = "-3";
-        r1 = r1.equals(r2);	 Catch:{ all -> 0x009e }
-        if (r1 != 0) goto L_0x0098;
-    L_0x002f:
-        r1 = r6.b();	 Catch:{ all -> 0x009e }
-        if (r1 != 0) goto L_0x009a;
-    L_0x0035:
-        r1 = r9.z();	 Catch:{ all -> 0x009e }
-        r2 = "offpct";
-        r2 = com.loc.br.a(r1, r2);	 Catch:{ all -> 0x009e }
-        if (r2 != 0) goto L_0x00a1;
-    L_0x0042:
-        r1 = "wifi";
-        r1 = r7.contains(r1);	 Catch:{ all -> 0x009e }
-        if (r1 != 0) goto L_0x00ab;
-    L_0x004b:
-        r0 = "cgi";
-        r0 = r7.contains(r0);	 Catch:{ all -> 0x009e }
-        if (r0 != 0) goto L_0x0123;
-    L_0x0054:
-        r0 = r6.a(r7, r8);	 Catch:{ all -> 0x009e }
-        r0 = com.loc.br.a(r0);	 Catch:{ all -> 0x009e }
-        if (r0 != 0) goto L_0x013e;
-    L_0x005e:
-        r0 = com.loc.br.b();	 Catch:{ all -> 0x009e }
-        r6.c = r0;	 Catch:{ all -> 0x009e }
-        r1 = new com.loc.bf$a;	 Catch:{ all -> 0x009e }
-        r1.<init>(r6);	 Catch:{ all -> 0x009e }
-        r1.a(r9);	 Catch:{ all -> 0x009e }
-        r0 = android.text.TextUtils.isEmpty(r8);	 Catch:{ all -> 0x009e }
-        if (r0 != 0) goto L_0x0140;
-    L_0x0072:
-        r0 = r8.toString();	 Catch:{ all -> 0x009e }
-    L_0x0076:
-        r1.a(r0);	 Catch:{ all -> 0x009e }
-        r0 = r6.b;	 Catch:{ all -> 0x009e }
-        r0 = r0.containsKey(r7);	 Catch:{ all -> 0x009e }
-        if (r0 != 0) goto L_0x0143;
-    L_0x0081:
-        r0 = new java.util.ArrayList;	 Catch:{ all -> 0x009e }
-        r0.<init>();	 Catch:{ all -> 0x009e }
-        r0.add(r1);	 Catch:{ all -> 0x009e }
-        r1 = r6.b;	 Catch:{ all -> 0x009e }
-        r1.put(r7, r0);	 Catch:{ all -> 0x009e }
-    L_0x008e:
-        if (r11 != 0) goto L_0x0150;
-    L_0x0090:
-        monitor-exit(r6);
-        return;
-    L_0x0092:
-        monitor-exit(r6);
-        return;
-    L_0x0094:
-        monitor-exit(r6);
-        return;
-    L_0x0096:
-        monitor-exit(r6);
-        return;
-    L_0x0098:
-        monitor-exit(r6);
-        return;
-    L_0x009a:
-        r6.c();	 Catch:{ all -> 0x009e }
-        goto L_0x0035;
-    L_0x009e:
-        r0 = move-exception;
-        monitor-exit(r6);
-        throw r0;
-    L_0x00a1:
-        r2 = "offpct";
-        r1.remove(r2);	 Catch:{ all -> 0x009e }
-        r9.a(r1);	 Catch:{ all -> 0x009e }
-        goto L_0x0042;
-    L_0x00ab:
-        r1 = android.text.TextUtils.isEmpty(r8);	 Catch:{ all -> 0x009e }
-        if (r1 != 0) goto L_0x0102;
-    L_0x00b1:
-        r1 = r9.h();	 Catch:{ all -> 0x009e }
-        r2 = 1133903872; // 0x43960000 float:300.0 double:5.60222949E-315;
-        r1 = (r1 > r2 ? 1 : (r1 == r2 ? 0 : -1));
-        if (r1 < 0) goto L_0x0117;
-    L_0x00bb:
-        r1 = r8.toString();	 Catch:{ all -> 0x009e }
-        r2 = "#";
-        r2 = r1.split(r2);	 Catch:{ all -> 0x009e }
-        r3 = r2.length;	 Catch:{ all -> 0x009e }
-        r1 = r0;
-    L_0x00c8:
-        if (r1 < r3) goto L_0x0104;
-    L_0x00ca:
-        r1 = 8;
-        if (r0 >= r1) goto L_0x0115;
-    L_0x00ce:
-        r0 = "cgiwifi";
-        r0 = r7.contains(r0);	 Catch:{ all -> 0x009e }
-        if (r0 == 0) goto L_0x0054;
-    L_0x00d7:
-        r0 = r9.x();	 Catch:{ all -> 0x009e }
-        r0 = android.text.TextUtils.isEmpty(r0);	 Catch:{ all -> 0x009e }
-        if (r0 != 0) goto L_0x0054;
-    L_0x00e1:
-        r0 = "cgiwifi";
-        r1 = "cgi";
-        r1 = r7.replace(r0, r1);	 Catch:{ all -> 0x009e }
-        r3 = r9.y();	 Catch:{ all -> 0x009e }
-        r0 = com.loc.br.a(r3);	 Catch:{ all -> 0x009e }
-        if (r0 == 0) goto L_0x0054;
-    L_0x00f5:
-        r2 = new java.lang.StringBuilder;	 Catch:{ all -> 0x009e }
-        r2.<init>();	 Catch:{ all -> 0x009e }
-        r5 = 1;
-        r0 = r6;
-        r4 = r10;
-        r0.a(r1, r2, r3, r4, r5);	 Catch:{ all -> 0x009e }
-        goto L_0x0054;
-    L_0x0102:
-        monitor-exit(r6);
-        return;
-    L_0x0104:
-        r4 = r2[r1];	 Catch:{ all -> 0x009e }
-        r5 = ",";
-        r4 = r4.contains(r5);	 Catch:{ all -> 0x009e }
-        if (r4 != 0) goto L_0x0112;
-    L_0x010f:
-        r1 = r1 + 1;
-        goto L_0x00c8;
-    L_0x0112:
-        r0 = r0 + 1;
-        goto L_0x010f;
-    L_0x0115:
-        monitor-exit(r6);
-        return;
-    L_0x0117:
-        r0 = r9.h();	 Catch:{ all -> 0x009e }
-        r1 = 1092616192; // 0x41200000 float:10.0 double:5.398241246E-315;
-        r0 = (r0 > r1 ? 1 : (r0 == r1 ? 0 : -1));
-        if (r0 > 0) goto L_0x00ce;
-    L_0x0121:
-        monitor-exit(r6);
-        return;
-    L_0x0123:
-        r0 = ",";
-        r0 = r8.indexOf(r0);	 Catch:{ all -> 0x009e }
-        r1 = -1;
-        if (r0 != r1) goto L_0x013c;
-    L_0x012d:
-        r0 = r9.k();	 Catch:{ all -> 0x009e }
-        r1 = "4";
-        r0 = r0.equals(r1);	 Catch:{ all -> 0x009e }
-        if (r0 == 0) goto L_0x0054;
-    L_0x013a:
-        monitor-exit(r6);
-        return;
-    L_0x013c:
-        monitor-exit(r6);
-        return;
-    L_0x013e:
-        monitor-exit(r6);
-        return;
-    L_0x0140:
-        r0 = 0;
-        goto L_0x0076;
-    L_0x0143:
-        r0 = r6.b;	 Catch:{ all -> 0x009e }
-        r0 = r0.get(r7);	 Catch:{ all -> 0x009e }
-        r0 = (java.util.ArrayList) r0;	 Catch:{ all -> 0x009e }
-        r0.add(r1);	 Catch:{ all -> 0x009e }
-        goto L_0x008e;
-    L_0x0150:
-        r0 = com.loc.bg.a();	 Catch:{ Exception -> 0x0159 }
-        r0.a(r7, r9, r8, r10);	 Catch:{ Exception -> 0x0159 }
-        goto L_0x0090;
-    L_0x0159:
-        r0 = move-exception;
-        goto L_0x0090;
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.loc.bf.a(java.lang.String, java.lang.StringBuilder, com.autonavi.aps.amapapi.model.AmapLoc, android.content.Context, boolean):void");
-    }
-
-    public synchronized AmapLoc a(String str, StringBuilder stringBuilder) {
-        if (str.contains("gps")) {
-            return null;
-        }
-        if (b()) {
-            c();
-            return null;
-        } else if (this.b.isEmpty()) {
-            return null;
-        } else {
-            a a;
-            String str2 = "found#\u2297";
-            String str3;
-            if (str.contains("cgiwifi")) {
-                a = a(stringBuilder, str);
-                if (a != null) {
-                    str3 = "found#cgiwifi";
+    private bf(Context context) {
+        if (context != null) {
+            this.rF = context;
+            this.rK = Build.MODEL;
+            this.rG = (TelephonyManager) context.getSystemService("phone");
+            this.rH = (LocationManager) context.getSystemService("location");
+            this.rI = (WifiManager) context.getSystemService("wifi");
+            this.rJ = (SensorManager) context.getSystemService("sensor");
+            if (this.rG != null && this.rI != null) {
+                try {
+                    this.rL = this.rG.getDeviceId();
+                } catch (Exception e) {
                 }
-            } else if (str.contains("wifi")) {
-                a = a(stringBuilder, str);
-                if (a != null) {
-                    str3 = "found#wifi";
+                this.rM = this.rG.getSubscriberId();
+                if (this.rI.getConnectionInfo() != null) {
+                    this.rS = this.rI.getConnectionInfo().getMacAddress();
+                    if (this.rS != null && this.rS.length() > 0) {
+                        this.rS = this.rS.replace(":", "");
+                    }
                 }
-            } else if (str.contains("cgi")) {
-                if (this.b.containsKey(str)) {
-                    a = (a) ((ArrayList) this.b.get(str)).get(0);
-                } else {
-                    a = null;
-                }
-                if (a != null) {
-                    str3 = "found#cgi";
-                }
-            } else {
-                a = null;
+                String[] tB = tB(this.rG);
+                this.rT = Integer.parseInt(tB[0]);
+                this.rU = Integer.parseInt(tB[1]);
+                this.rV = this.rG.getNetworkType();
+                this.rW = context.getPackageName();
+                this.rN = this.rG.getPhoneType() == 2;
             }
-            if (a == null || !br.a(a.a())) {
-                return null;
-            }
-            a.a().f("mem");
-            if (TextUtils.isEmpty(c.h)) {
-                c.h = String.valueOf(a.a().w());
-            }
-            return a.a();
         }
     }
 
-    public boolean b() {
-        long b = br.b() - this.c;
-        if (this.c == 0) {
-            return false;
-        }
-        if (this.b.size() > 360) {
-            return true;
-        }
-        boolean z;
-        if (b <= 36000000) {
-            z = true;
-        } else {
-            z = false;
-        }
-        if (z) {
-            return false;
-        }
-        return true;
-    }
-
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    public boolean a(java.lang.String r4, com.autonavi.aps.amapapi.model.AmapLoc r5) {
-        /*
-        r3 = this;
-        r1 = 0;
-        r0 = android.text.TextUtils.isEmpty(r4);
-        if (r0 == 0) goto L_0x0008;
-    L_0x0007:
-        return r1;
-    L_0x0008:
-        r0 = com.loc.br.a(r5);
-        if (r0 == 0) goto L_0x0007;
-    L_0x000e:
-        r0 = "#";
-        r0 = r4.startsWith(r0);
-        if (r0 != 0) goto L_0x0022;
-    L_0x0017:
-        r0 = 1;
-        r2 = "network";
-        r2 = r4.contains(r2);
-        if (r2 == 0) goto L_0x0023;
-    L_0x0021:
-        return r0;
-    L_0x0022:
-        return r1;
-    L_0x0023:
-        r0 = r1;
-        goto L_0x0021;
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.loc.bf.a(java.lang.String, com.autonavi.aps.amapapi.model.AmapLoc):boolean");
-    }
-
-    public void c() {
-        this.c = 0;
-        if (!this.b.isEmpty()) {
-            this.b.clear();
-        }
-        this.d = false;
-    }
-
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    private synchronized com.loc.bf.a a(java.lang.StringBuilder r19, java.lang.String r20) {
-        /*
-        r18 = this;
-        monitor-enter(r18);
-        r0 = r18;
-        r2 = r0.b;	 Catch:{ all -> 0x0108 }
-        r2 = r2.isEmpty();	 Catch:{ all -> 0x0108 }
-        if (r2 == 0) goto L_0x000e;
-    L_0x000b:
-        r2 = 0;
-        monitor-exit(r18);
-        return r2;
-    L_0x000e:
-        r2 = android.text.TextUtils.isEmpty(r19);	 Catch:{ all -> 0x0108 }
-        if (r2 != 0) goto L_0x000b;
-    L_0x0014:
-        r0 = r18;
-        r2 = r0.b;	 Catch:{ all -> 0x0108 }
-        r0 = r20;
-        r2 = r2.containsKey(r0);	 Catch:{ all -> 0x0108 }
-        if (r2 == 0) goto L_0x0051;
-    L_0x0020:
-        r5 = 0;
-        r11 = new java.util.Hashtable;	 Catch:{ all -> 0x0108 }
-        r11.<init>();	 Catch:{ all -> 0x0108 }
-        r12 = new java.util.Hashtable;	 Catch:{ all -> 0x0108 }
-        r12.<init>();	 Catch:{ all -> 0x0108 }
-        r13 = new java.util.Hashtable;	 Catch:{ all -> 0x0108 }
-        r13.<init>();	 Catch:{ all -> 0x0108 }
-        r0 = r18;
-        r2 = r0.b;	 Catch:{ all -> 0x0108 }
-        r0 = r20;
-        r2 = r2.get(r0);	 Catch:{ all -> 0x0108 }
-        r2 = (java.util.ArrayList) r2;	 Catch:{ all -> 0x0108 }
-        r3 = r2.size();	 Catch:{ all -> 0x0108 }
-        r3 = r3 + -1;
-        r10 = r3;
-    L_0x0043:
-        if (r10 >= 0) goto L_0x0054;
-    L_0x0045:
-        r3 = r5;
-    L_0x0046:
-        r11.clear();	 Catch:{ all -> 0x0108 }
-        r12.clear();	 Catch:{ all -> 0x0108 }
-        r13.clear();	 Catch:{ all -> 0x0108 }
-        monitor-exit(r18);
-        return r3;
-    L_0x0051:
-        r2 = 0;
-        monitor-exit(r18);
-        return r2;
-    L_0x0054:
-        r3 = r2.get(r10);	 Catch:{ all -> 0x0108 }
-        r3 = (com.loc.bf.a) r3;	 Catch:{ all -> 0x0108 }
-        r4 = r3.b();	 Catch:{ all -> 0x0108 }
-        r4 = android.text.TextUtils.isEmpty(r4);	 Catch:{ all -> 0x0108 }
-        if (r4 != 0) goto L_0x00e4;
-    L_0x0064:
-        r4 = 0;
-        r6 = r3.b();	 Catch:{ all -> 0x0108 }
-        r0 = r18;
-        r1 = r19;
-        r6 = r0.c(r6, r1);	 Catch:{ all -> 0x0108 }
-        if (r6 != 0) goto L_0x00e9;
-    L_0x0073:
-        r9 = r4;
-    L_0x0074:
-        r4 = r3.b();	 Catch:{ all -> 0x0108 }
-        r0 = r18;
-        r0.a(r4, r11);	 Catch:{ all -> 0x0108 }
-        r4 = r19.toString();	 Catch:{ all -> 0x0108 }
-        r0 = r18;
-        r0.a(r4, r12);	 Catch:{ all -> 0x0108 }
-        r13.clear();	 Catch:{ all -> 0x0108 }
-        r4 = r11.keySet();	 Catch:{ all -> 0x0108 }
-        r6 = r4.iterator();	 Catch:{ all -> 0x0108 }
-    L_0x0091:
-        r4 = r6.hasNext();	 Catch:{ all -> 0x0108 }
-        if (r4 != 0) goto L_0x00fb;
-    L_0x0097:
-        r4 = r12.keySet();	 Catch:{ all -> 0x0108 }
-        r6 = r4.iterator();	 Catch:{ all -> 0x0108 }
-    L_0x009f:
-        r4 = r6.hasNext();	 Catch:{ all -> 0x0108 }
-        if (r4 != 0) goto L_0x010b;
-    L_0x00a5:
-        r14 = r13.keySet();	 Catch:{ all -> 0x0108 }
-        r4 = r14.size();	 Catch:{ all -> 0x0108 }
-        r15 = new double[r4];	 Catch:{ all -> 0x0108 }
-        r4 = r14.size();	 Catch:{ all -> 0x0108 }
-        r0 = new double[r4];	 Catch:{ all -> 0x0108 }
-        r16 = r0;
-        r4 = 0;
-        r17 = r14.iterator();	 Catch:{ all -> 0x0108 }
-        r8 = r4;
-    L_0x00bd:
-        if (r17 != 0) goto L_0x0118;
-    L_0x00bf:
-        r14.clear();	 Catch:{ all -> 0x0108 }
-        r0 = r18;
-        r1 = r16;
-        r4 = r0.a(r15, r1);	 Catch:{ all -> 0x0108 }
-        r6 = 0;
-        r6 = r4[r6];	 Catch:{ all -> 0x0108 }
-        r14 = 4605380979056443392; // 0x3fe99999a0000000 float:-1.0842022E-19 double:0.800000011920929;
-        r6 = (r6 > r14 ? 1 : (r6 == r14 ? 0 : -1));
-        if (r6 >= 0) goto L_0x0046;
-    L_0x00d6:
-        r6 = 1;
-        r6 = r4[r6];	 Catch:{ all -> 0x0108 }
-        r14 = 4603741668684706349; // 0x3fe3c6a7ef9db22d float:-9.76091E28 double:0.618;
-        r6 = (r6 > r14 ? 1 : (r6 == r14 ? 0 : -1));
-        if (r6 >= 0) goto L_0x0046;
-    L_0x00e2:
-        if (r9 != 0) goto L_0x0142;
-    L_0x00e4:
-        r3 = r10 + -1;
-        r10 = r3;
-        goto L_0x0043;
-    L_0x00e9:
-        r4 = 1;
-        r6 = r3.b();	 Catch:{ all -> 0x0108 }
-        r0 = r18;
-        r1 = r19;
-        r6 = r0.b(r6, r1);	 Catch:{ all -> 0x0108 }
-        if (r6 != 0) goto L_0x0046;
-    L_0x00f8:
-        r9 = r4;
-        goto L_0x0074;
-    L_0x00fb:
-        r4 = r6.next();	 Catch:{ all -> 0x0108 }
-        r4 = (java.lang.String) r4;	 Catch:{ all -> 0x0108 }
-        r7 = "";
-        r13.put(r4, r7);	 Catch:{ all -> 0x0108 }
-        goto L_0x0091;
-    L_0x0108:
-        r2 = move-exception;
-        monitor-exit(r18);
-        throw r2;
-    L_0x010b:
-        r4 = r6.next();	 Catch:{ all -> 0x0108 }
-        r4 = (java.lang.String) r4;	 Catch:{ all -> 0x0108 }
-        r7 = "";
-        r13.put(r4, r7);	 Catch:{ all -> 0x0108 }
-        goto L_0x009f;
-    L_0x0118:
-        r4 = r17.hasNext();	 Catch:{ all -> 0x0108 }
-        if (r4 == 0) goto L_0x00bf;
-    L_0x011e:
-        r4 = r17.next();	 Catch:{ all -> 0x0108 }
-        r4 = (java.lang.String) r4;	 Catch:{ all -> 0x0108 }
-        r6 = r11.containsKey(r4);	 Catch:{ all -> 0x0108 }
-        if (r6 != 0) goto L_0x013c;
-    L_0x012a:
-        r6 = 0;
-    L_0x012c:
-        r15[r8] = r6;	 Catch:{ all -> 0x0108 }
-        r4 = r12.containsKey(r4);	 Catch:{ all -> 0x0108 }
-        if (r4 != 0) goto L_0x013f;
-    L_0x0134:
-        r6 = 0;
-    L_0x0136:
-        r16[r8] = r6;	 Catch:{ all -> 0x0108 }
-        r4 = r8 + 1;
-        r8 = r4;
-        goto L_0x00bd;
-    L_0x013c:
-        r6 = 4607182418800017408; // 0x3ff0000000000000 float:0.0 double:1.0;
-        goto L_0x012c;
-    L_0x013f:
-        r6 = 4607182418800017408; // 0x3ff0000000000000 float:0.0 double:1.0;
-        goto L_0x0136;
-    L_0x0142:
-        r6 = 0;
-        r6 = r4[r6];	 Catch:{ all -> 0x0108 }
-        r8 = 4603741668684706349; // 0x3fe3c6a7ef9db22d float:-9.76091E28 double:0.618;
-        r4 = (r6 > r8 ? 1 : (r6 == r8 ? 0 : -1));
-        if (r4 < 0) goto L_0x00e4;
-    L_0x014e:
-        goto L_0x0046;
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.loc.bf.a(java.lang.StringBuilder, java.lang.String):com.loc.bf$a");
-    }
-
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    private boolean c(java.lang.String r5, java.lang.StringBuilder r6) {
-        /*
-        r4 = this;
-        r3 = 0;
-        r0 = android.text.TextUtils.isEmpty(r5);
-        if (r0 == 0) goto L_0x0008;
-    L_0x0007:
-        return r3;
-    L_0x0008:
-        r0 = android.text.TextUtils.isEmpty(r6);
-        if (r0 != 0) goto L_0x0007;
-    L_0x000e:
-        r0 = ",access";
-        r0 = r5.contains(r0);
-        if (r0 != 0) goto L_0x0018;
-    L_0x0017:
-        return r3;
-    L_0x0018:
-        r0 = ",access";
-        r0 = r6.indexOf(r0);
-        r1 = -1;
-        if (r0 == r1) goto L_0x0017;
-    L_0x0022:
-        r0 = ",access";
-        r0 = r5.split(r0);
-        r1 = r0[r3];
-        r2 = "#";
-        r1 = r1.contains(r2);
-        if (r1 != 0) goto L_0x0059;
-    L_0x0034:
-        r0 = r0[r3];
-    L_0x0036:
-        r1 = android.text.TextUtils.isEmpty(r0);
-        if (r1 != 0) goto L_0x006b;
-    L_0x003c:
-        r1 = r6.toString();
-        r2 = new java.lang.StringBuilder;
-        r2.<init>();
-        r0 = r2.append(r0);
-        r2 = ",access";
-        r0 = r0.append(r2);
-        r0 = r0.toString();
-        r0 = r1.contains(r0);
-        return r0;
-    L_0x0059:
-        r1 = r0[r3];
-        r0 = r0[r3];
-        r2 = "#";
-        r0 = r0.lastIndexOf(r2);
-        r0 = r0 + 1;
-        r0 = r1.substring(r0);
-        goto L_0x0036;
-    L_0x006b:
-        return r3;
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.loc.bf.c(java.lang.String, java.lang.StringBuilder):boolean");
-    }
-
-    private void a(String str, Hashtable<String, String> hashtable) {
-        if (!TextUtils.isEmpty(str)) {
-            hashtable.clear();
-            for (Object obj : str.split("#")) {
-                if (!(TextUtils.isEmpty(obj) || obj.contains("|"))) {
-                    hashtable.put(obj, "");
+    protected static bf tA(Context context) {
+        if (rZ == null && uw(context)) {
+            Object obj;
+            LocationManager locationManager = (LocationManager) context.getSystemService("location");
+            if (locationManager != null) {
+                for (String str : locationManager.getAllProviders()) {
+                    if (str.equals("passive") || str.equals("gps")) {
+                        obj = 1;
+                        break;
+                    }
                 }
             }
-        }
-    }
-
-    private double[] a(double[] dArr, double[] dArr2) {
-        int i;
-        double[] dArr3 = new double[3];
-        double d = 0.0d;
-        double d2 = 0.0d;
-        double d3 = 0.0d;
-        int i2 = 0;
-        int i3 = 0;
-        for (i = 0; i < dArr.length; i++) {
-            d2 += dArr[i] * dArr[i];
-            d3 += dArr2[i] * dArr2[i];
-            d += dArr[i] * dArr2[i];
-            if (dArr2[i] == 1.0d) {
-                i2++;
-                if (dArr[i] == 1.0d) {
-                    i3++;
-                }
+            obj = null;
+            if (obj != null) {
+                rZ = new bf(context);
             }
         }
-        dArr3[0] = d / (Math.sqrt(d3) * Math.sqrt(d2));
-        dArr3[1] = (((double) i3) * 1.0d) / ((double) i2);
-        dArr3[2] = (double) i3;
-        for (i = 0; i < dArr3.length - 1; i++) {
-            if (dArr3[i] > 1.0d) {
-                dArr3[i] = 1.0d;
-            }
-            dArr3[i] = Double.parseDouble(br.a(Double.valueOf(dArr3[i]), "#.00"));
-        }
-        return dArr3;
+        return rZ;
     }
 
-    public boolean b(String str, StringBuilder stringBuilder) {
-        String[] split = str.split("#");
-        ArrayList arrayList = new ArrayList();
+    private static String[] tB(TelephonyManager telephonyManager) {
+        String str = null;
         int i = 0;
-        while (i < split.length) {
-            if (split[i].contains(",nb") || split[i].contains(",access")) {
-                arrayList.add(split[i]);
-            }
-            i++;
+        if (telephonyManager != null) {
+            str = telephonyManager.getNetworkOperator();
         }
-        String[] split2 = stringBuilder.toString().split("#");
-        i = 0;
-        int i2 = 0;
-        int i3 = 0;
-        while (i < split2.length) {
-            if (split2[i].contains(",nb") || split2[i].contains(",access")) {
-                i2++;
-                if (arrayList.contains(split2[i])) {
-                    i3++;
-                }
+        String[] strArr = new String[]{"0", "0"};
+        if (TextUtils.isDigitsOnly(str) && str.length() > 4) {
+            strArr[0] = str.substring(0, 3);
+            char[] toCharArray = str.substring(3).toCharArray();
+            while (i < toCharArray.length && Character.isDigit(toCharArray[i])) {
+                i++;
             }
-            i++;
+            strArr[1] = str.substring(3, i + 3);
         }
-        if (((double) (i3 * 2)) >= ((double) (arrayList.size() + i2)) * 0.618d) {
-            return true;
+        return strArr;
+    }
+
+    static /* synthetic */ void uD(bf bfVar, PhoneStateListener phoneStateListener) {
+        if (bfVar.rG != null) {
+            bfVar.rG.listen(phoneStateListener, 273);
+        }
+    }
+
+    static /* synthetic */ void uG(bf bfVar, NmeaListener nmeaListener) {
+        if (bfVar.rH != null && nmeaListener != null) {
+            bfVar.rH.addNmeaListener(nmeaListener);
+        }
+    }
+
+    private static boolean ul(Object obj) {
+        try {
+            Method declaredMethod = WifiManager.class.getDeclaredMethod("isScanAlwaysAvailable", null);
+            if (declaredMethod != null) {
+                return ((Boolean) declaredMethod.invoke(obj, null)).booleanValue();
+            }
+        } catch (Exception e) {
         }
         return false;
     }
 
-    public void a(Context context) {
-        if (!this.d) {
-            br.b();
+    private static int um(Object obj) {
+        try {
+            Method declaredMethod = Sensor.class.getDeclaredMethod("getMinDelay", null);
+            if (declaredMethod != null) {
+                return ((Integer) declaredMethod.invoke(obj, null)).intValue();
+            }
+        } catch (Exception e) {
+        }
+        return 0;
+    }
+
+    private void un() {
+        if (this.rI != null) {
             try {
-                bg.a().a(context);
+                if (sj) {
+                    uv(this.rI);
+                }
             } catch (Exception e) {
             }
-            br.b();
-            this.d = true;
         }
+    }
+
+    private void uo(BroadcastReceiver broadcastReceiver) {
+        if (broadcastReceiver != null && this.rF != null) {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction("android.net.wifi.SCAN_RESULTS");
+            this.rF.registerReceiver(broadcastReceiver, intentFilter);
+        }
+    }
+
+    private void up(BroadcastReceiver broadcastReceiver) {
+        if (broadcastReceiver != null && this.rF != null) {
+            try {
+                this.rF.unregisterReceiver(broadcastReceiver);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    private static void uq(List list) {
+        if (list != null && list.size() > 0) {
+            Object hashMap = new HashMap();
+            for (int i = 0; i < list.size(); i++) {
+                ScanResult scanResult = (ScanResult) list.get(i);
+                if (scanResult.SSID == null) {
+                    scanResult.SSID = "null";
+                }
+                hashMap.put(Integer.valueOf(scanResult.level), scanResult);
+            }
+            TreeMap treeMap = new TreeMap(Collections.reverseOrder());
+            treeMap.putAll(hashMap);
+            list.clear();
+            for (Object obj : treeMap.keySet()) {
+                list.add(treeMap.get(obj));
+            }
+            hashMap.clear();
+            treeMap.clear();
+        }
+    }
+
+    /* JADX WARNING: inconsistent code. */
+    /* Code decompiled incorrectly, please refer to instructions dump. */
+    private boolean ur(android.telephony.CellLocation r6) {
+        /*
+        r5 = this;
+        r4 = 65535; // 0xffff float:9.1834E-41 double:3.23786E-319;
+        r3 = -1;
+        r1 = 0;
+        if (r6 == 0) goto L_0x0013;
+    L_0x0007:
+        r0 = 1;
+        r2 = r5.rF;
+        r2 = us(r6, r2);
+        switch(r2) {
+            case 1: goto L_0x0014;
+            case 2: goto L_0x0044;
+            default: goto L_0x0011;
+        };
+    L_0x0011:
+        r1 = r0;
+    L_0x0012:
+        return r1;
+    L_0x0013:
+        return r1;
+    L_0x0014:
+        r6 = (android.telephony.gsm.GsmCellLocation) r6;
+        r2 = r6.getLac();
+        if (r2 == r3) goto L_0x0012;
+    L_0x001c:
+        r2 = r6.getLac();
+        if (r2 == 0) goto L_0x0012;
+    L_0x0022:
+        r2 = r6.getLac();
+        if (r2 > r4) goto L_0x0012;
+    L_0x0028:
+        r2 = r6.getCid();
+        if (r2 == r3) goto L_0x0012;
+    L_0x002e:
+        r2 = r6.getCid();
+        if (r2 == 0) goto L_0x0012;
+    L_0x0034:
+        r2 = r6.getCid();
+        if (r2 == r4) goto L_0x0012;
+    L_0x003a:
+        r2 = r6.getCid();
+        r3 = 268435455; // 0xfffffff float:2.5243547E-29 double:1.326247364E-315;
+        if (r2 >= r3) goto L_0x0012;
+    L_0x0043:
+        goto L_0x0011;
+    L_0x0044:
+        r2 = "getSystemId";
+        r3 = 0;
+        r3 = new java.lang.Object[r3];	 Catch:{ Exception -> 0x006a }
+        r2 = com.loc.aW.tg(r6, r2, r3);	 Catch:{ Exception -> 0x006a }
+        if (r2 <= 0) goto L_0x0012;
+    L_0x0050:
+        r2 = "getNetworkId";
+        r3 = 0;
+        r3 = new java.lang.Object[r3];	 Catch:{ Exception -> 0x006a }
+        r2 = com.loc.aW.tg(r6, r2, r3);	 Catch:{ Exception -> 0x006a }
+        if (r2 < 0) goto L_0x0012;
+    L_0x005c:
+        r2 = "getBaseStationId";
+        r3 = 0;
+        r3 = new java.lang.Object[r3];	 Catch:{ Exception -> 0x006a }
+        r2 = com.loc.aW.tg(r6, r2, r3);	 Catch:{ Exception -> 0x006a }
+        if (r2 >= 0) goto L_0x0011;
+    L_0x0068:
+        r0 = r1;
+        goto L_0x0011;
+    L_0x006a:
+        r1 = move-exception;
+        goto L_0x0011;
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.loc.bf.ur(android.telephony.CellLocation):boolean");
+    }
+
+    private static int us(CellLocation cellLocation, Context context) {
+        if (System.getInt(context.getContentResolver(), "airplane_mode_on", 0) == 1 || cellLocation == null) {
+            return 9;
+        }
+        if (cellLocation instanceof GsmCellLocation) {
+            return 1;
+        }
+        try {
+            Class.forName("android.telephony.cdma.CdmaCellLocation");
+            return 2;
+        } catch (Exception e) {
+            return 9;
+        }
+    }
+
+    private CellLocation ut() {
+        CellLocation uu;
+        if (this.rG == null) {
+            return null;
+        }
+        try {
+            uu = uu((List) aW.tf(this.rG, "getAllCellInfo", new Object[0]));
+        } catch (NoSuchMethodException e) {
+            uu = null;
+            return uu;
+        } catch (Exception e2) {
+            uu = null;
+            return uu;
+        }
+        return uu;
+    }
+
+    private static CellLocation uu(List list) {
+        CellLocation gsmCellLocation;
+        int i;
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        int i2;
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        int i3 = 0;
+        CellLocation cellLocation = null;
+        Object obj = null;
+        CellLocation cellLocation2 = null;
+        while (i3 < list.size()) {
+            CellLocation cellLocation3;
+            CellLocation cellLocation4;
+            Object obj2 = list.get(i3);
+            if (obj2 != null) {
+                try {
+                    Class loadClass = systemClassLoader.loadClass("android.telephony.CellInfoGsm");
+                    Class loadClass2 = systemClassLoader.loadClass("android.telephony.CellInfoWcdma");
+                    Class loadClass3 = systemClassLoader.loadClass("android.telephony.CellInfoLte");
+                    Class loadClass4 = systemClassLoader.loadClass("android.telephony.CellInfoCdma");
+                    i2 = !loadClass.isInstance(obj2) ? !loadClass2.isInstance(obj2) ? !loadClass3.isInstance(obj2) ? !loadClass4.isInstance(obj2) ? 0 : 4 : 3 : 2 : 1;
+                    if (i2 > 0) {
+                        obj = null;
+                        if (i2 == 1) {
+                            obj = loadClass.cast(obj2);
+                        } else if (i2 == 2) {
+                            obj = loadClass2.cast(obj2);
+                        } else if (i2 == 3) {
+                            obj = loadClass3.cast(obj2);
+                        } else if (i2 == 4) {
+                            obj = loadClass4.cast(obj2);
+                        }
+                        try {
+                            obj2 = aW.tf(obj, "getCellIdentity", new Object[0]);
+                            if (obj2 != null) {
+                                if (i2 != 4) {
+                                    int tg;
+                                    int tg2;
+                                    if (i2 != 3) {
+                                        tg = aW.tg(obj2, "getLac", new Object[0]);
+                                        tg2 = aW.tg(obj2, "getCid", new Object[0]);
+                                        gsmCellLocation = new GsmCellLocation();
+                                        try {
+                                            gsmCellLocation.setLacAndCid(tg, tg2);
+                                        } catch (Exception e) {
+                                            cellLocation = gsmCellLocation;
+                                            i = i2;
+                                        }
+                                    } else {
+                                        tg = aW.tg(obj2, "getTac", new Object[0]);
+                                        tg2 = aW.tg(obj2, "getCi", new Object[0]);
+                                        gsmCellLocation = new GsmCellLocation();
+                                        gsmCellLocation.setLacAndCid(tg, tg2);
+                                    }
+                                    cellLocation = gsmCellLocation;
+                                    break;
+                                }
+                                gsmCellLocation = new CdmaCellLocation();
+                                try {
+                                    gsmCellLocation.setCellLocationData(aW.tg(obj2, "getBasestationId", new Object[0]), aW.tg(obj2, "getLatitude", new Object[0]), aW.tg(obj2, "getLongitude", new Object[0]), aW.tg(obj2, "getSystemId", new Object[0]), aW.tg(obj2, "getNetworkId", new Object[0]));
+                                    cellLocation2 = gsmCellLocation;
+                                    break;
+                                } catch (Exception e2) {
+                                    cellLocation2 = gsmCellLocation;
+                                    i = i2;
+                                }
+                            }
+                        } catch (Exception e3) {
+                            i = i2;
+                        }
+                    }
+                    cellLocation3 = cellLocation2;
+                    cellLocation4 = cellLocation;
+                    int i4 = i2;
+                } catch (Exception e4) {
+                }
+                i3++;
+                cellLocation = cellLocation4;
+                obj = r1;
+                cellLocation2 = cellLocation3;
+            }
+            cellLocation3 = cellLocation2;
+            cellLocation4 = cellLocation;
+            Object obj3 = obj;
+            i3++;
+            cellLocation = cellLocation4;
+            obj = obj3;
+            cellLocation2 = cellLocation3;
+        }
+        i2 = obj;
+        return i2 != 4 ? cellLocation : cellLocation2;
+    }
+
+    private static void uv(WifiManager wifiManager) {
+        if (wifiManager != null) {
+            try {
+                aW.tf(wifiManager, "startScanActive", new Object[0]);
+            } catch (Exception e) {
+                wifiManager.startScan();
+            }
+        }
+    }
+
+    private static boolean uw(Context context) {
+        try {
+            String[] strArr = context.getPackageManager().getPackageInfo(context.getPackageName(), 4096).requestedPermissions;
+            for (Object obj : sl) {
+                boolean z;
+                if (!(strArr == null || obj == null)) {
+                    for (String equals : strArr) {
+                        if (equals.equals(obj)) {
+                            z = true;
+                            break;
+                        }
+                    }
+                }
+                z = false;
+                if (!z) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    protected static boolean uy(Context context) {
+        if (context == null) {
+            return true;
+        }
+        boolean z;
+        if (!Secure.getString(context.getContentResolver(), "mock_location").equals("0")) {
+            PackageManager packageManager = context.getPackageManager();
+            List<ApplicationInfo> installedApplications = packageManager.getInstalledApplications(128);
+            String str = "android.permission.ACCESS_MOCK_LOCATION";
+            String packageName = context.getPackageName();
+            z = false;
+            for (ApplicationInfo applicationInfo : installedApplications) {
+                if (z) {
+                    break;
+                }
+                boolean z2;
+                try {
+                    String[] strArr = packageManager.getPackageInfo(applicationInfo.packageName, 4096).requestedPermissions;
+                    if (strArr != null) {
+                        int length = strArr.length;
+                        int i = 0;
+                        while (i < length) {
+                            if (!strArr[i].equals(str)) {
+                                i++;
+                            } else if (!applicationInfo.packageName.equals(packageName)) {
+                                z2 = true;
+                                z = z2;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    z2 = z;
+                }
+            }
+        } else {
+            z = false;
+        }
+        return z;
+    }
+
+    protected final void tC() {
+        String str = "";
+        tD();
+        if (this.sh != null) {
+            this.sh.quit();
+            this.sh = null;
+        }
+        if (this.sg != null) {
+            this.sg.interrupt();
+            this.sg = null;
+        }
+        this.sg = new w(this, str);
+        this.sg.start();
+    }
+
+    protected final void tD() {
+        if (this.sa != null) {
+            PhoneStateListener phoneStateListener = this.sa;
+            if (this.rG != null) {
+                this.rG.listen(phoneStateListener, 0);
+            }
+            this.sa = null;
+        }
+        if (this.sb != null) {
+            NmeaListener nmeaListener = this.sb;
+            if (!(this.rH == null || nmeaListener == null)) {
+                this.rH.removeNmeaListener(nmeaListener);
+            }
+            this.sb = null;
+        }
+        if (this.sf != null) {
+            this.sf.cancel();
+            this.sf = null;
+        }
+        if (this.sh != null) {
+            this.sh.quit();
+            this.sh = null;
+        }
+        if (this.sg != null) {
+            this.sg.interrupt();
+            this.sg = null;
+        }
+    }
+
+    protected final boolean tE() {
+        CellLocation cellLocation = null;
+        if (this.rG != null && this.rG.getSimState() == 5 && this.rP) {
+            return true;
+        }
+        if (this.rG != null) {
+            try {
+                cellLocation = this.rG.getCellLocation();
+            } catch (Exception e) {
+            }
+            if (cellLocation != null) {
+                this.rY = System.currentTimeMillis();
+                this.sc = cellLocation;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected final boolean tF() {
+        if (this.rI != null) {
+            if (this.rI.isWifiEnabled() || ul(this.rI)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected final boolean tG() {
+        try {
+            if (this.rH != null && this.rH.isProviderEnabled("gps")) {
+                return true;
+            }
+        } catch (Exception e) {
+        }
+        return false;
+    }
+
+    protected final String tH() {
+        if (this.rK == null) {
+            this.rK = Build.MODEL;
+        }
+        return this.rK == null ? "" : this.rK;
+    }
+
+    protected final String tI() {
+        if (this.rL == null && this.rF != null) {
+            this.rG = (TelephonyManager) this.rF.getSystemService("phone");
+            if (this.rG != null) {
+                try {
+                    this.rL = this.rG.getDeviceId();
+                } catch (Exception e) {
+                }
+            }
+        }
+        return this.rL == null ? "" : this.rL;
+    }
+
+    protected final String tJ() {
+        if (this.rM == null && this.rF != null) {
+            this.rG = (TelephonyManager) this.rF.getSystemService("phone");
+            if (this.rG != null) {
+                this.rM = this.rG.getSubscriberId();
+            }
+        }
+        return this.rM == null ? "" : this.rM;
+    }
+
+    protected final boolean tK() {
+        return this.rN;
+    }
+
+    protected final List tL() {
+        if (System.getInt(this.rF.getContentResolver(), "airplane_mode_on", 0) == 1) {
+            return new ArrayList();
+        }
+        if (!tE()) {
+            return new ArrayList();
+        }
+        Object ut;
+        List arrayList = new ArrayList();
+        if (!ur(this.sc)) {
+            ut = ut();
+            if (ur(ut)) {
+                this.rY = System.currentTimeMillis();
+                arrayList.add(Long.valueOf(this.rY));
+                arrayList.add(ut);
+                return arrayList;
+            }
+        }
+        ut = this.sc;
+        arrayList.add(Long.valueOf(this.rY));
+        arrayList.add(ut);
+        return arrayList;
+    }
+
+    protected final List tM(boolean z) {
+        int i = 1;
+        int i2 = 0;
+        List arrayList = new ArrayList();
+        if (!tF()) {
+            return new ArrayList();
+        }
+        List arrayList2 = new ArrayList();
+        synchronized (this) {
+            if (!z) {
+                if ((System.currentTimeMillis() - this.rX >= 3500 ? 1 : 0) != 0) {
+                    i = 0;
+                }
+                if (i == 0) {
+                }
+            }
+            arrayList2.add(Long.valueOf(this.rX));
+            while (i2 < this.se.size()) {
+                arrayList.add(this.se.get(i2));
+                i2++;
+            }
+            arrayList2.add(arrayList);
+        }
+        return arrayList2;
+    }
+
+    protected final byte tN() {
+        return !tE() ? Byte.MIN_VALUE : (byte) this.rO;
+    }
+
+    protected final List tO() {
+        List arrayList = new ArrayList();
+        if (this.rG == null || !tE() || this.rG.getSimState() == 1) {
+            return arrayList;
+        }
+        int i = 0;
+        for (NeighboringCellInfo neighboringCellInfo : this.rG.getNeighboringCellInfo()) {
+            if (i > 15) {
+                break;
+            } else if (!(neighboringCellInfo.getLac() == 0 || neighboringCellInfo.getLac() == 65535 || neighboringCellInfo.getCid() == 65535 || neighboringCellInfo.getCid() == 268435455)) {
+                arrayList.add(neighboringCellInfo);
+                i++;
+            }
+        }
+        return arrayList;
+    }
+
+    protected final List tP() {
+        Object obj = 1;
+        List arrayList = new ArrayList();
+        long j = -1;
+        String str = "";
+        if (tG()) {
+            j = this.rQ;
+            str = this.rR;
+        }
+        String str2 = str;
+        long j2 = j;
+        String str3 = str2;
+        if ((j2 > 0 ? 1 : null) == null) {
+            j2 = System.currentTimeMillis() / 1000;
+        }
+        if (j2 > 2147483647L) {
+            obj = null;
+        }
+        if (obj == null) {
+            j2 /= 1000;
+        }
+        arrayList.add(Long.valueOf(j2));
+        arrayList.add(str3);
+        return arrayList;
+    }
+
+    protected final long tQ() {
+        long j = this.rQ;
+        if ((j > 0 ? 1 : null) == null) {
+            return 0;
+        }
+        int length = String.valueOf(j).length();
+        while (length != 13) {
+            long j2 = length <= 13 ? j * 10 : j / 10;
+            j = j2;
+            length = String.valueOf(j2).length();
+        }
+        return j;
+    }
+
+    protected final String tR() {
+        if (this.rS == null && this.rF != null) {
+            this.rI = (WifiManager) this.rF.getSystemService("wifi");
+            if (!(this.rI == null || this.rI.getConnectionInfo() == null)) {
+                this.rS = this.rI.getConnectionInfo().getMacAddress();
+                if (this.rS != null && this.rS.length() > 0) {
+                    this.rS = this.rS.replace(":", "");
+                }
+            }
+        }
+        return this.rS == null ? "" : this.rS;
+    }
+
+    protected final int tS() {
+        return this.rT;
+    }
+
+    protected final int tT() {
+        return this.rU;
+    }
+
+    protected final int tU() {
+        return this.rV;
+    }
+
+    protected final String tV() {
+        if (this.rW == null && this.rF != null) {
+            this.rW = this.rF.getPackageName();
+        }
+        return this.rW == null ? "" : this.rW;
+    }
+
+    protected final List tW(float f) {
+        List arrayList = new ArrayList();
+        long currentTimeMillis = System.currentTimeMillis();
+        if (Math.abs(f) <= 1.0f) {
+            f = 1.0f;
+        }
+        if (tE()) {
+            CellLocation cellLocation = (CellLocation) tL().get(1);
+            if (cellLocation != null && (cellLocation instanceof GsmCellLocation)) {
+                arrayList.add(Integer.valueOf(((GsmCellLocation) cellLocation).getLac()));
+                arrayList.add(Integer.valueOf(((GsmCellLocation) cellLocation).getCid()));
+                if (((double) (currentTimeMillis - ((Long) tL().get(0)).longValue())) <= 50000.0d / ((double) f)) {
+                    arrayList.add(Integer.valueOf(1));
+                } else {
+                    arrayList.add(Integer.valueOf(0));
+                }
+            }
+        }
+        return arrayList;
+    }
+
+    protected final List tX(float f) {
+        List arrayList = new ArrayList();
+        long currentTimeMillis = System.currentTimeMillis();
+        if (Math.abs(f) <= 1.0f) {
+            f = 1.0f;
+        }
+        if (tE()) {
+            CellLocation cellLocation = (CellLocation) tL().get(1);
+            if (cellLocation != null && (cellLocation instanceof CdmaCellLocation)) {
+                CdmaCellLocation cdmaCellLocation = (CdmaCellLocation) cellLocation;
+                arrayList.add(Integer.valueOf(cdmaCellLocation.getSystemId()));
+                arrayList.add(Integer.valueOf(cdmaCellLocation.getNetworkId()));
+                arrayList.add(Integer.valueOf(cdmaCellLocation.getBaseStationId()));
+                arrayList.add(Integer.valueOf(cdmaCellLocation.getBaseStationLongitude()));
+                arrayList.add(Integer.valueOf(cdmaCellLocation.getBaseStationLatitude()));
+                if (((double) (currentTimeMillis - ((Long) tL().get(0)).longValue())) <= 50000.0d / ((double) f)) {
+                    arrayList.add(Integer.valueOf(1));
+                } else {
+                    arrayList.add(Integer.valueOf(0));
+                }
+            }
+        }
+        return arrayList;
+    }
+
+    protected final List tY() {
+        int i = 0;
+        List arrayList = new ArrayList();
+        if (tF()) {
+            List tM = tM(true);
+            List list = (List) tM.get(1);
+            long longValue = ((Long) tM.get(0)).longValue();
+            uq(list);
+            arrayList.add(Long.valueOf(longValue));
+            if (list != null && list.size() > 0) {
+                while (i < list.size()) {
+                    ScanResult scanResult = (ScanResult) list.get(i);
+                    if (arrayList.size() - 1 >= 40) {
+                        break;
+                    }
+                    if (scanResult != null) {
+                        List arrayList2 = new ArrayList();
+                        arrayList2.add(scanResult.BSSID.replace(":", ""));
+                        arrayList2.add(Integer.valueOf(scanResult.level));
+                        arrayList2.add(scanResult.SSID);
+                        arrayList.add(arrayList2);
+                    }
+                    i++;
+                }
+            }
+        }
+        return arrayList;
+    }
+
+    protected final void tZ(int i) {
+        if (i != si) {
+            synchronized (this) {
+                this.se.clear();
+            }
+            if (this.sd != null) {
+                up(this.sd);
+                this.sd = null;
+            }
+            if (this.sf != null) {
+                this.sf.cancel();
+                this.sf = null;
+            }
+            if (i >= 5000) {
+                si = i;
+                this.sf = new Timer();
+                this.sd = new F();
+                uo(this.sd);
+                un();
+            }
+        }
+    }
+
+    protected final void ua() {
+        synchronized (this) {
+            this.se.clear();
+        }
+        if (this.sd != null) {
+            up(this.sd);
+            this.sd = null;
+        }
+        if (this.sf != null) {
+            this.sf.cancel();
+            this.sf = null;
+        }
+        this.sf = new Timer();
+        this.sd = new F();
+        uo(this.sd);
+        un();
+    }
+
+    protected final void ub() {
+        synchronized (this) {
+            this.se.clear();
+        }
+        if (this.sd != null) {
+            up(this.sd);
+            this.sd = null;
+        }
+        if (this.sf != null) {
+            this.sf.cancel();
+            this.sf = null;
+        }
+    }
+
+    protected final byte uc() {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return (byte) 0;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return sensorList != null ? (byte) sensorList.size() : (byte) 0;
+    }
+
+    protected final String ud(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return "null";
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null || ((Sensor) sensorList.get(i)).getName() == null || ((Sensor) sensorList.get(i)).getName().length() <= 0) ? "null" : ((Sensor) sensorList.get(i)).getName();
+    }
+
+    protected final double ue(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return 0.0d;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null) ? 0.0d : (double) ((Sensor) sensorList.get(i)).getMaximumRange();
+    }
+
+    protected final int uf(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return 0;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null) ? 0 : um(sensorList.get(i));
+    }
+
+    protected final int ug(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return 0;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null) ? 0 : (int) (((double) ((Sensor) sensorList.get(i)).getPower()) * 100.0d);
+    }
+
+    protected final double uh(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return 0.0d;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null) ? 0.0d : (double) ((Sensor) sensorList.get(i)).getResolution();
+    }
+
+    protected final byte ui(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return Byte.MAX_VALUE;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null || ((Sensor) sensorList.get(i)).getType() > 127) ? Byte.MAX_VALUE : (byte) ((Sensor) sensorList.get(i)).getType();
+    }
+
+    protected final String uj(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return "null";
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null || ((Sensor) sensorList.get(i)).getVendor() == null || ((Sensor) sensorList.get(i)).getVendor().length() <= 0) ? "null" : ((Sensor) sensorList.get(i)).getVendor();
+    }
+
+    protected final byte uk(int i) {
+        ArrayList arrayList = new ArrayList();
+        if (this.rJ == null) {
+            return Byte.MAX_VALUE;
+        }
+        List sensorList = this.rJ.getSensorList(-1);
+        return (sensorList == null || sensorList.get(i) == null || ((Sensor) sensorList.get(i)).getType() > 127) ? Byte.MAX_VALUE : (byte) ((Sensor) sensorList.get(i)).getVersion();
+    }
+
+    protected final Context ux() {
+        return this.rF;
     }
 }

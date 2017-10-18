@@ -4,27 +4,17 @@ import java.io.Serializable;
 
 /* compiled from: Unknown */
 final class bz implements Serializable {
-    protected byte a;
-    protected byte[] b;
-    protected double c;
-    protected int d;
-    protected int e;
-    protected double f;
-    protected byte g;
-    protected byte h;
-    protected byte[] i;
-    protected byte j;
+    protected byte a = (byte) 0;
+    protected byte[] b = new byte[100];
+    protected double c = 0.0d;
+    protected int d = 0;
+    protected int e = 0;
+    protected double f = 0.0d;
+    protected byte g = (byte) 0;
+    protected byte h = (byte) 0;
+    protected byte[] i = new byte[100];
+    protected byte j = (byte) 0;
 
     bz() {
-        this.a = (byte) 0;
-        this.b = new byte[100];
-        this.c = 0.0d;
-        this.d = 0;
-        this.e = 0;
-        this.f = 0.0d;
-        this.g = (byte) 0;
-        this.h = (byte) 0;
-        this.i = new byte[100];
-        this.j = (byte) 0;
     }
 }

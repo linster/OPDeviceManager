@@ -4,13 +4,10 @@ import java.io.Serializable;
 
 /* compiled from: Unknown */
 final class cb implements Serializable {
-    protected byte[] a;
-    protected short b;
-    protected byte[] c;
+    protected byte[] a = new byte[16];
+    protected short b = (short) 0;
+    protected byte[] c = new byte[32];
 
     cb() {
-        this.a = new byte[16];
-        this.b = (short) 0;
-        this.c = new byte[32];
     }
 }

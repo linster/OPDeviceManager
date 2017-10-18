@@ -1,259 +1,22 @@
 package com.google.gson.internal;
 
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.Comparator;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
-public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Serializable {
+public final class LinkedTreeMap extends AbstractMap implements Serializable {
     static final /* synthetic */ boolean $assertionsDisabled;
-    private static final Comparator<Comparable> NATURAL_ORDER;
-    Comparator<? super K> comparator;
-    private EntrySet entrySet;
-    final Node<K, V> header;
-    private KeySet keySet;
+    private static final Comparator eY = new d();
+    Comparator comparator;
+    private o entrySet;
+    final c header;
+    private y keySet;
     int modCount;
-    Node<K, V> root;
+    c root;
     int size;
-
-    private abstract class LinkedTreeMapIterator<T> implements Iterator<T> {
-        int expectedModCount;
-        Node<K, V> lastReturned;
-        Node<K, V> next;
-
-        private LinkedTreeMapIterator() {
-            this.next = LinkedTreeMap.this.header.next;
-            this.lastReturned = null;
-            this.expectedModCount = LinkedTreeMap.this.modCount;
-        }
-
-        public final boolean hasNext() {
-            return this.next != LinkedTreeMap.this.header;
-        }
-
-        final Node<K, V> nextNode() {
-            Node<K, V> e = this.next;
-            if (e == LinkedTreeMap.this.header) {
-                throw new NoSuchElementException();
-            } else if (LinkedTreeMap.this.modCount == this.expectedModCount) {
-                this.next = e.next;
-                this.lastReturned = e;
-                return e;
-            } else {
-                throw new ConcurrentModificationException();
-            }
-        }
-
-        public final void remove() {
-            if (this.lastReturned != null) {
-                LinkedTreeMap.this.removeInternal(this.lastReturned, true);
-                this.lastReturned = null;
-                this.expectedModCount = LinkedTreeMap.this.modCount;
-                return;
-            }
-            throw new IllegalStateException();
-        }
-    }
-
-    class EntrySet extends AbstractSet<Entry<K, V>> {
-        EntrySet() {
-        }
-
-        public int size() {
-            return LinkedTreeMap.this.size;
-        }
-
-        public Iterator<Entry<K, V>> iterator() {
-            return new LinkedTreeMapIterator<Entry<K, V>>() {
-                {
-                    LinkedTreeMap linkedTreeMap = LinkedTreeMap.this;
-                }
-
-                public Entry<K, V> next() {
-                    return nextNode();
-                }
-            };
-        }
-
-        public boolean contains(Object o) {
-            return (o instanceof Entry) && LinkedTreeMap.this.findByEntry((Entry) o) != null;
-        }
-
-        public boolean remove(Object o) {
-            if (!(o instanceof Entry)) {
-                return false;
-            }
-            Node<K, V> node = LinkedTreeMap.this.findByEntry((Entry) o);
-            if (node == null) {
-                return false;
-            }
-            LinkedTreeMap.this.removeInternal(node, true);
-            return true;
-        }
-
-        public void clear() {
-            LinkedTreeMap.this.clear();
-        }
-    }
-
-    final class KeySet extends AbstractSet<K> {
-        KeySet() {
-        }
-
-        public int size() {
-            return LinkedTreeMap.this.size;
-        }
-
-        public Iterator<K> iterator() {
-            return new LinkedTreeMapIterator<K>() {
-                {
-                    LinkedTreeMap linkedTreeMap = LinkedTreeMap.this;
-                }
-
-                public K next() {
-                    return nextNode().key;
-                }
-            };
-        }
-
-        public boolean contains(Object o) {
-            return LinkedTreeMap.this.containsKey(o);
-        }
-
-        public boolean remove(Object key) {
-            return LinkedTreeMap.this.removeInternalByKey(key) != null;
-        }
-
-        public void clear() {
-            LinkedTreeMap.this.clear();
-        }
-    }
-
-    static final class Node<K, V> implements Entry<K, V> {
-        int height;
-        final K key;
-        Node<K, V> left;
-        Node<K, V> next;
-        Node<K, V> parent;
-        Node<K, V> prev;
-        Node<K, V> right;
-        V value;
-
-        Node() {
-            this.key = null;
-            this.prev = this;
-            this.next = this;
-        }
-
-        Node(Node<K, V> parent, K key, Node<K, V> next, Node<K, V> prev) {
-            this.parent = parent;
-            this.key = key;
-            this.height = 1;
-            this.next = next;
-            this.prev = prev;
-            prev.next = this;
-            next.prev = this;
-        }
-
-        public K getKey() {
-            return this.key;
-        }
-
-        public V getValue() {
-            return this.value;
-        }
-
-        public V setValue(V value) {
-            V oldValue = this.value;
-            this.value = value;
-            return oldValue;
-        }
-
-        /* JADX WARNING: inconsistent code. */
-        /* Code decompiled incorrectly, please refer to instructions dump. */
-        public boolean equals(java.lang.Object r5) {
-            /*
-            r4 = this;
-            r1 = 0;
-            r2 = r5 instanceof java.util.Map.Entry;
-            if (r2 != 0) goto L_0x0006;
-        L_0x0005:
-            return r1;
-        L_0x0006:
-            r0 = r5;
-            r0 = (java.util.Map.Entry) r0;
-            r2 = r4.key;
-            if (r2 == 0) goto L_0x001a;
-        L_0x000d:
-            r2 = r4.key;
-            r3 = r0.getKey();
-            r2 = r2.equals(r3);
-            if (r2 != 0) goto L_0x0020;
-        L_0x0019:
-            return r1;
-        L_0x001a:
-            r2 = r0.getKey();
-            if (r2 != 0) goto L_0x0019;
-        L_0x0020:
-            r2 = r4.value;
-            if (r2 == 0) goto L_0x0032;
-        L_0x0024:
-            r2 = r4.value;
-            r3 = r0.getValue();
-            r2 = r2.equals(r3);
-            if (r2 == 0) goto L_0x0019;
-        L_0x0030:
-            r1 = 1;
-            goto L_0x0019;
-        L_0x0032:
-            r2 = r0.getValue();
-            if (r2 == 0) goto L_0x0030;
-        L_0x0038:
-            goto L_0x0019;
-            */
-            throw new UnsupportedOperationException("Method not decompiled: com.google.gson.internal.LinkedTreeMap.Node.equals(java.lang.Object):boolean");
-        }
-
-        public int hashCode() {
-            int i = 0;
-            int hashCode = this.key != null ? this.key.hashCode() : 0;
-            if (this.value != null) {
-                i = this.value.hashCode();
-            }
-            return hashCode ^ i;
-        }
-
-        public String toString() {
-            return this.key + "=" + this.value;
-        }
-
-        public Node<K, V> first() {
-            Node<K, V> node;
-            Node<K, V> child = this.left;
-            while (child != null) {
-                node = child;
-                child = node.left;
-            }
-            return node;
-        }
-
-        public Node<K, V> last() {
-            Node<K, V> node;
-            Node<K, V> child = this.right;
-            while (child != null) {
-                node = child;
-                child = node.right;
-            }
-            return node;
-        }
-    }
 
     /* JADX WARNING: inconsistent code. */
     /* Code decompiled incorrectly, please refer to instructions dump. */
@@ -264,9 +27,9 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
         if (r1 == 0) goto L_0x0011;
     L_0x0007:
         $assertionsDisabled = r0;
-        r0 = new com.google.gson.internal.LinkedTreeMap$1;
+        r0 = new com.google.gson.internal.d;
         r0.<init>();
-        NATURAL_ORDER = r0;
+        eY = r0;
     L_0x0011:
         r0 = 1;
         goto L_0x0007;
@@ -275,340 +38,341 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
     }
 
     public LinkedTreeMap() {
-        this(NATURAL_ORDER);
+        this(eY);
     }
 
-    public LinkedTreeMap(Comparator<? super K> comparator) {
+    public LinkedTreeMap(Comparator comparator) {
         this.size = 0;
         this.modCount = 0;
-        this.header = new Node();
+        this.header = new c();
         if (comparator == null) {
-            comparator = NATURAL_ORDER;
+            comparator = eY;
         }
         this.comparator = comparator;
     }
 
-    public int size() {
-        return this.size;
-    }
-
-    public V get(Object key) {
-        Node<K, V> node = findByObject(key);
-        if (node == null) {
-            return null;
+    private void eQ(c cVar, c cVar2) {
+        c cVar3 = cVar.eZ;
+        cVar.eZ = null;
+        if (cVar2 != null) {
+            cVar2.eZ = cVar3;
         }
-        return node.value;
-    }
-
-    public boolean containsKey(Object key) {
-        return findByObject(key) != null;
-    }
-
-    public V put(K key, V value) {
-        if (key != null) {
-            Node<K, V> created = find(key, true);
-            V result = created.value;
-            created.value = value;
-            return result;
-        }
-        throw new NullPointerException("key == null");
-    }
-
-    public void clear() {
-        this.root = null;
-        this.size = 0;
-        this.modCount++;
-        Node<K, V> header = this.header;
-        header.prev = header;
-        header.next = header;
-    }
-
-    public V remove(Object key) {
-        Node<K, V> node = removeInternalByKey(key);
-        if (node == null) {
-            return null;
-        }
-        return node.value;
-    }
-
-    Node<K, V> find(K key, boolean create) {
-        Comparator<? super K> comparator = this.comparator;
-        Node<K, V> nearest = this.root;
-        int comparison = 0;
-        if (nearest != null) {
-            Comparable<Object> comparableKey = comparator != NATURAL_ORDER ? null : (Comparable) key;
-            while (true) {
-                comparison = comparableKey == null ? comparator.compare(key, nearest.key) : comparableKey.compareTo(nearest.key);
-                if (comparison != 0) {
-                    Node<K, V> child = comparison >= 0 ? nearest.right : nearest.left;
-                    if (child == null) {
-                        break;
-                    }
-                    nearest = child;
-                } else {
-                    return nearest;
-                }
-            }
-        }
-        if (!create) {
-            return null;
-        }
-        Node<K, V> created;
-        Node<K, V> header = this.header;
-        if (nearest != null) {
-            created = new Node(nearest, key, header, header.prev);
-            if (comparison >= 0) {
-                nearest.right = created;
-            } else {
-                nearest.left = created;
-            }
-            rebalance(nearest, true);
-        } else if (comparator == NATURAL_ORDER && !(key instanceof Comparable)) {
-            throw new ClassCastException(key.getClass().getName() + " is not Comparable");
+        if (cVar3 == null) {
+            this.root = cVar2;
+        } else if (cVar3.fa == cVar) {
+            cVar3.fa = cVar2;
+        } else if ($assertionsDisabled || cVar3.fb == cVar) {
+            cVar3.fb = cVar2;
         } else {
-            created = new Node(nearest, key, header, header.prev);
-            this.root = created;
+            throw new AssertionError();
         }
-        this.size++;
-        this.modCount++;
-        return created;
     }
 
-    Node<K, V> findByObject(Object key) {
-        Node<K, V> node = null;
-        if (key != null) {
-            try {
-                node = find(key, false);
-            } catch (ClassCastException e) {
-                return node;
+    private void eR(c cVar, boolean z) {
+        while (cVar != null) {
+            c cVar2 = cVar.fa;
+            c cVar3 = cVar.fb;
+            int i = cVar2 == null ? 0 : cVar2.fg;
+            int i2 = cVar3 == null ? 0 : cVar3.fg;
+            int i3 = i - i2;
+            c cVar4;
+            c cVar5;
+            if (i3 == -2) {
+                cVar4 = cVar3.fa;
+                cVar5 = cVar3.fb;
+                i = (cVar4 == null ? 0 : cVar4.fg) - (cVar5 == null ? 0 : cVar5.fg);
+                if (i != -1) {
+                    if (i == 0) {
+                        if (z) {
+                        }
+                    }
+                    if ($assertionsDisabled || i == 1) {
+                        eT(cVar3);
+                        eS(cVar);
+                        if (!z) {
+                            return;
+                        }
+                    } else {
+                        throw new AssertionError();
+                    }
+                }
+                eS(cVar);
+                if (!z) {
+                    return;
+                }
+            } else if (i3 == 2) {
+                cVar4 = cVar2.fa;
+                cVar5 = cVar2.fb;
+                i = (cVar4 == null ? 0 : cVar4.fg) - (cVar5 == null ? 0 : cVar5.fg);
+                if (i != 1) {
+                    if (i == 0) {
+                        if (z) {
+                        }
+                    }
+                    if ($assertionsDisabled || i == -1) {
+                        eS(cVar2);
+                        eT(cVar);
+                        if (!z) {
+                            return;
+                        }
+                    } else {
+                        throw new AssertionError();
+                    }
+                }
+                eT(cVar);
+                if (!z) {
+                    return;
+                }
+            } else if (i3 == 0) {
+                cVar.fg = i + 1;
+                if (z) {
+                    return;
+                }
+            } else if ($assertionsDisabled || i3 == -1 || i3 == 1) {
+                cVar.fg = Math.max(i, i2) + 1;
+                if (!z) {
+                    return;
+                }
+            } else {
+                throw new AssertionError();
             }
+            cVar = cVar.eZ;
         }
-        return node;
     }
 
-    Node<K, V> findByEntry(Entry<?, ?> entry) {
-        boolean valuesEqual = false;
-        Node<K, V> mine = findByObject(entry.getKey());
-        if (mine != null && equal(mine.value, entry.getValue())) {
-            valuesEqual = true;
+    private void eS(c cVar) {
+        int i = 0;
+        c cVar2 = cVar.fa;
+        c cVar3 = cVar.fb;
+        c cVar4 = cVar3.fa;
+        c cVar5 = cVar3.fb;
+        cVar.fb = cVar4;
+        if (cVar4 != null) {
+            cVar4.eZ = cVar;
         }
-        return !valuesEqual ? null : mine;
+        eQ(cVar, cVar3);
+        cVar3.fa = cVar;
+        cVar.eZ = cVar3;
+        cVar.fg = Math.max(cVar2 == null ? 0 : cVar2.fg, cVar4 == null ? 0 : cVar4.fg) + 1;
+        int i2 = cVar.fg;
+        if (cVar5 != null) {
+            i = cVar5.fg;
+        }
+        cVar3.fg = Math.max(i2, i) + 1;
     }
 
-    private boolean equal(Object a, Object b) {
-        if (a != b) {
-            if (a == null) {
+    private void eT(c cVar) {
+        int i = 0;
+        c cVar2 = cVar.fa;
+        c cVar3 = cVar.fb;
+        c cVar4 = cVar2.fa;
+        c cVar5 = cVar2.fb;
+        cVar.fa = cVar5;
+        if (cVar5 != null) {
+            cVar5.eZ = cVar;
+        }
+        eQ(cVar, cVar2);
+        cVar2.fb = cVar;
+        cVar.eZ = cVar2;
+        cVar.fg = Math.max(cVar3 == null ? 0 : cVar3.fg, cVar5 == null ? 0 : cVar5.fg) + 1;
+        int i2 = cVar.fg;
+        if (cVar4 != null) {
+            i = cVar4.fg;
+        }
+        cVar2.fg = Math.max(i2, i) + 1;
+    }
+
+    private boolean equal(Object obj, Object obj2) {
+        if (obj != obj2) {
+            if (obj == null) {
                 return false;
             }
-            if (!a.equals(b)) {
+            if (!obj.equals(obj2)) {
                 return false;
             }
         }
         return true;
     }
 
-    void removeInternal(Node<K, V> node, boolean unlink) {
-        if (unlink) {
-            node.prev.next = node.next;
-            node.next.prev = node.prev;
-        }
-        Node<K, V> left = node.left;
-        Node<K, V> right = node.right;
-        Node<K, V> originalParent = node.parent;
-        if (left == null || right == null) {
-            if (left != null) {
-                replaceInParent(node, left);
-                node.left = null;
-            } else if (right == null) {
-                replaceInParent(node, null);
-            } else {
-                replaceInParent(node, right);
-                node.right = null;
+    private Object writeReplace() {
+        return new LinkedHashMap(this);
+    }
+
+    public void clear() {
+        this.root = null;
+        this.size = 0;
+        this.modCount++;
+        c cVar = this.header;
+        cVar.fd = cVar;
+        cVar.fc = cVar;
+    }
+
+    public boolean containsKey(Object obj) {
+        return eM(obj) != null;
+    }
+
+    c eL(Object obj, boolean z) {
+        int i = 0;
+        Comparator comparator = this.comparator;
+        c cVar = this.root;
+        if (cVar != null) {
+            Comparable comparable = comparator != eY ? null : (Comparable) obj;
+            c cVar2 = cVar;
+            while (true) {
+                i = comparable == null ? comparator.compare(obj, cVar2.fe) : comparable.compareTo(cVar2.fe);
+                if (i != 0) {
+                    cVar = i >= 0 ? cVar2.fb : cVar2.fa;
+                    if (cVar == null) {
+                        break;
+                    }
+                    cVar2 = cVar;
+                } else {
+                    return cVar2;
+                }
             }
-            rebalance(originalParent, false);
+            cVar = cVar2;
+        }
+        if (!z) {
+            return null;
+        }
+        c cVar3;
+        c cVar4 = this.header;
+        if (cVar != null) {
+            cVar3 = new c(cVar, obj, cVar4, cVar4.fd);
+            if (i >= 0) {
+                cVar.fb = cVar3;
+            } else {
+                cVar.fa = cVar3;
+            }
+            eR(cVar, true);
+        } else if (comparator == eY && !(obj instanceof Comparable)) {
+            throw new ClassCastException(obj.getClass().getName() + " is not Comparable");
+        } else {
+            cVar3 = new c(cVar, obj, cVar4, cVar4.fd);
+            this.root = cVar3;
+        }
+        this.size++;
+        this.modCount++;
+        return cVar3;
+    }
+
+    c eM(Object obj) {
+        c cVar = null;
+        if (obj != null) {
+            try {
+                cVar = eL(obj, false);
+            } catch (ClassCastException e) {
+                return cVar;
+            }
+        }
+        return cVar;
+    }
+
+    c eN(Entry entry) {
+        Object obj = null;
+        c eM = eM(entry.getKey());
+        if (eM != null && equal(eM.ff, entry.getValue())) {
+            obj = 1;
+        }
+        return obj == null ? null : eM;
+    }
+
+    void eO(c cVar, boolean z) {
+        int i = 0;
+        if (z) {
+            cVar.fd.fc = cVar.fc;
+            cVar.fc.fd = cVar.fd;
+        }
+        c cVar2 = cVar.fa;
+        c cVar3 = cVar.fb;
+        c cVar4 = cVar.eZ;
+        if (cVar2 == null || cVar3 == null) {
+            if (cVar2 != null) {
+                eQ(cVar, cVar2);
+                cVar.fa = null;
+            } else if (cVar3 == null) {
+                eQ(cVar, null);
+            } else {
+                eQ(cVar, cVar3);
+                cVar.fb = null;
+            }
+            eR(cVar4, false);
             this.size--;
             this.modCount++;
             return;
         }
-        Node<K, V> adjacent = left.height <= right.height ? right.first() : left.last();
-        removeInternal(adjacent, false);
-        int leftHeight = 0;
-        left = node.left;
-        if (left != null) {
-            leftHeight = left.height;
-            adjacent.left = left;
-            left.parent = adjacent;
-            node.left = null;
-        }
-        int rightHeight = 0;
-        right = node.right;
-        if (right != null) {
-            rightHeight = right.height;
-            adjacent.right = right;
-            right.parent = adjacent;
-            node.right = null;
-        }
-        adjacent.height = Math.max(leftHeight, rightHeight) + 1;
-        replaceInParent(node, adjacent);
-    }
-
-    Node<K, V> removeInternalByKey(Object key) {
-        Node<K, V> node = findByObject(key);
-        if (node != null) {
-            removeInternal(node, true);
-        }
-        return node;
-    }
-
-    private void replaceInParent(Node<K, V> node, Node<K, V> replacement) {
-        Node<K, V> parent = node.parent;
-        node.parent = null;
-        if (replacement != null) {
-            replacement.parent = parent;
-        }
-        if (parent == null) {
-            this.root = replacement;
-        } else if (parent.left == node) {
-            parent.left = replacement;
-        } else if ($assertionsDisabled || parent.right == node) {
-            parent.right = replacement;
+        int i2;
+        cVar2 = cVar2.fg <= cVar3.fg ? cVar3.eU() : cVar2.eV();
+        eO(cVar2, false);
+        cVar4 = cVar.fa;
+        if (cVar4 == null) {
+            i2 = 0;
         } else {
-            throw new AssertionError();
+            i2 = cVar4.fg;
+            cVar2.fa = cVar4;
+            cVar4.eZ = cVar2;
+            cVar.fa = null;
         }
+        cVar4 = cVar.fb;
+        if (cVar4 != null) {
+            i = cVar4.fg;
+            cVar2.fb = cVar4;
+            cVar4.eZ = cVar2;
+            cVar.fb = null;
+        }
+        cVar2.fg = Math.max(i2, i) + 1;
+        eQ(cVar, cVar2);
     }
 
-    private void rebalance(Node<K, V> unbalanced, boolean insert) {
-        for (Node<K, V> node = unbalanced; node != null; node = node.parent) {
-            Node<K, V> left = node.left;
-            Node<K, V> right = node.right;
-            int leftHeight = left == null ? 0 : left.height;
-            int rightHeight = right == null ? 0 : right.height;
-            int delta = leftHeight - rightHeight;
-            if (delta == -2) {
-                Node<K, V> rightLeft = right.left;
-                Node<K, V> rightRight = right.right;
-                int rightDelta = (rightLeft == null ? 0 : rightLeft.height) - (rightRight == null ? 0 : rightRight.height);
-                if (rightDelta != -1) {
-                    if (rightDelta == 0) {
-                        if (insert) {
-                        }
-                    }
-                    if ($assertionsDisabled || rightDelta == 1) {
-                        rotateRight(right);
-                        rotateLeft(node);
-                        if (!insert) {
-                            return;
-                        }
-                    } else {
-                        throw new AssertionError();
-                    }
-                }
-                rotateLeft(node);
-                if (!insert) {
-                    return;
-                }
-            } else if (delta == 2) {
-                Node<K, V> leftLeft = left.left;
-                Node<K, V> leftRight = left.right;
-                int leftDelta = (leftLeft == null ? 0 : leftLeft.height) - (leftRight == null ? 0 : leftRight.height);
-                if (leftDelta != 1) {
-                    if (leftDelta == 0) {
-                        if (insert) {
-                        }
-                    }
-                    if ($assertionsDisabled || leftDelta == -1) {
-                        rotateLeft(left);
-                        rotateRight(node);
-                        if (!insert) {
-                            return;
-                        }
-                    } else {
-                        throw new AssertionError();
-                    }
-                }
-                rotateRight(node);
-                if (!insert) {
-                    return;
-                }
-            } else if (delta == 0) {
-                node.height = leftHeight + 1;
-                if (insert) {
-                    return;
-                }
-            } else if ($assertionsDisabled || delta == -1 || delta == 1) {
-                node.height = Math.max(leftHeight, rightHeight) + 1;
-                if (!insert) {
-                    return;
-                }
-            } else {
-                throw new AssertionError();
-            }
+    c eP(Object obj) {
+        c eM = eM(obj);
+        if (eM != null) {
+            eO(eM, true);
         }
+        return eM;
     }
 
-    private void rotateLeft(Node<K, V> root) {
-        int i = 0;
-        Node<K, V> left = root.left;
-        Node<K, V> pivot = root.right;
-        Node<K, V> pivotLeft = pivot.left;
-        Node<K, V> pivotRight = pivot.right;
-        root.right = pivotLeft;
-        if (pivotLeft != null) {
-            pivotLeft.parent = root;
-        }
-        replaceInParent(root, pivot);
-        pivot.left = root;
-        root.parent = pivot;
-        root.height = Math.max(left == null ? 0 : left.height, pivotLeft == null ? 0 : pivotLeft.height) + 1;
-        int i2 = root.height;
-        if (pivotRight != null) {
-            i = pivotRight.height;
-        }
-        pivot.height = Math.max(i2, i) + 1;
-    }
-
-    private void rotateRight(Node<K, V> root) {
-        int i = 0;
-        Node<K, V> pivot = root.left;
-        Node<K, V> right = root.right;
-        Node<K, V> pivotLeft = pivot.left;
-        Node<K, V> pivotRight = pivot.right;
-        root.left = pivotRight;
-        if (pivotRight != null) {
-            pivotRight.parent = root;
-        }
-        replaceInParent(root, pivot);
-        pivot.right = root;
-        root.parent = pivot;
-        root.height = Math.max(right == null ? 0 : right.height, pivotRight == null ? 0 : pivotRight.height) + 1;
-        int i2 = root.height;
-        if (pivotLeft != null) {
-            i = pivotLeft.height;
-        }
-        pivot.height = Math.max(i2, i) + 1;
-    }
-
-    public Set<Entry<K, V>> entrySet() {
-        Set<Entry<K, V>> set = this.entrySet;
+    public Set entrySet() {
+        Set set = this.entrySet;
         if (set != null) {
             return set;
         }
-        Set entrySet = new EntrySet();
-        this.entrySet = entrySet;
-        return entrySet;
+        set = new o(this);
+        this.entrySet = set;
+        return set;
     }
 
-    public Set<K> keySet() {
-        Set<K> set = this.keySet;
+    public Object get(Object obj) {
+        c eM = eM(obj);
+        return eM == null ? null : eM.ff;
+    }
+
+    public Set keySet() {
+        Set set = this.keySet;
         if (set != null) {
             return set;
         }
-        Set keySet = new KeySet();
-        this.keySet = keySet;
-        return keySet;
+        set = new y(this);
+        this.keySet = set;
+        return set;
     }
 
-    private Object writeReplace() throws ObjectStreamException {
-        return new LinkedHashMap(this);
+    public Object put(Object obj, Object obj2) {
+        if (obj != null) {
+            c eL = eL(obj, true);
+            Object obj3 = eL.ff;
+            eL.ff = obj2;
+            return obj3;
+        }
+        throw new NullPointerException("key == null");
+    }
+
+    public Object remove(Object obj) {
+        c eP = eP(obj);
+        return eP == null ? null : eP.ff;
+    }
+
+    public int size() {
+        return this.size;
     }
 }

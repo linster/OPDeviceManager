@@ -1,15 +1,15 @@
 package retrofit.converter;
 
 public class ConversionException extends Exception {
-    public ConversionException(String message) {
-        super(message);
+    public ConversionException(String str) {
+        super(str);
     }
 
-    public ConversionException(String message, Throwable throwable) {
-        super(message, throwable);
+    public ConversionException(String str, Throwable th) {
+        super(str, th);
     }
 
-    public ConversionException(Throwable throwable) {
-        super(throwable);
+    public ConversionException(Throwable th) {
+        super(th);
     }
 }

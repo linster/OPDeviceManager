@@ -3,24 +3,22 @@ package com.squareup.okhttp.internal.http;
 import com.squareup.okhttp.Connection;
 import com.squareup.okhttp.ConnectionPool;
 import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.Response.Builder;
+import com.squareup.okhttp.Headers.Builder;
+import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.Internal;
 import com.squareup.okhttp.internal.Util;
-
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
-
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.Okio;
-import okio.Sink;
-import okio.Source;
-import okio.Timeout;
+import okio.a;
+import okio.b;
+import okio.g;
+import okio.j;
+import okio.k;
+import okio.n;
+import okio.v;
 
 public final class HttpConnection {
     private static final int ON_IDLE_CLOSE = 2;
@@ -34,31 +32,27 @@ public final class HttpConnection {
     private static final int STATE_READ_RESPONSE_HEADERS = 3;
     private static final int STATE_WRITING_REQUEST_BODY = 2;
     private final Connection connection;
-    private int onIdle;
+    private int onIdle = 0;
     private final ConnectionPool pool;
-    private final BufferedSink sink;
+    private final b sink;
     private final Socket socket;
-    private final BufferedSource source;
-    private int state;
+    private final a source;
+    private int state = 0;
 
-    private abstract class AbstractSource implements Source {
+    abstract class AbstractSource implements v {
         protected boolean closed;
 
         private AbstractSource() {
         }
 
-        public Timeout timeout() {
-            return HttpConnection.this.source.timeout();
-        }
-
-        protected final void endOfInput(boolean recyclable) throws IOException {
+        protected final void endOfInput(boolean z) {
             if (HttpConnection.this.state == HttpConnection.STATE_READING_RESPONSE_BODY) {
-                HttpConnection.this.state = HttpConnection.STATE_IDLE;
-                if (recyclable && HttpConnection.this.onIdle == HttpConnection.STATE_OPEN_REQUEST_BODY) {
-                    HttpConnection.this.onIdle = HttpConnection.STATE_IDLE;
+                HttpConnection.this.state = 0;
+                if (z && HttpConnection.this.onIdle == 1) {
+                    HttpConnection.this.onIdle = 0;
                     Internal.instance.recycle(HttpConnection.this.pool, HttpConnection.this.connection);
                     return;
-                } else if (HttpConnection.this.onIdle == HttpConnection.STATE_WRITING_REQUEST_BODY) {
+                } else if (HttpConnection.this.onIdle == 2) {
                     HttpConnection.this.state = HttpConnection.STATE_CLOSED;
                     HttpConnection.this.connection.getSocket().close();
                     return;
@@ -69,68 +63,161 @@ public final class HttpConnection {
             throw new IllegalStateException("state: " + HttpConnection.this.state);
         }
 
+        public g timeout() {
+            return HttpConnection.this.source.timeout();
+        }
+
         protected final void unexpectedEndOfInput() {
             Util.closeQuietly(HttpConnection.this.connection.getSocket());
             HttpConnection.this.state = HttpConnection.STATE_CLOSED;
         }
     }
 
-    private final class ChunkedSink implements Sink {
+    final class ChunkedSink implements n {
         private boolean closed;
 
         private ChunkedSink() {
         }
 
-        public Timeout timeout() {
-            return HttpConnection.this.sink.timeout();
-        }
-
-        public void write(Buffer source, long byteCount) throws IOException {
-            if (this.closed) {
-                throw new IllegalStateException("closed");
-            } else if (byteCount != 0) {
-                HttpConnection.this.sink.writeHexadecimalUnsignedLong(byteCount);
-                HttpConnection.this.sink.writeUtf8("\r\n");
-                HttpConnection.this.sink.write(source, byteCount);
-                HttpConnection.this.sink.writeUtf8("\r\n");
+        public synchronized void close() {
+            if (!this.closed) {
+                this.closed = true;
+                HttpConnection.this.sink.Ac("0\r\n\r\n");
+                HttpConnection.this.state = HttpConnection.STATE_READ_RESPONSE_HEADERS;
             }
         }
 
-        public synchronized void flush() throws IOException {
+        public synchronized void flush() {
             if (!this.closed) {
                 HttpConnection.this.sink.flush();
             }
         }
 
-        public synchronized void close() throws IOException {
-            if (!this.closed) {
-                this.closed = true;
-                HttpConnection.this.sink.writeUtf8("0\r\n\r\n");
-                HttpConnection.this.state = HttpConnection.STATE_READ_RESPONSE_HEADERS;
+        public g timeout() {
+            return HttpConnection.this.sink.timeout();
+        }
+
+        public void write(k kVar, long j) {
+            if (this.closed) {
+                throw new IllegalStateException("closed");
+            } else if (j != 0) {
+                HttpConnection.this.sink.Ah(j);
+                HttpConnection.this.sink.Ac("\r\n");
+                HttpConnection.this.sink.write(kVar, j);
+                HttpConnection.this.sink.Ac("\r\n");
             }
         }
     }
 
-    private class ChunkedSource extends AbstractSource {
+    class ChunkedSource extends AbstractSource {
         private static final long NO_CHUNK_YET = -1;
-        private long bytesRemainingInChunk;
-        private boolean hasMoreChunks;
+        private long bytesRemainingInChunk = NO_CHUNK_YET;
+        private boolean hasMoreChunks = true;
         private final HttpEngine httpEngine;
 
-        ChunkedSource(HttpEngine httpEngine) throws IOException {
-            super(null);
-            this.bytesRemainingInChunk = NO_CHUNK_YET;
-            this.hasMoreChunks = true;
+        ChunkedSource(HttpEngine httpEngine) {
+            super();
             this.httpEngine = httpEngine;
         }
 
-        public long read(Buffer sink, long byteCount) throws IOException {
+        /* JADX WARNING: inconsistent code. */
+        /* Code decompiled incorrectly, please refer to instructions dump. */
+        private void readChunkSize() {
+            /*
+            r10 = this;
+            r8 = 0;
+            r1 = 1;
+            r2 = 0;
+            r4 = r10.bytesRemainingInChunk;
+            r6 = -1;
+            r0 = (r4 > r6 ? 1 : (r4 == r6 ? 0 : -1));
+            if (r0 == 0) goto L_0x0015;
+        L_0x000c:
+            r0 = com.squareup.okhttp.internal.http.HttpConnection.this;
+            r0 = r0.source;
+            r0.zW();
+        L_0x0015:
+            r0 = com.squareup.okhttp.internal.http.HttpConnection.this;	 Catch:{ NumberFormatException -> 0x008f }
+            r0 = r0.source;	 Catch:{ NumberFormatException -> 0x008f }
+            r4 = r0.zS();	 Catch:{ NumberFormatException -> 0x008f }
+            r10.bytesRemainingInChunk = r4;	 Catch:{ NumberFormatException -> 0x008f }
+            r0 = com.squareup.okhttp.internal.http.HttpConnection.this;	 Catch:{ NumberFormatException -> 0x008f }
+            r0 = r0.source;	 Catch:{ NumberFormatException -> 0x008f }
+            r0 = r0.zW();	 Catch:{ NumberFormatException -> 0x008f }
+            r3 = r0.trim();	 Catch:{ NumberFormatException -> 0x008f }
+            r4 = r10.bytesRemainingInChunk;	 Catch:{ NumberFormatException -> 0x008f }
+            r0 = (r4 > r8 ? 1 : (r4 == r8 ? 0 : -1));
+            if (r0 >= 0) goto L_0x005d;
+        L_0x0035:
+            r0 = r1;
+        L_0x0036:
+            if (r0 != 0) goto L_0x0068;
+        L_0x0038:
+            r0 = r3.isEmpty();	 Catch:{ NumberFormatException -> 0x008f }
+            if (r0 == 0) goto L_0x005f;
+        L_0x003e:
+            r4 = r10.bytesRemainingInChunk;
+            r0 = (r4 > r8 ? 1 : (r4 == r8 ? 0 : -1));
+            if (r0 != 0) goto L_0x005c;
+        L_0x0044:
+            r10.hasMoreChunks = r2;
+            r0 = new com.squareup.okhttp.Headers$Builder;
+            r0.<init>();
+            r2 = com.squareup.okhttp.internal.http.HttpConnection.this;
+            r2.readHeaders(r0);
+            r2 = r10.httpEngine;
+            r0 = r0.build();
+            r2.receiveHeaders(r0);
+            r10.endOfInput(r1);
+        L_0x005c:
+            return;
+        L_0x005d:
+            r0 = r2;
+            goto L_0x0036;
+        L_0x005f:
+            r0 = ";";
+            r0 = r3.startsWith(r0);	 Catch:{ NumberFormatException -> 0x008f }
+            if (r0 != 0) goto L_0x003e;
+        L_0x0068:
+            r0 = new java.net.ProtocolException;	 Catch:{ NumberFormatException -> 0x008f }
+            r1 = new java.lang.StringBuilder;	 Catch:{ NumberFormatException -> 0x008f }
+            r1.<init>();	 Catch:{ NumberFormatException -> 0x008f }
+            r2 = "expected chunk size and optional extensions but was \"";
+            r1 = r1.append(r2);	 Catch:{ NumberFormatException -> 0x008f }
+            r4 = r10.bytesRemainingInChunk;	 Catch:{ NumberFormatException -> 0x008f }
+            r1 = r1.append(r4);	 Catch:{ NumberFormatException -> 0x008f }
+            r1 = r1.append(r3);	 Catch:{ NumberFormatException -> 0x008f }
+            r2 = "\"";
+            r1 = r1.append(r2);	 Catch:{ NumberFormatException -> 0x008f }
+            r1 = r1.toString();	 Catch:{ NumberFormatException -> 0x008f }
+            r0.<init>(r1);	 Catch:{ NumberFormatException -> 0x008f }
+            throw r0;	 Catch:{ NumberFormatException -> 0x008f }
+        L_0x008f:
+            r0 = move-exception;
+            r1 = new java.net.ProtocolException;
+            r0 = r0.getMessage();
+            r1.<init>(r0);
+            throw r1;
+            */
+            throw new UnsupportedOperationException("Method not decompiled: com.squareup.okhttp.internal.http.HttpConnection.ChunkedSource.readChunkSize():void");
+        }
+
+        public void close() {
+            if (!this.closed) {
+                if (this.hasMoreChunks && !Util.discard(this, 100, TimeUnit.MILLISECONDS)) {
+                    unexpectedEndOfInput();
+                }
+                this.closed = true;
+            }
+        }
+
+        public long read(k kVar, long j) {
             Object obj = null;
-            if (byteCount >= 0) {
-                obj = HttpConnection.STATE_OPEN_REQUEST_BODY;
+            if (j >= 0) {
+                obj = 1;
             }
             if (obj == null) {
-                throw new IllegalArgumentException("byteCount < 0: " + byteCount);
+                throw new IllegalArgumentException("byteCount < 0: " + j);
             } else if (this.closed) {
                 throw new IllegalStateException("closed");
             } else if (!this.hasMoreChunks) {
@@ -142,7 +229,7 @@ public final class HttpConnection {
                         return NO_CHUNK_YET;
                     }
                 }
-                long read = HttpConnection.this.source.read(sink, Math.min(byteCount, this.bytesRemainingInChunk));
+                long read = HttpConnection.this.source.read(kVar, Math.min(j, this.bytesRemainingInChunk));
                 if (read == NO_CHUNK_YET) {
                     unexpectedEndOfInput();
                     throw new IOException("unexpected end of stream");
@@ -151,136 +238,17 @@ public final class HttpConnection {
                 return read;
             }
         }
-
-        /* JADX WARNING: inconsistent code. */
-        /* Code decompiled incorrectly, please refer to instructions dump. */
-        private void readChunkSize() throws java.io.IOException {
-            /*
-            r12 = this;
-            r10 = 0;
-            r4 = 1;
-            r5 = 0;
-            r6 = r12.bytesRemainingInChunk;
-            r8 = -1;
-            r3 = (r6 > r8 ? 1 : (r6 == r8 ? 0 : -1));
-            if (r3 == 0) goto L_0x0015;
-        L_0x000c:
-            r3 = com.squareup.okhttp.internal.http.HttpConnection.this;
-            r3 = r3.source;
-            r3.readUtf8LineStrict();
-        L_0x0015:
-            r3 = com.squareup.okhttp.internal.http.HttpConnection.this;	 Catch:{ NumberFormatException -> 0x008f }
-            r3 = r3.source;	 Catch:{ NumberFormatException -> 0x008f }
-            r6 = r3.readHexadecimalUnsignedLong();	 Catch:{ NumberFormatException -> 0x008f }
-            r12.bytesRemainingInChunk = r6;	 Catch:{ NumberFormatException -> 0x008f }
-            r3 = com.squareup.okhttp.internal.http.HttpConnection.this;	 Catch:{ NumberFormatException -> 0x008f }
-            r3 = r3.source;	 Catch:{ NumberFormatException -> 0x008f }
-            r3 = r3.readUtf8LineStrict();	 Catch:{ NumberFormatException -> 0x008f }
-            r1 = r3.trim();	 Catch:{ NumberFormatException -> 0x008f }
-            r6 = r12.bytesRemainingInChunk;	 Catch:{ NumberFormatException -> 0x008f }
-            r3 = (r6 > r10 ? 1 : (r6 == r10 ? 0 : -1));
-            if (r3 >= 0) goto L_0x005d;
-        L_0x0035:
-            r3 = r4;
-        L_0x0036:
-            if (r3 != 0) goto L_0x0068;
-        L_0x0038:
-            r3 = r1.isEmpty();	 Catch:{ NumberFormatException -> 0x008f }
-            if (r3 == 0) goto L_0x005f;
-        L_0x003e:
-            r6 = r12.bytesRemainingInChunk;
-            r3 = (r6 > r10 ? 1 : (r6 == r10 ? 0 : -1));
-            if (r3 != 0) goto L_0x005c;
-        L_0x0044:
-            r12.hasMoreChunks = r5;
-            r2 = new com.squareup.okhttp.Headers$Builder;
-            r2.<init>();
-            r3 = com.squareup.okhttp.internal.http.HttpConnection.this;
-            r3.readHeaders(r2);
-            r3 = r12.httpEngine;
-            r5 = r2.build();
-            r3.receiveHeaders(r5);
-            r12.endOfInput(r4);
-        L_0x005c:
-            return;
-        L_0x005d:
-            r3 = r5;
-            goto L_0x0036;
-        L_0x005f:
-            r3 = ";";
-            r3 = r1.startsWith(r3);	 Catch:{ NumberFormatException -> 0x008f }
-            if (r3 != 0) goto L_0x003e;
-        L_0x0068:
-            r3 = new java.net.ProtocolException;	 Catch:{ NumberFormatException -> 0x008f }
-            r4 = new java.lang.StringBuilder;	 Catch:{ NumberFormatException -> 0x008f }
-            r4.<init>();	 Catch:{ NumberFormatException -> 0x008f }
-            r5 = "expected chunk size and optional extensions but was \"";
-            r4 = r4.append(r5);	 Catch:{ NumberFormatException -> 0x008f }
-            r6 = r12.bytesRemainingInChunk;	 Catch:{ NumberFormatException -> 0x008f }
-            r4 = r4.append(r6);	 Catch:{ NumberFormatException -> 0x008f }
-            r4 = r4.append(r1);	 Catch:{ NumberFormatException -> 0x008f }
-            r5 = "\"";
-            r4 = r4.append(r5);	 Catch:{ NumberFormatException -> 0x008f }
-            r4 = r4.toString();	 Catch:{ NumberFormatException -> 0x008f }
-            r3.<init>(r4);	 Catch:{ NumberFormatException -> 0x008f }
-            throw r3;	 Catch:{ NumberFormatException -> 0x008f }
-        L_0x008f:
-            r0 = move-exception;
-            r3 = new java.net.ProtocolException;
-            r4 = r0.getMessage();
-            r3.<init>(r4);
-            throw r3;
-            */
-            throw new UnsupportedOperationException("Method not decompiled: com.squareup.okhttp.internal.http.HttpConnection.ChunkedSource.readChunkSize():void");
-        }
-
-        public void close() throws IOException {
-            if (!this.closed) {
-                if (this.hasMoreChunks && !Util.discard(this, 100, TimeUnit.MILLISECONDS)) {
-                    unexpectedEndOfInput();
-                }
-                this.closed = true;
-            }
-        }
     }
 
-    private final class FixedLengthSink implements Sink {
+    final class FixedLengthSink implements n {
         private long bytesRemaining;
         private boolean closed;
 
-        private FixedLengthSink(long bytesRemaining) {
-            this.bytesRemaining = bytesRemaining;
+        private FixedLengthSink(long j) {
+            this.bytesRemaining = j;
         }
 
-        public Timeout timeout() {
-            return HttpConnection.this.sink.timeout();
-        }
-
-        public void write(Buffer source, long byteCount) throws IOException {
-            if (this.closed) {
-                throw new IllegalStateException("closed");
-            }
-            Object obj;
-            Util.checkOffsetAndCount(source.size(), 0, byteCount);
-            if (byteCount <= this.bytesRemaining) {
-                obj = HttpConnection.STATE_OPEN_REQUEST_BODY;
-            } else {
-                obj = HttpConnection.STATE_IDLE;
-            }
-            if (obj == null) {
-                throw new ProtocolException("expected " + this.bytesRemaining + " bytes but received " + byteCount);
-            }
-            HttpConnection.this.sink.write(source, byteCount);
-            this.bytesRemaining -= byteCount;
-        }
-
-        public void flush() throws IOException {
-            if (!this.closed) {
-                HttpConnection.this.sink.flush();
-            }
-        }
-
-        public void close() throws IOException {
+        public void close() {
             boolean z = true;
             if (!this.closed) {
                 this.closed = true;
@@ -294,32 +262,63 @@ public final class HttpConnection {
                 throw new ProtocolException("unexpected end of stream");
             }
         }
+
+        public void flush() {
+            if (!this.closed) {
+                HttpConnection.this.sink.flush();
+            }
+        }
+
+        public g timeout() {
+            return HttpConnection.this.sink.timeout();
+        }
+
+        public void write(k kVar, long j) {
+            if (this.closed) {
+                throw new IllegalStateException("closed");
+            }
+            Util.checkOffsetAndCount(kVar.size(), 0, j);
+            if ((j <= this.bytesRemaining ? 1 : null) == null) {
+                throw new ProtocolException("expected " + this.bytesRemaining + " bytes but received " + j);
+            }
+            HttpConnection.this.sink.write(kVar, j);
+            this.bytesRemaining -= j;
+        }
     }
 
-    private class FixedLengthSource extends AbstractSource {
+    class FixedLengthSource extends AbstractSource {
         private long bytesRemaining;
 
-        public FixedLengthSource(long length) throws IOException {
-            super(null);
-            this.bytesRemaining = length;
+        public FixedLengthSource(long j) {
+            super();
+            this.bytesRemaining = j;
             if (this.bytesRemaining == 0) {
                 endOfInput(true);
             }
         }
 
-        public long read(Buffer sink, long byteCount) throws IOException {
+        public void close() {
+            if (!this.closed) {
+                if (!(this.bytesRemaining == 0 || Util.discard(this, 100, TimeUnit.MILLISECONDS))) {
+                    unexpectedEndOfInput();
+                }
+                this.closed = true;
+            }
+        }
+
+        public long read(k kVar, long j) {
             boolean z = false;
-            if (byteCount >= 0) {
+            if (j >= 0) {
                 z = true;
             }
             if (!z) {
-                throw new IllegalArgumentException("byteCount < 0: " + byteCount);
+                throw new IllegalArgumentException("byteCount < 0: " + j);
             } else if (this.closed) {
                 throw new IllegalStateException("closed");
             } else if (this.bytesRemaining == 0) {
                 return -1;
             } else {
-                long read = HttpConnection.this.source.read(sink, Math.min(this.bytesRemaining, byteCount));
+                long read = HttpConnection.this.source.read(kVar, Math.min(this.bytesRemaining, j));
                 if (read == -1) {
                     unexpectedEndOfInput();
                     throw new ProtocolException("unexpected end of stream");
@@ -331,33 +330,33 @@ public final class HttpConnection {
                 return read;
             }
         }
+    }
 
-        public void close() throws IOException {
+    class UnknownLengthSource extends AbstractSource {
+        private boolean inputExhausted;
+
+        private UnknownLengthSource() {
+            super();
+        }
+
+        public void close() {
             if (!this.closed) {
-                if (!(this.bytesRemaining == 0 || Util.discard(this, 100, TimeUnit.MILLISECONDS))) {
+                if (!this.inputExhausted) {
                     unexpectedEndOfInput();
                 }
                 this.closed = true;
             }
         }
-    }
 
-    private class UnknownLengthSource extends AbstractSource {
-        private boolean inputExhausted;
-
-        private UnknownLengthSource() {
-            super(null);
-        }
-
-        public long read(Buffer sink, long byteCount) throws IOException {
-            if (!(byteCount >= 0)) {
-                throw new IllegalArgumentException("byteCount < 0: " + byteCount);
+        public long read(k kVar, long j) {
+            if (!(j >= 0)) {
+                throw new IllegalArgumentException("byteCount < 0: " + j);
             } else if (this.closed) {
                 throw new IllegalStateException("closed");
             } else if (this.inputExhausted) {
                 return -1;
             } else {
-                long read = HttpConnection.this.source.read(sink, byteCount);
+                long read = HttpConnection.this.source.read(kVar, j);
                 if (read != -1) {
                     return read;
                 }
@@ -366,171 +365,69 @@ public final class HttpConnection {
                 return -1;
             }
         }
-
-        public void close() throws IOException {
-            if (!this.closed) {
-                if (!this.inputExhausted) {
-                    unexpectedEndOfInput();
-                }
-                this.closed = true;
-            }
-        }
     }
 
-    public HttpConnection(ConnectionPool pool, Connection connection, Socket socket) throws IOException {
-        this.state = STATE_IDLE;
-        this.onIdle = STATE_IDLE;
-        this.pool = pool;
+    public HttpConnection(ConnectionPool connectionPool, Connection connection, Socket socket) {
+        this.pool = connectionPool;
         this.connection = connection;
         this.socket = socket;
-        this.source = Okio.buffer(Okio.source(socket));
-        this.sink = Okio.buffer(Okio.sink(socket));
+        this.source = j.AE(j.AL(socket));
+        this.sink = j.AF(j.AI(socket));
     }
 
-    public void setTimeouts(int readTimeoutMillis, int writeTimeoutMillis) {
-        if (readTimeoutMillis != 0) {
-            this.source.timeout().timeout((long) readTimeoutMillis, TimeUnit.MILLISECONDS);
-        }
-        if (writeTimeoutMillis != 0) {
-            this.sink.timeout().timeout((long) writeTimeoutMillis, TimeUnit.MILLISECONDS);
-        }
+    public long bufferSize() {
+        return this.source.zK().size();
     }
 
-    public void poolOnIdle() {
-        this.onIdle = STATE_OPEN_REQUEST_BODY;
-        if (this.state == 0) {
-            this.onIdle = STATE_IDLE;
-            Internal.instance.recycle(this.pool, this.connection);
-        }
+    public void closeIfOwnedBy(Object obj) {
+        Internal.instance.closeIfOwnedBy(this.connection, obj);
     }
 
-    public void closeOnIdle() throws IOException {
-        this.onIdle = STATE_WRITING_REQUEST_BODY;
+    public void closeOnIdle() {
+        this.onIdle = 2;
         if (this.state == 0) {
             this.state = STATE_CLOSED;
             this.connection.getSocket().close();
         }
     }
 
+    public void flush() {
+        this.sink.flush();
+    }
+
     public boolean isClosed() {
         return this.state == STATE_CLOSED;
     }
 
-    public void closeIfOwnedBy(Object owner) throws IOException {
-        Internal.instance.closeIfOwnedBy(this.connection, owner);
-    }
-
-    public void flush() throws IOException {
-        this.sink.flush();
-    }
-
-    public long bufferSize() {
-        return this.source.buffer().size();
-    }
-
     public boolean isReadable() {
-        int readTimeout;
+        int soTimeout;
         try {
-            readTimeout = this.socket.getSoTimeout();
-            this.socket.setSoTimeout(STATE_OPEN_REQUEST_BODY);
-            if (this.source.exhausted()) {
-                this.socket.setSoTimeout(readTimeout);
+            soTimeout = this.socket.getSoTimeout();
+            this.socket.setSoTimeout(1);
+            if (this.source.zL()) {
+                this.socket.setSoTimeout(soTimeout);
                 return false;
             }
-            this.socket.setSoTimeout(readTimeout);
+            this.socket.setSoTimeout(soTimeout);
             return true;
         } catch (SocketTimeoutException e) {
             return true;
         } catch (IOException e2) {
             return false;
         } catch (Throwable th) {
-            this.socket.setSoTimeout(readTimeout);
+            this.socket.setSoTimeout(soTimeout);
         }
     }
 
-    public void writeRequest(Headers headers, String requestLine) throws IOException {
-        if (this.state == 0) {
-            this.sink.writeUtf8(requestLine).writeUtf8("\r\n");
-            int size = headers.size();
-            for (int i = STATE_IDLE; i < size; i += STATE_OPEN_REQUEST_BODY) {
-                this.sink.writeUtf8(headers.name(i)).writeUtf8(": ").writeUtf8(headers.value(i)).writeUtf8("\r\n");
-            }
-            this.sink.writeUtf8("\r\n");
-            this.state = STATE_OPEN_REQUEST_BODY;
-            return;
-        }
-        throw new IllegalStateException("state: " + this.state);
-    }
-
-    public Builder readResponse() throws IOException {
-        if (this.state == STATE_OPEN_REQUEST_BODY || this.state == STATE_READ_RESPONSE_HEADERS) {
-            Builder responseBuilder;
-            StatusLine statusLine;
-            do {
-                try {
-                    statusLine = StatusLine.parse(this.source.readUtf8LineStrict());
-                    responseBuilder = new Builder().protocol(statusLine.protocol).code(statusLine.code).message(statusLine.message);
-                    Headers.Builder headersBuilder = new Headers.Builder();
-                    readHeaders(headersBuilder);
-                    headersBuilder.add(OkHeaders.SELECTED_PROTOCOL, statusLine.protocol.toString());
-                    responseBuilder.headers(headersBuilder.build());
-                } catch (EOFException e) {
-                    IOException exception = new IOException("unexpected end of stream on " + this.connection + " (recycle count=" + Internal.instance.recycleCount(this.connection) + ")");
-                    exception.initCause(e);
-                    throw exception;
-                }
-            } while (statusLine.code == 100);
-            this.state = STATE_OPEN_RESPONSE_BODY;
-            return responseBuilder;
-        }
-        throw new IllegalStateException("state: " + this.state);
-    }
-
-    public void readHeaders(Headers.Builder builder) throws IOException {
-        while (true) {
-            String line = this.source.readUtf8LineStrict();
-            if (line.length() != 0) {
-                Internal.instance.addLenient(builder, line);
-            } else {
-                return;
-            }
-        }
-    }
-
-    public Sink newChunkedSink() {
-        if (this.state == STATE_OPEN_REQUEST_BODY) {
-            this.state = STATE_WRITING_REQUEST_BODY;
+    public n newChunkedSink() {
+        if (this.state == 1) {
+            this.state = 2;
             return new ChunkedSink();
         }
         throw new IllegalStateException("state: " + this.state);
     }
 
-    public Sink newFixedLengthSink(long contentLength) {
-        if (this.state == STATE_OPEN_REQUEST_BODY) {
-            this.state = STATE_WRITING_REQUEST_BODY;
-            return new FixedLengthSink(contentLength, null);
-        }
-        throw new IllegalStateException("state: " + this.state);
-    }
-
-    public void writeRequestBody(RetryableSink requestBody) throws IOException {
-        if (this.state == STATE_OPEN_REQUEST_BODY) {
-            this.state = STATE_READ_RESPONSE_HEADERS;
-            requestBody.writeToSocket(this.sink);
-            return;
-        }
-        throw new IllegalStateException("state: " + this.state);
-    }
-
-    public Source newFixedLengthSource(long length) throws IOException {
-        if (this.state == STATE_OPEN_RESPONSE_BODY) {
-            this.state = STATE_READING_RESPONSE_BODY;
-            return new FixedLengthSource(length);
-        }
-        throw new IllegalStateException("state: " + this.state);
-    }
-
-    public Source newChunkedSource(HttpEngine httpEngine) throws IOException {
+    public v newChunkedSource(HttpEngine httpEngine) {
         if (this.state == STATE_OPEN_RESPONSE_BODY) {
             this.state = STATE_READING_RESPONSE_BODY;
             return new ChunkedSource(httpEngine);
@@ -538,10 +435,101 @@ public final class HttpConnection {
         throw new IllegalStateException("state: " + this.state);
     }
 
-    public Source newUnknownLengthSource() throws IOException {
+    public n newFixedLengthSink(long j) {
+        if (this.state == 1) {
+            this.state = 2;
+            return new FixedLengthSink(j);
+        }
+        throw new IllegalStateException("state: " + this.state);
+    }
+
+    public v newFixedLengthSource(long j) {
+        if (this.state == STATE_OPEN_RESPONSE_BODY) {
+            this.state = STATE_READING_RESPONSE_BODY;
+            return new FixedLengthSource(j);
+        }
+        throw new IllegalStateException("state: " + this.state);
+    }
+
+    public v newUnknownLengthSource() {
         if (this.state == STATE_OPEN_RESPONSE_BODY) {
             this.state = STATE_READING_RESPONSE_BODY;
             return new UnknownLengthSource();
+        }
+        throw new IllegalStateException("state: " + this.state);
+    }
+
+    public void poolOnIdle() {
+        this.onIdle = 1;
+        if (this.state == 0) {
+            this.onIdle = 0;
+            Internal.instance.recycle(this.pool, this.connection);
+        }
+    }
+
+    public void readHeaders(Builder builder) {
+        while (true) {
+            String zW = this.source.zW();
+            if (zW.length() != 0) {
+                Internal.instance.addLenient(builder, zW);
+            } else {
+                return;
+            }
+        }
+    }
+
+    public Response.Builder readResponse() {
+        if (this.state == 1 || this.state == STATE_READ_RESPONSE_HEADERS) {
+            Response.Builder message;
+            StatusLine parse;
+            do {
+                try {
+                    parse = StatusLine.parse(this.source.zW());
+                    message = new Response.Builder().protocol(parse.protocol).code(parse.code).message(parse.message);
+                    Builder builder = new Builder();
+                    readHeaders(builder);
+                    builder.add(OkHeaders.SELECTED_PROTOCOL, parse.protocol.toString());
+                    message.headers(builder.build());
+                } catch (Throwable e) {
+                    IOException iOException = new IOException("unexpected end of stream on " + this.connection + " (recycle count=" + Internal.instance.recycleCount(this.connection) + ")");
+                    iOException.initCause(e);
+                    throw iOException;
+                }
+            } while (parse.code == 100);
+            this.state = STATE_OPEN_RESPONSE_BODY;
+            return message;
+        }
+        throw new IllegalStateException("state: " + this.state);
+    }
+
+    public void setTimeouts(int i, int i2) {
+        if (i != 0) {
+            this.source.timeout().timeout((long) i, TimeUnit.MILLISECONDS);
+        }
+        if (i2 != 0) {
+            this.sink.timeout().timeout((long) i2, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    public void writeRequest(Headers headers, String str) {
+        if (this.state == 0) {
+            this.sink.Ac(str).Ac("\r\n");
+            int size = headers.size();
+            for (int i = 0; i < size; i++) {
+                this.sink.Ac(headers.name(i)).Ac(": ").Ac(headers.value(i)).Ac("\r\n");
+            }
+            this.sink.Ac("\r\n");
+            this.state = 1;
+            return;
+        }
+        throw new IllegalStateException("state: " + this.state);
+    }
+
+    public void writeRequestBody(RetryableSink retryableSink) {
+        if (this.state == 1) {
+            this.state = STATE_READ_RESPONSE_HEADERS;
+            retryableSink.writeToSocket(this.sink);
+            return;
         }
         throw new IllegalStateException("state: " + this.state);
     }

@@ -1,13 +1,17 @@
 package com.loc;
 
-import android.content.ContentValues;
-import android.database.Cursor;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 
-/* compiled from: SQlEntity */
-public interface y<T> {
-    ContentValues a();
+class y implements HostnameVerifier {
+    final /* synthetic */ bG lm;
 
-    T a(Cursor cursor);
+    y(bG bGVar) {
+        this.lm = bGVar;
+    }
 
-    String b();
+    public boolean verify(String str, SSLSession sSLSession) {
+        return HttpsURLConnection.getDefaultHostnameVerifier().verify("*.amap.com", sSLSession);
+    }
 }

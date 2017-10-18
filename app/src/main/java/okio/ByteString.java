@@ -1,7 +1,6 @@
 package okio;
 
 import java.io.EOFException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,180 +11,76 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class ByteString implements Serializable {
-    public static final ByteString EMPTY;
-    static final char[] HEX_DIGITS;
     private static final long serialVersionUID = 1;
+    static final char[] uC = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    public static final ByteString uD = Ar(new byte[0]);
     final byte[] data;
-    transient int hashCode;
-    transient String utf8;
+    transient int uE;
+    transient String uF;
 
-    static {
-        HEX_DIGITS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-        EMPTY = of(new byte[0]);
+    ByteString(byte[] bArr) {
+        this.data = bArr;
     }
 
-    ByteString(byte[] data) {
-        this.data = data;
-    }
-
-    public static ByteString of(byte... data) {
-        if (data != null) {
-            return new ByteString((byte[]) data.clone());
+    public static ByteString Ar(byte... bArr) {
+        if (bArr != null) {
+            return new ByteString((byte[]) bArr.clone());
         }
         throw new IllegalArgumentException("data == null");
     }
 
-    public static ByteString encodeUtf8(String s) {
-        if (s != null) {
-            ByteString byteString = new ByteString(s.getBytes(Util.UTF_8));
-            byteString.utf8 = s;
+    public static ByteString As(String str) {
+        if (str != null) {
+            ByteString byteString = new ByteString(str.getBytes(r.UTF_8));
+            byteString.uF = str;
             return byteString;
         }
         throw new IllegalArgumentException("s == null");
     }
 
-    public String utf8() {
-        String str = this.utf8;
-        if (str != null) {
-            return str;
-        }
-        str = new String(this.data, Util.UTF_8);
-        this.utf8 = str;
-        return str;
-    }
-
-    public String base64() {
-        return Base64.encode(this.data);
-    }
-
-    public ByteString md5() {
-        return digest("MD5");
-    }
-
-    private ByteString digest(String digest) {
+    private ByteString Aw(String str) {
         try {
-            return of(MessageDigest.getInstance(digest).digest(this.data));
+            return Ar(MessageDigest.getInstance(str).digest(this.data));
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         }
     }
 
-    public static ByteString decodeBase64(String base64) {
-        if (base64 != null) {
-            byte[] decoded = Base64.decode(base64);
-            if (decoded == null) {
-                return null;
-            }
-            return new ByteString(decoded);
+    public static ByteString Ax(String str) {
+        if (str != null) {
+            byte[] Bp = D.Bp(str);
+            return Bp == null ? null : new ByteString(Bp);
+        } else {
+            throw new IllegalArgumentException("base64 == null");
         }
-        throw new IllegalArgumentException("base64 == null");
     }
 
-    public String hex() {
-        char[] result = new char[(this.data.length * 2)];
-        int c = 0;
-        for (byte b : this.data) {
-            int i = c + 1;
-            result[c] = (char) HEX_DIGITS[(b >> 4) & 15];
-            c = i + 1;
-            result[i] = (char) HEX_DIGITS[b & 15];
-        }
-        return new String(result);
-    }
-
-    public static ByteString read(InputStream in, int byteCount) throws IOException {
-        if (in == null) {
+    public static ByteString Az(InputStream inputStream, int i) {
+        int i2 = 0;
+        if (inputStream == null) {
             throw new IllegalArgumentException("in == null");
-        } else if (byteCount >= 0) {
-            byte[] result = new byte[byteCount];
-            int offset = 0;
-            while (offset < byteCount) {
-                int read = in.read(result, offset, byteCount - offset);
+        } else if (i >= 0) {
+            byte[] bArr = new byte[i];
+            while (i2 < i) {
+                int read = inputStream.read(bArr, i2, i - i2);
                 if (read != -1) {
-                    offset += read;
+                    i2 += read;
                 } else {
                     throw new EOFException();
                 }
             }
-            return new ByteString(result);
+            return new ByteString(bArr);
         } else {
-            throw new IllegalArgumentException("byteCount < 0: " + byteCount);
+            throw new IllegalArgumentException("byteCount < 0: " + i);
         }
     }
 
-    public ByteString toAsciiLowercase() {
-        for (int i = 0; i < this.data.length; i++) {
-            byte c = this.data[i];
-            if (c >= (byte) 65 && c <= (byte) 90) {
-                byte[] lowercase = (byte[]) this.data.clone();
-                int i2 = i + 1;
-                lowercase[i] = (byte) ((byte) (c + 32));
-                for (i = i2; i < lowercase.length; i++) {
-                    c = lowercase[i];
-                    if (c >= (byte) 65 && c <= (byte) 90) {
-                        lowercase[i] = (byte) ((byte) (c + 32));
-                    }
-                }
-                return new ByteString(lowercase);
-            }
-        }
-        return this;
-    }
-
-    public byte getByte(int pos) {
-        return this.data[pos];
-    }
-
-    public int size() {
-        return this.data.length;
-    }
-
-    public byte[] toByteArray() {
-        return (byte[]) this.data.clone();
-    }
-
-    void write(Buffer buffer) {
-        buffer.write(this.data, 0, this.data.length);
-    }
-
-    public boolean rangeEquals(int offset, byte[] other, int otherOffset, int byteCount) {
-        return offset <= this.data.length - byteCount && otherOffset <= other.length - byteCount && Util.arrayRangeEquals(this.data, offset, other, otherOffset, byteCount);
-    }
-
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        boolean z = (o instanceof ByteString) && ((ByteString) o).size() == this.data.length && ((ByteString) o).rangeEquals(0, this.data, 0, this.data.length);
-        return z;
-    }
-
-    public int hashCode() {
-        int i = this.hashCode;
-        if (i != 0) {
-            return i;
-        }
-        i = Arrays.hashCode(this.data);
-        this.hashCode = i;
-        return i;
-    }
-
-    public String toString() {
-        if (this.data.length == 0) {
-            return "ByteString[size=0]";
-        }
-        if (this.data.length > 16) {
-            return String.format("ByteString[size=%s md5=%s]", new Object[]{Integer.valueOf(this.data.length), md5().hex()});
-        }
-        return String.format("ByteString[size=%s data=%s]", new Object[]{Integer.valueOf(this.data.length), hex()});
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException {
-        ByteString byteString = read(in, in.readInt());
+    private void readObject(ObjectInputStream objectInputStream) {
+        ByteString Az = Az(objectInputStream, objectInputStream.readInt());
         try {
-            Field field = ByteString.class.getDeclaredField("data");
-            field.setAccessible(true);
-            field.set(this, byteString.data);
+            Field declaredField = ByteString.class.getDeclaredField("data");
+            declaredField.setAccessible(true);
+            declaredField.set(this, Az.data);
         } catch (NoSuchFieldException e) {
             throw new AssertionError();
         } catch (IllegalAccessException e2) {
@@ -193,8 +88,110 @@ public class ByteString implements Serializable {
         }
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeInt(this.data.length);
-        out.write(this.data);
+    private void writeObject(ObjectOutputStream objectOutputStream) {
+        objectOutputStream.writeInt(this.data.length);
+        objectOutputStream.write(this.data);
+    }
+
+    public ByteString AA() {
+        for (int i = 0; i < this.data.length; i++) {
+            byte b = this.data[i];
+            if (b >= (byte) 65 && b <= (byte) 90) {
+                byte[] bArr = (byte[]) this.data.clone();
+                int i2 = i + 1;
+                bArr[i] = (byte) ((byte) (b + 32));
+                for (i = i2; i < bArr.length; i++) {
+                    byte b2 = bArr[i];
+                    if (b2 >= (byte) 65 && b2 <= (byte) 90) {
+                        bArr[i] = (byte) ((byte) (b2 + 32));
+                    }
+                }
+                return new ByteString(bArr);
+            }
+        }
+        return this;
+    }
+
+    public byte[] AB() {
+        return (byte[]) this.data.clone();
+    }
+
+    void AC(k kVar) {
+        kVar.write(this.data, 0, this.data.length);
+    }
+
+    public boolean AD(int i, byte[] bArr, int i2, int i3) {
+        return i <= this.data.length - i3 && i2 <= bArr.length - i3 && r.Bm(this.data, i, bArr, i2, i3);
+    }
+
+    public String At() {
+        String str = this.uF;
+        if (str != null) {
+            return str;
+        }
+        str = new String(this.data, r.UTF_8);
+        this.uF = str;
+        return str;
+    }
+
+    public String Au() {
+        return D.Bq(this.data);
+    }
+
+    public ByteString Av() {
+        return Aw("MD5");
+    }
+
+    public String Ay() {
+        int i = 0;
+        char[] cArr = new char[(this.data.length * 2)];
+        byte[] bArr = this.data;
+        int length = bArr.length;
+        int i2 = 0;
+        while (i < length) {
+            byte b = bArr[i];
+            int i3 = i2 + 1;
+            cArr[i2] = (char) uC[(b >> 4) & 15];
+            i2 = i3 + 1;
+            cArr[i3] = (char) uC[b & 15];
+            i++;
+        }
+        return new String(cArr);
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        boolean z = (obj instanceof ByteString) && ((ByteString) obj).size() == this.data.length && ((ByteString) obj).AD(0, this.data, 0, this.data.length);
+        return z;
+    }
+
+    public byte getByte(int i) {
+        return this.data[i];
+    }
+
+    public int hashCode() {
+        int i = this.uE;
+        if (i != 0) {
+            return i;
+        }
+        i = Arrays.hashCode(this.data);
+        this.uE = i;
+        return i;
+    }
+
+    public int size() {
+        return this.data.length;
+    }
+
+    public String toString() {
+        if (this.data.length == 0) {
+            return "ByteString[size=0]";
+        }
+        if (this.data.length > 16) {
+            return String.format("ByteString[size=%s md5=%s]", new Object[]{Integer.valueOf(this.data.length), Av().Ay()});
+        }
+        return String.format("ByteString[size=%s data=%s]", new Object[]{Integer.valueOf(this.data.length), Ay()});
     }
 }

@@ -1,414 +1,183 @@
 package com.loc;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.TrafficStats;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
-import android.os.Build.VERSION;
-import android.os.Environment;
-import android.provider.Settings.System;
-import android.telephony.CellLocation;
-import android.telephony.TelephonyManager;
-import android.telephony.cdma.CdmaCellLocation;
-import android.telephony.gsm.GsmCellLocation;
-import android.text.TextUtils;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-/* compiled from: DeviceInfo */
 public class n {
-    private static String a;
-    private static boolean b;
-    private static String c;
-    private static String d;
-    private static String e;
-    private static String f;
+    public int c = 0;
+    public int e = -1;
+    public double kN = 0.0d;
+    public double kO = 0.0d;
+    public String kP = "0";
+    final /* synthetic */ bg kQ;
 
-    /* compiled from: DeviceInfo */
-    static class a extends DefaultHandler {
-        a() {
-        }
-
-        public void startElement(String str, String str2, String str3, Attributes attributes) throws SAXException {
-            if (str2.equals("string") && "UTDID".equals(attributes.getValue("name"))) {
-                n.b = true;
-            }
-        }
-
-        public void characters(char[] cArr, int i, int i2) throws SAXException {
-            if (n.b) {
-                n.a = new String(cArr, i, i2);
-            }
-        }
-
-        public void endElement(String str, String str2, String str3) throws SAXException {
-            n.b = false;
-        }
+    public n(bg bgVar, double d, double d2) {
+        this.kQ = bgVar;
+        this.kN = d;
+        this.kO = d2;
     }
 
-    static {
-        a = "";
-        b = false;
-        c = "";
-        d = "";
-        e = "";
-        f = "";
+    public n(bg bgVar, double d, double d2, int i, int i2) {
+        this.kQ = bgVar;
+        this.kN = d;
+        this.kO = d2;
+        this.c = i;
+        this.e = i2;
     }
 
-    public static void a() {
-        try {
-            if (VERSION.SDK_INT > 14) {
-                TrafficStats.class.getDeclaredMethod("setThreadStatsTag", new Class[]{Integer.TYPE}).invoke(null, new Object[]{Integer.valueOf(40964)});
-            }
-        } catch (Throwable e) {
-            v.a(e, "DeviceInfo", "setTraficTag");
-        } catch (Throwable e2) {
-            v.a(e2, "DeviceInfo", "setTraficTag");
-        } catch (Throwable e22) {
-            v.a(e22, "DeviceInfo", "setTraficTag");
-        } catch (Throwable e222) {
-            v.a(e222, "DeviceInfo", "setTraficTag");
-        } catch (Throwable e2222) {
-            v.a(e2222, "DeviceInfo", "setTraficTag");
-        }
+    public n(bg bgVar, double d, double d2, int i, String str, double d3, int i2) {
+        this.kQ = bgVar;
+        this.kN = d;
+        this.kO = d2;
+        this.kP = str;
+        this.c = i;
+        this.e = i2;
     }
 
-    public static String a(Context context) {
-        try {
-            if (a != null) {
-                if (!"".equals(a)) {
-                    return a;
-                }
-            }
-            if (context.checkCallingOrSelfPermission("android.permission.WRITE_SETTINGS") == 0) {
-                a = System.getString(context.getContentResolver(), "mqBRboGZkQPcAkyk");
-            }
-            if (a != null) {
-                if (!"".equals(a)) {
-                    return a;
-                }
-            }
-        } catch (Throwable th) {
-            th.printStackTrace();
-        }
-        try {
-            if ("mounted".equals(Environment.getExternalStorageState())) {
-                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/.UTSystemConfig/Global/Alvin2.xml");
-                if (file.exists()) {
-                    SAXParserFactory.newInstance().newSAXParser().parse(file, new a());
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e2) {
-            e2.printStackTrace();
-        } catch (SAXException e3) {
-            e3.printStackTrace();
-        } catch (IOException e4) {
-            e4.printStackTrace();
-        } catch (Throwable th2) {
-            th2.printStackTrace();
-        }
-        return a;
+    /* JADX WARNING: inconsistent code. */
+    /* Code decompiled incorrectly, please refer to instructions dump. */
+    private boolean lN(com.loc.n r13) {
+        /*
+        r12 = this;
+        r10 = 4662219572839972864; // 0x40b3880000000000 float:0.0 double:5000.0;
+        r8 = 4647503709213818880; // 0x407f400000000000 float:0.0 double:500.0;
+        r6 = 4609434218613702656; // 0x3ff8000000000000 float:0.0 double:1.5;
+        r0 = 1;
+        r1 = 0;
+        r4 = r12.lO(r13);
+        r2 = (r4 > r8 ? 1 : (r4 == r8 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0017;
+    L_0x0016:
+        return r0;
+    L_0x0017:
+        r2 = r12.e;
+        if (r2 > 0) goto L_0x003d;
+    L_0x001b:
+        r2 = r12.e;
+        if (r2 == 0) goto L_0x0062;
+    L_0x001f:
+        r2 = r12.e;
+        if (r2 <= 0) goto L_0x0076;
+    L_0x0023:
+        r2 = (r4 > r10 ? 1 : (r4 == r10 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0094;
+    L_0x0027:
+        r2 = r0;
+    L_0x0028:
+        if (r2 != 0) goto L_0x003b;
+    L_0x002a:
+        r2 = r12.c;
+        r2 = (double) r2;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0096;
+    L_0x0031:
+        r2 = r0;
+    L_0x0032:
+        if (r2 != 0) goto L_0x003b;
+    L_0x0034:
+        r2 = r13.c;
+        r2 = (double) r2;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x003c;
+    L_0x003b:
+        r1 = r0;
+    L_0x003c:
+        return r1;
+    L_0x003d:
+        r2 = r13.e;
+        if (r2 != 0) goto L_0x001b;
+    L_0x0041:
+        r2 = r12.e;
+        if (r2 != r0) goto L_0x0067;
+    L_0x0045:
+        r2 = 4658815484840378368; // 0x40a7700000000000 float:0.0 double:3000.0;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0072;
+    L_0x004e:
+        r2 = r12.c;
+        r2 = (double) r2;
+        r2 = r2 * r6;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0070;
+    L_0x0056:
+        r2 = r0;
+    L_0x0057:
+        if (r2 != 0) goto L_0x0061;
+    L_0x0059:
+        r2 = r13.c;
+        r2 = (double) r2;
+        r2 = r2 * r6;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0072;
+    L_0x0061:
+        return r0;
+    L_0x0062:
+        r2 = r13.e;
+        if (r2 > 0) goto L_0x0041;
+    L_0x0066:
+        goto L_0x001f;
+    L_0x0067:
+        r2 = r13.e;
+        if (r2 == r0) goto L_0x0045;
+    L_0x006b:
+        r2 = (r4 > r10 ? 1 : (r4 == r10 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0074;
+    L_0x006f:
+        return r0;
+    L_0x0070:
+        r2 = r1;
+        goto L_0x0057;
+    L_0x0072:
+        r0 = r1;
+        goto L_0x0061;
+    L_0x0074:
+        r0 = r1;
+        goto L_0x006f;
+    L_0x0076:
+        r2 = r13.e;
+        if (r2 > 0) goto L_0x0023;
+    L_0x007a:
+        r2 = r12.c;
+        r2 = (double) r2;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0098;
+    L_0x0081:
+        r2 = r0;
+    L_0x0082:
+        if (r2 != 0) goto L_0x0092;
+    L_0x0084:
+        r2 = r13.c;
+        r2 = (double) r2;
+        r2 = (r4 > r2 ? 1 : (r4 == r2 ? 0 : -1));
+        if (r2 >= 0) goto L_0x009a;
+    L_0x008b:
+        r2 = r0;
+    L_0x008c:
+        if (r2 != 0) goto L_0x0092;
+    L_0x008e:
+        r2 = (r4 > r8 ? 1 : (r4 == r8 ? 0 : -1));
+        if (r2 >= 0) goto L_0x0093;
+    L_0x0092:
+        r1 = r0;
+    L_0x0093:
+        return r1;
+    L_0x0094:
+        r2 = r1;
+        goto L_0x0028;
+    L_0x0096:
+        r2 = r1;
+        goto L_0x0032;
+    L_0x0098:
+        r2 = r1;
+        goto L_0x0082;
+    L_0x009a:
+        r2 = r1;
+        goto L_0x008c;
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.loc.n.lN(com.loc.n):boolean");
     }
 
-    static String b(Context context) {
-        if (context != null) {
-            String bssid;
-            try {
-                if (context.checkCallingOrSelfPermission("android.permission.ACCESS_WIFI_STATE") == 0) {
-                    WifiManager wifiManager = (WifiManager) context.getSystemService("wifi");
-                    if (wifiManager.isWifiEnabled()) {
-                        bssid = wifiManager.getConnectionInfo().getBSSID();
-                    } else {
-                        bssid = null;
-                    }
-                    return bssid;
-                }
-            } catch (Throwable th) {
-                v.a(th, "DeviceInfo", "getWifiMacs");
-                bssid = null;
-            }
-        }
-        return null;
-    }
-
-    static String c(Context context) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (context != null && context.checkCallingOrSelfPermission("android.permission.ACCESS_WIFI_STATE") == 0) {
-            WifiManager wifiManager = (WifiManager) context.getSystemService("wifi");
-            if (wifiManager.isWifiEnabled()) {
-                List scanResults = wifiManager.getScanResults();
-                if (scanResults == null || scanResults.size() == 0) {
-                    return stringBuilder.toString();
-                }
-                List a = a(scanResults);
-                Object obj = 1;
-                int i = 0;
-                while (i < a.size() && i < 7) {
-                    ScanResult scanResult = (ScanResult) a.get(i);
-                    if (obj == null) {
-                        stringBuilder.append(";");
-                    } else {
-                        obj = null;
-                    }
-                    stringBuilder.append(scanResult.BSSID);
-                    i++;
-                }
-            }
-        } else {
-            try {
-                return stringBuilder.toString();
-            } catch (Throwable th) {
-                v.a(th, "DeviceInfo", "getWifiMacs");
-            }
-        }
-        return stringBuilder.toString();
-    }
-
-    static String d(Context context) {
-        try {
-            if (c != null) {
-                if (!"".equals(c)) {
-                    return c;
-                }
-            }
-            if (context.checkCallingOrSelfPermission("android.permission.ACCESS_WIFI_STATE") != 0) {
-                return c;
-            }
-            c = ((WifiManager) context.getSystemService("wifi")).getConnectionInfo().getMacAddress();
-            return c;
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getDeviceMac");
-        }
-    }
-
-    static String[] e(Context context) {
-        try {
-            if (context.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE") == 0 && context.checkCallingOrSelfPermission("android.permission.ACCESS_COARSE_LOCATION") == 0) {
-                CellLocation cellLocation = ((TelephonyManager) context.getSystemService("phone")).getCellLocation();
-                int cid;
-                int lac;
-                if (cellLocation instanceof GsmCellLocation) {
-                    GsmCellLocation gsmCellLocation = (GsmCellLocation) cellLocation;
-                    cid = gsmCellLocation.getCid();
-                    lac = gsmCellLocation.getLac();
-                    return new String[]{lac + "||" + cid, "gsm"};
-                }
-                if (cellLocation instanceof CdmaCellLocation) {
-                    CdmaCellLocation cdmaCellLocation = (CdmaCellLocation) cellLocation;
-                    cid = cdmaCellLocation.getSystemId();
-                    int networkId = cdmaCellLocation.getNetworkId();
-                    lac = cdmaCellLocation.getBaseStationId();
-                    if (cid >= 0 && networkId >= 0 && lac >= 0) {
-                    }
-                    return new String[]{cid + "||" + networkId + "||" + lac, "cdma"};
-                }
-                return new String[]{"", ""};
-            }
-            return new String[]{"", ""};
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "cellInfo");
-        }
-    }
-
-    static String f(Context context) {
-        String str = "";
-        String networkOperator;
-        try {
-            if (context.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE") != 0) {
-                return str;
-            }
-            networkOperator = ((TelephonyManager) context.getSystemService("phone")).getNetworkOperator();
-            if (TextUtils.isEmpty(networkOperator) && networkOperator.length() < 3) {
-                return str;
-            }
-            networkOperator = networkOperator.substring(3);
-            return networkOperator;
-        } catch (Throwable th) {
-            th.printStackTrace();
-            v.a(th, "DeviceInfo", "getMNC");
-            networkOperator = str;
-        }
-    }
-
-    public static int g(Context context) {
-        try {
-            return r(context);
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getNetWorkType");
-            return -1;
-        }
-    }
-
-    public static int h(Context context) {
-        try {
-            return q(context);
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getActiveNetWorkType");
-            return -1;
-        }
-    }
-
-    public static NetworkInfo i(Context context) {
-        if (context.checkCallingOrSelfPermission("android.permission.ACCESS_NETWORK_STATE") != 0) {
-            return null;
-        }
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService("connectivity");
-        if (connectivityManager != null) {
-            return connectivityManager.getActiveNetworkInfo();
-        }
-        return null;
-    }
-
-    static String j(Context context) {
-        String extraInfo;
-        try {
-            NetworkInfo i = i(context);
-            if (i == null) {
-                return null;
-            }
-            extraInfo = i.getExtraInfo();
-            return extraInfo;
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getNetworkExtraInfo");
-            extraInfo = null;
-        }
-    }
-
-    static String k(Context context) {
-        try {
-            if (d != null) {
-                if (!"".equals(d)) {
-                    return d;
-                }
-            }
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            ((WindowManager) context.getSystemService("window")).getDefaultDisplay().getMetrics(displayMetrics);
-            int i = displayMetrics.widthPixels;
-            int i2 = displayMetrics.heightPixels;
-            d = i2 <= i ? i2 + "*" + i : i + "*" + i2;
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getReslution");
-        }
-        return d;
-    }
-
-    public static String l(Context context) {
-        try {
-            if (e != null) {
-                if (!"".equals(e)) {
-                    return e;
-                }
-            }
-            if (context.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE") != 0) {
-                return e;
-            }
-            e = ((TelephonyManager) context.getSystemService("phone")).getDeviceId();
-            if (e == null) {
-                e = "";
-            }
-            return e;
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getDeviceID");
-        }
-    }
-
-    public static String m(Context context) {
-        String str = "";
-        try {
-            return o(context);
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getSubscriberId");
-            return str;
-        }
-    }
-
-    static String n(Context context) {
-        try {
-            return p(context);
-        } catch (Throwable th) {
-            v.a(th, "DeviceInfo", "getNetworkOperatorName");
-            return "";
-        }
-    }
-
-    private static String o(Context context) {
-        if (f != null && !"".equals(f)) {
-            return f;
-        }
-        if (context.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE") != 0) {
-            return f;
-        }
-        f = ((TelephonyManager) context.getSystemService("phone")).getSubscriberId();
-        if (f == null) {
-            f = "";
-        }
-        return f;
-    }
-
-    private static String p(Context context) {
-        if (context.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE") != 0) {
-            return null;
-        }
-        String networkOperatorName;
-        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService("phone");
-        CharSequence simOperatorName = telephonyManager.getSimOperatorName();
-        if (TextUtils.isEmpty(simOperatorName)) {
-            networkOperatorName = telephonyManager.getNetworkOperatorName();
-        } else {
-            networkOperatorName = simOperatorName;
-        }
-        return networkOperatorName;
-    }
-
-    private static int q(Context context) {
-        if (context == null || context.checkCallingOrSelfPermission("android.permission.ACCESS_NETWORK_STATE") != 0) {
-            return -1;
-        }
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService("connectivity");
-        if (connectivityManager == null) {
-            return -1;
-        }
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        if (activeNetworkInfo != null) {
-            return activeNetworkInfo.getType();
-        }
-        return -1;
-    }
-
-    private static int r(Context context) {
-        if (context.checkCallingOrSelfPermission("android.permission.READ_PHONE_STATE") == 0) {
-            return ((TelephonyManager) context.getSystemService("phone")).getNetworkType();
-        }
-        return -1;
-    }
-
-    private static List<ScanResult> a(List<ScanResult> list) {
-        int size = list.size();
-        for (int i = 0; i < size - 1; i++) {
-            for (int i2 = 1; i2 < size - i; i2++) {
-                if (((ScanResult) list.get(i2 - 1)).level > ((ScanResult) list.get(i2)).level) {
-                    ScanResult scanResult = (ScanResult) list.get(i2 - 1);
-                    list.set(i2 - 1, list.get(i2));
-                    list.set(i2, scanResult);
-                }
-            }
-        }
-        return list;
+    private double lO(n nVar) {
+        double d = (((90.0d - this.kN) * 21412.0d) / 90.0d) + 6356725.0d;
+        double cos = (Math.cos((this.kN * 3.1415926535898d) / 180.0d) * d) * (((nVar.kO - this.kO) * 3.1415926535898d) / 180.0d);
+        d *= ((nVar.kN - this.kN) * 3.1415926535898d) / 180.0d;
+        return Math.sqrt((d * d) + (cos * cos));
     }
 }

@@ -1,37 +1,35 @@
 package com.squareup.okhttp.internal.spdy;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.List;
-
-import okio.Buffer;
+import okio.k;
 
 public interface FrameWriter extends Closeable {
-    void ackSettings(Settings settings) throws IOException;
+    void ackSettings(Settings settings);
 
-    void connectionPreface() throws IOException;
+    void connectionPreface();
 
-    void data(boolean z, int i, Buffer buffer, int i2) throws IOException;
+    void data(boolean z, int i, k kVar, int i2);
 
-    void flush() throws IOException;
+    void flush();
 
-    void goAway(int i, ErrorCode errorCode, byte[] bArr) throws IOException;
+    void goAway(int i, ErrorCode errorCode, byte[] bArr);
 
-    void headers(int i, List<Header> list) throws IOException;
+    void headers(int i, List list);
 
     int maxDataLength();
 
-    void ping(boolean z, int i, int i2) throws IOException;
+    void ping(boolean z, int i, int i2);
 
-    void pushPromise(int i, int i2, List<Header> list) throws IOException;
+    void pushPromise(int i, int i2, List list);
 
-    void rstStream(int i, ErrorCode errorCode) throws IOException;
+    void rstStream(int i, ErrorCode errorCode);
 
-    void settings(Settings settings) throws IOException;
+    void settings(Settings settings);
 
-    void synReply(boolean z, int i, List<Header> list) throws IOException;
+    void synReply(boolean z, int i, List list);
 
-    void synStream(boolean z, boolean z2, int i, int i2, List<Header> list) throws IOException;
+    void synStream(boolean z, boolean z2, int i, int i2, List list);
 
-    void windowUpdate(int i, long j) throws IOException;
+    void windowUpdate(int i, long j);
 }

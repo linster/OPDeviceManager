@@ -25,11 +25,7 @@ public final class Settings {
     private int persistValue;
     private int persisted;
     private int set;
-    private final int[] values;
-
-    public Settings() {
-        this.values = new int[FLOW_CONTROL_OPTIONS];
-    }
+    private final int[] values = new int[10];
 
     void clear() {
         this.persisted = 0;
@@ -38,124 +34,112 @@ public final class Settings {
         Arrays.fill(this.values, 0);
     }
 
-    Settings set(int id, int idFlags, int value) {
-        if (id >= this.values.length) {
+    int flags(int i) {
+        int i2 = 0;
+        if (isPersisted(i)) {
+            i2 = 2;
+        }
+        return !persistValue(i) ? i2 : i2 | 1;
+    }
+
+    int get(int i) {
+        return this.values[i];
+    }
+
+    int getClientCertificateVectorSize(int i) {
+        return (this.set & 256) == 0 ? i : this.values[CLIENT_CERTIFICATE_VECTOR_SIZE];
+    }
+
+    int getCurrentCwnd(int i) {
+        return (this.set & 32) == 0 ? i : this.values[5];
+    }
+
+    int getDownloadBandwidth(int i) {
+        return (this.set & MAX_CONCURRENT_STREAMS) == 0 ? i : this.values[2];
+    }
+
+    int getDownloadRetransRate(int i) {
+        return (this.set & 64) == 0 ? i : this.values[6];
+    }
+
+    boolean getEnablePush(boolean z) {
+        boolean z2 = (this.set & MAX_CONCURRENT_STREAMS) == 0 ? z : this.values[2];
+        return z2;
+    }
+
+    int getHeaderTableSize() {
+        return (this.set & 2) == 0 ? -1 : this.values[1];
+    }
+
+    int getInitialWindowSize(int i) {
+        return (this.set & 128) == 0 ? i : this.values[INITIAL_WINDOW_SIZE];
+    }
+
+    int getMaxConcurrentStreams(int i) {
+        return (this.set & 16) == 0 ? i : this.values[MAX_CONCURRENT_STREAMS];
+    }
+
+    int getMaxFrameSize(int i) {
+        return (this.set & 32) == 0 ? i : this.values[5];
+    }
+
+    int getMaxHeaderListSize(int i) {
+        return (this.set & 64) == 0 ? i : this.values[6];
+    }
+
+    int getRoundTripTime(int i) {
+        return (this.set & CLIENT_CERTIFICATE_VECTOR_SIZE) == 0 ? i : this.values[ROUND_TRIP_TIME];
+    }
+
+    int getUploadBandwidth(int i) {
+        return (this.set & 2) == 0 ? i : this.values[1];
+    }
+
+    boolean isFlowControlDisabled() {
+        return (((this.set & 1024) == 0 ? 0 : this.values[10]) & 1) != 0;
+    }
+
+    boolean isPersisted(int i) {
+        return ((1 << i) & this.persisted) != 0;
+    }
+
+    boolean isSet(int i) {
+        return ((1 << i) & this.set) != 0;
+    }
+
+    void merge(Settings settings) {
+        for (int i = 0; i < 10; i++) {
+            if (settings.isSet(i)) {
+                set(i, settings.flags(i), settings.get(i));
+            }
+        }
+    }
+
+    boolean persistValue(int i) {
+        return ((1 << i) & this.persistValue) != 0;
+    }
+
+    Settings set(int i, int i2, int i3) {
+        if (i >= this.values.length) {
             return this;
         }
-        int bit = UPLOAD_BANDWIDTH << id;
-        this.set |= bit;
-        if ((idFlags & UPLOAD_BANDWIDTH) == 0) {
-            this.persistValue &= bit ^ -1;
+        int i4 = 1 << i;
+        this.set |= i4;
+        if ((i2 & 1) == 0) {
+            this.persistValue &= i4 ^ -1;
         } else {
-            this.persistValue |= bit;
+            this.persistValue |= i4;
         }
-        if ((idFlags & PERSISTED) == 0) {
-            this.persisted &= bit ^ -1;
+        if ((i2 & 2) == 0) {
+            this.persisted = (i4 ^ -1) & this.persisted;
         } else {
-            this.persisted |= bit;
+            this.persisted = i4 | this.persisted;
         }
-        this.values[id] = value;
+        this.values[i] = i3;
         return this;
-    }
-
-    boolean isSet(int id) {
-        if ((this.set & (UPLOAD_BANDWIDTH << id)) == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    int get(int id) {
-        return this.values[id];
-    }
-
-    int flags(int id) {
-        int result = 0;
-        if (isPersisted(id)) {
-            result = PERSISTED;
-        }
-        if (persistValue(id)) {
-            return result | UPLOAD_BANDWIDTH;
-        }
-        return result;
     }
 
     int size() {
         return Integer.bitCount(this.set);
-    }
-
-    int getUploadBandwidth(int defaultValue) {
-        return (this.set & PERSISTED) == 0 ? defaultValue : this.values[UPLOAD_BANDWIDTH];
-    }
-
-    int getHeaderTableSize() {
-        return (this.set & PERSISTED) == 0 ? -1 : this.values[UPLOAD_BANDWIDTH];
-    }
-
-    int getDownloadBandwidth(int defaultValue) {
-        return (this.set & MAX_CONCURRENT_STREAMS) == 0 ? defaultValue : this.values[PERSISTED];
-    }
-
-    boolean getEnablePush(boolean defaultValue) {
-        boolean z = (this.set & MAX_CONCURRENT_STREAMS) == 0 ? !defaultValue ? false : UPLOAD_BANDWIDTH : this.values[PERSISTED];
-        return z == UPLOAD_BANDWIDTH;
-    }
-
-    int getRoundTripTime(int defaultValue) {
-        return (this.set & CLIENT_CERTIFICATE_VECTOR_SIZE) == 0 ? defaultValue : this.values[ROUND_TRIP_TIME];
-    }
-
-    int getMaxConcurrentStreams(int defaultValue) {
-        return (this.set & 16) == 0 ? defaultValue : this.values[MAX_CONCURRENT_STREAMS];
-    }
-
-    int getCurrentCwnd(int defaultValue) {
-        return (this.set & 32) == 0 ? defaultValue : this.values[MAX_FRAME_SIZE];
-    }
-
-    int getMaxFrameSize(int defaultValue) {
-        return (this.set & 32) == 0 ? defaultValue : this.values[MAX_FRAME_SIZE];
-    }
-
-    int getDownloadRetransRate(int defaultValue) {
-        return (this.set & 64) == 0 ? defaultValue : this.values[MAX_HEADER_LIST_SIZE];
-    }
-
-    int getMaxHeaderListSize(int defaultValue) {
-        return (this.set & 64) == 0 ? defaultValue : this.values[MAX_HEADER_LIST_SIZE];
-    }
-
-    int getInitialWindowSize(int defaultValue) {
-        return (this.set & 128) == 0 ? defaultValue : this.values[INITIAL_WINDOW_SIZE];
-    }
-
-    int getClientCertificateVectorSize(int defaultValue) {
-        return (this.set & 256) == 0 ? defaultValue : this.values[CLIENT_CERTIFICATE_VECTOR_SIZE];
-    }
-
-    boolean isFlowControlDisabled() {
-        return (((this.set & 1024) == 0 ? 0 : this.values[FLOW_CONTROL_OPTIONS]) & UPLOAD_BANDWIDTH) != 0;
-    }
-
-    boolean persistValue(int id) {
-        if ((this.persistValue & (UPLOAD_BANDWIDTH << id)) == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    boolean isPersisted(int id) {
-        if ((this.persisted & (UPLOAD_BANDWIDTH << id)) == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    void merge(Settings other) {
-        for (int i = 0; i < FLOW_CONTROL_OPTIONS; i += UPLOAD_BANDWIDTH) {
-            if (other.isSet(i)) {
-                set(i, other.flags(i), other.get(i));
-            }
-        }
     }
 }

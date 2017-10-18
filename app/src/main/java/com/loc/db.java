@@ -7,23 +7,17 @@ import java.util.ArrayList;
 
 /* compiled from: Unknown */
 final class db implements Serializable {
-    protected short a;
-    protected int b;
-    protected byte c;
-    protected byte d;
-    protected ArrayList e;
-    private byte f;
+    protected short a = (short) 0;
+    protected int b = 0;
+    protected byte c = (byte) 0;
+    protected byte d = (byte) 0;
+    protected ArrayList e = new ArrayList();
+    private byte f = (byte) 2;
 
     db() {
-        this.f = (byte) 2;
-        this.a = (short) 0;
-        this.b = 0;
-        this.c = (byte) 0;
-        this.d = (byte) 0;
-        this.e = new ArrayList();
     }
 
-    protected final Boolean a(DataOutputStream dataOutputStream) {
+    protected final Boolean ll(DataOutputStream dataOutputStream) {
         try {
             dataOutputStream.writeByte(this.f);
             dataOutputStream.writeShort(this.a);

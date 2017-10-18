@@ -1,128 +1,120 @@
 package com.loc;
 
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
-import java.security.MessageDigest;
-import java.util.Locale;
-
-/* compiled from: AppInfo */
 public class j {
-    private static String a;
-    private static String b;
-    private static String c;
-    private static String d;
-    private static String e;
+    private ByteArrayInputStream kD;
+    private long kE;
+    private boolean kF = false;
+    private RandomAccessFile kG = null;
+    private boolean kH = false;
+    private final byte[] kI = new byte[8];
+    private V kJ;
+    private String kK = null;
 
-    static {
-        a = "";
-        b = "";
-        c = "";
-        d = "";
-        e = null;
-    }
-
-    public static String a(Context context) {
-        try {
-            if (!"".equals(a)) {
-                return a;
+    public j(File file, V v) {
+        if (v != null) {
+            if (!v.ms) {
+                this.kG = new RandomAccessFile(file, "r");
+                this.kF = true;
+            } else {
+                byte[] wl = bq.wl(file);
+                this.kD = new ByteArrayInputStream(wl);
+                this.kE = (long) wl.length;
+                this.kF = false;
+                this.kK = file.getAbsolutePath();
             }
-            PackageManager packageManager = context.getPackageManager();
-            a = (String) packageManager.getApplicationLabel(packageManager.getApplicationInfo(context.getPackageName(), 0));
-            return a;
-        } catch (Throwable e) {
-            v.a(e, "AppInfo", "getApplicationName");
-        } catch (Throwable e2) {
-            v.a(e2, "AppInfo", "getApplicationName");
+            this.kJ = v;
         }
     }
 
-    public static String b(Context context) {
-        try {
-            if (b != null) {
-                if (!"".equals(b)) {
-                    return b;
+    private void lu() {
+        if (this.kH) {
+            throw new IOException("file closed");
+        }
+    }
+
+    protected void finalize() {
+        ln();
+        super.finalize();
+    }
+
+    public boolean lm() {
+        return this.kJ != null ? this.kJ.ms : false;
+    }
+
+    public void ln() {
+        synchronized (this) {
+            if (this.kF) {
+                if (this.kG != null) {
+                    this.kG.close();
+                    this.kG = null;
                 }
+            } else if (this.kD != null) {
+                this.kD.close();
+                this.kD = null;
             }
-            b = context.getApplicationContext().getPackageName();
-        } catch (Throwable th) {
-            v.a(th, "AppInfo", "getPackageName");
-        }
-        return b;
-    }
-
-    public static String c(Context context) {
-        try {
-            if (!"".equals(c)) {
-                return c;
-            }
-            c = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
-            return c;
-        } catch (Throwable e) {
-            v.a(e, "AppInfo", "getApplicationVersion");
-        } catch (Throwable e2) {
-            v.a(e2, "AppInfo", "getApplicationVersion");
+            this.kH = true;
         }
     }
 
-    public static String d(Context context) {
-        try {
-            if (e != null && !"".equals(e)) {
-                return e;
-            }
-            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 64);
-            byte[] digest = MessageDigest.getInstance("SHA1").digest(packageInfo.signatures[0].toByteArray());
-            StringBuffer stringBuffer = new StringBuffer();
-            for (byte b : digest) {
-                String toUpperCase = Integer.toHexString(b & 255).toUpperCase(Locale.US);
-                if (toUpperCase.length() == 1) {
-                    stringBuffer.append("0");
-                }
-                stringBuffer.append(toUpperCase);
-                stringBuffer.append(":");
-            }
-            stringBuffer.append(packageInfo.packageName);
-            e = stringBuffer.toString();
-            return e;
-        } catch (Throwable e) {
-            v.a(e, "AppInfo", "getSHA1AndPackage");
-            return e;
-        } catch (Throwable e2) {
-            v.a(e2, "AppInfo", "getSHA1AndPackage");
-            return e;
-        } catch (Throwable e22) {
-            v.a(e22, "AppInfo", "getSHA1AndPackage");
-            return e;
+    public void lo(long j) {
+        Object obj = null;
+        if (j >= 0) {
+            obj = 1;
         }
-    }
-
-    static void a(String str) {
-        d = str;
-    }
-
-    private static String f(Context context) throws NameNotFoundException {
-        if (d == null || d.equals("")) {
-            ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), 128);
-            if (applicationInfo == null) {
-                return d;
-            }
-            d = applicationInfo.metaData.getString("com.amap.api.v2.apikey");
+        if (obj == null) {
+            throw new IOException("offset < 0: " + j);
         }
-        return d;
+        lu();
+        if (this.kF) {
+            this.kG.seek(j);
+            return;
+        }
+        this.kD.reset();
+        this.kD.skip(j);
     }
 
-    public static String e(Context context) {
-        try {
-            return f(context);
-        } catch (Throwable e) {
-            v.a(e, "AppInfo", "getKey");
-            return d;
-        } catch (Throwable e2) {
-            v.a(e2, "AppInfo", "getKey");
-            return d;
+    public final long lp() {
+        lu();
+        if (this.kF) {
+            return this.kG.readLong();
+        }
+        this.kD.read(this.kI);
+        return bq.wi(this.kI);
+    }
+
+    public final int lq() {
+        lu();
+        if (this.kF) {
+            return this.kG.readUnsignedShort();
+        }
+        this.kD.read(this.kI, 0, 2);
+        return bq.wj(this.kI);
+    }
+
+    public final int lr() {
+        lu();
+        if (this.kF) {
+            return this.kG.readInt();
+        }
+        this.kD.read(this.kI, 0, 4);
+        return bq.wk(this.kI);
+    }
+
+    public final int ls() {
+        lu();
+        return !this.kF ? this.kD.read() : this.kG.readUnsignedByte();
+    }
+
+    public long lt() {
+        if (!this.kH) {
+            return !this.kF ? this.kE : this.kG.length();
+        } else {
+            throw new IOException("file closed");
         }
     }
 }

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,406 +16,122 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-
-import net.oneplus.odm.common.Def;
-import net.oneplus.odm.common.Utils;
+import java.util.Map;
+import net.oneplus.odm.common.a;
+import net.oneplus.odm.common.c;
 import net.oneplus.odm.insight.MDMJobService;
 import net.oneplus.odm.insight.tracker.AppTracker;
 import net.oneplus.odm.insight.tracker.OSTracker;
 
 public class DeviceManagerReceiver extends BroadcastReceiver {
-    private Runnable mCheckBridgingTask;
-    private Runnable mCheckDeviceReboot;
-    private Context mContext;
-    private DeviceManagerSetting mSettings;
-    private OSTracker mTracker;
+    private Context bA;
+    private b bB;
+    private OSTracker bC;
+    private Runnable by = new r(this);
+    private Runnable bz = new s(this);
 
-    interface DeviceError {
-        File getLogFile();
-
-        String getPanicKeyword();
-
-        String getWatchDogKeyword();
-
-        boolean isPanic();
-
-        boolean isWatchDog();
-
-        void setPanic();
-
-        void setWatchDog();
-    }
-
-    class OnePlus2DeviceError implements DeviceError {
-        private boolean hasPanic;
-        private boolean hasWatchDog;
-        String path;
-
-        OnePlus2DeviceError() {
-            this.path = "/sys/fs/pstore/console-ramoops-0";
-            this.hasPanic = false;
-            this.hasWatchDog = false;
-        }
-
-        public void setPanic() {
-            this.hasPanic = true;
-        }
-
-        public boolean isPanic() {
-            return this.hasPanic;
-        }
-
-        public String getPanicKeyword() {
-            return "Kernel panic";
-        }
-
-        public void setWatchDog() {
-            this.hasWatchDog = true;
-        }
-
-        public boolean isWatchDog() {
-            return this.hasWatchDog;
-        }
-
-        public String getWatchDogKeyword() {
-            return "Watchdog bark";
-        }
-
-        public File getLogFile() {
-            return new File(this.path);
-        }
-    }
-
-    class OnePlus3DeviceError implements DeviceError {
-        private boolean hasPanic;
-        private boolean hasWatchDog;
-        String path;
-
-        OnePlus3DeviceError() {
-            this.path = "/sys/fs/pstore/console-ramoops";
-            this.hasPanic = false;
-            this.hasWatchDog = false;
-        }
-
-        public void setPanic() {
-            this.hasPanic = true;
-        }
-
-        public boolean isPanic() {
-            return this.hasPanic;
-        }
-
-        public String getPanicKeyword() {
-            return "Kernel panic";
-        }
-
-        public void setWatchDog() {
-            this.hasWatchDog = true;
-        }
-
-        public boolean isWatchDog() {
-            return this.hasWatchDog;
-        }
-
-        public String getWatchDogKeyword() {
-            return "Watchdog bark";
-        }
-
-        public File getLogFile() {
-            return new File(this.path);
-        }
-    }
-
-    class OnePlus5DeviceError implements DeviceError {
-        private boolean hasPanic;
-        private boolean hasWatchDog;
-        String path;
-
-        OnePlus5DeviceError() {
-            this.path = "/sys/fs/pstore/console-ramoops-0";
-            this.hasPanic = false;
-            this.hasWatchDog = false;
-        }
-
-        public void setPanic() {
-            this.hasPanic = true;
-        }
-
-        public boolean isPanic() {
-            return this.hasPanic;
-        }
-
-        public String getPanicKeyword() {
-            return "Kernel panic";
-        }
-
-        public void setWatchDog() {
-            this.hasWatchDog = true;
-        }
-
-        public boolean isWatchDog() {
-            return this.hasWatchDog;
-        }
-
-        public String getWatchDogKeyword() {
-            return "Watchdog bark";
-        }
-
-        public File getLogFile() {
-            return new File(this.path);
-        }
-    }
-
-    class OnePlusDeviceError implements DeviceError {
-        private boolean hasPanic;
-        private boolean hasWatchDog;
-        String path;
-
-        OnePlusDeviceError() {
-            this.path = "/proc/last_kmsg";
-            this.hasPanic = false;
-            this.hasWatchDog = false;
-        }
-
-        public void setPanic() {
-            this.hasPanic = true;
-        }
-
-        public boolean isPanic() {
-            return this.hasPanic;
-        }
-
-        public String getPanicKeyword() {
-            return "Kernel panic";
-        }
-
-        public void setWatchDog() {
-            this.hasWatchDog = true;
-        }
-
-        public boolean isWatchDog() {
-            return this.hasWatchDog;
-        }
-
-        public String getWatchDogKeyword() {
-            return "Watchdog bark";
-        }
-
-        public File getLogFile() {
-            return new File(this.path);
-        }
-    }
-
-    public DeviceManagerReceiver() {
-        this.mCheckBridgingTask = new Runnable() {
-            public void run() {
-                DeviceManagerReceiver.this.checkBridging();
+    private int ch(FileInputStream fileInputStream) {
+        String str = null;
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));
+        while (true) {
+            String readLine = bufferedReader.readLine();
+            if (readLine == null) {
+                String[] split = str.split(",|\\s+");
+                int intValue = Integer.valueOf(split[4]).intValue() + (((Integer.valueOf(split[1]).intValue() + 0) + Integer.valueOf(split[2]).intValue()) + Integer.valueOf(split[3]).intValue());
+                Log.v("DeviceManagerBootReceiver", "[Bridging] sum:" + intValue);
+                return intValue;
+            } else if (readLine.indexOf(",s1302") > 0) {
+                str = readLine;
             }
-        };
-        this.mCheckDeviceReboot = new Runnable() {
-            public void run() {
-                Exception e;
-                Throwable th;
-                boolean firstBootStatusCheck;
-                File rebootMarkFile;
-                boolean longPressReboot = false;
-                BufferedReader bufferedReader = null;
-                try {
-                    BufferedReader bufferedReader2 = new BufferedReader(new FileReader(new File("/sys/pwr_on_off_reason/pwroff_reason")));
-                    while (true) {
-                        try {
-                            String line = bufferedReader2.readLine();
-                            if (line == null) {
-                                break;
-                            } else if (line.indexOf("Power-off reason: [13]") > 0) {
-                                longPressReboot = true;
-                            }
-                        } catch (Exception e2) {
-                            e = e2;
-                            bufferedReader = bufferedReader2;
-                        } catch (Throwable th2) {
-                            th = th2;
-                            bufferedReader = bufferedReader2;
-                        }
-                    }
-                    if (bufferedReader2 != null) {
-                        try {
-                            bufferedReader2.close();
-                        } catch (IOException e3) {
-                            Log.e("DeviceManagerBootReceiver", e3.getMessage());
-                        }
-                    }
-                    bufferedReader = bufferedReader2;
-                } catch (Exception e4) {
-                    e = e4;
-                    try {
-                        Log.e("DeviceManagerBootReceiver", e.getMessage());
-                        if (bufferedReader != null) {
-                            try {
-                                bufferedReader.close();
-                            } catch (IOException e32) {
-                                Log.e("DeviceManagerBootReceiver", e32.getMessage());
-                            }
-                        }
-                        firstBootStatusCheck = DeviceManagerReceiver.this.mSettings.getPreference("first_boot_status_check", true);
-                        rebootMarkFile = new File("/data/mdm/reboot_mark");
-                        if (!rebootMarkFile.exists()) {
-                        }
-                        Log.v("DeviceManagerBootReceiver", "Device normal reboot");
-                        if (rebootMarkFile.exists()) {
-                            rebootMarkFile.delete();
-                        }
-                        DeviceManagerReceiver.this.mSettings.setPreference("first_boot_status_check", false);
-                        return;
-                    } catch (Throwable th3) {
-                        th = th3;
-                        if (bufferedReader != null) {
-                            try {
-                                bufferedReader.close();
-                            } catch (IOException e322) {
-                                Log.e("DeviceManagerBootReceiver", e322.getMessage());
-                            }
-                        }
-                        throw th;
-                    }
-                }
-                firstBootStatusCheck = DeviceManagerReceiver.this.mSettings.getPreference("first_boot_status_check", true);
-                rebootMarkFile = new File("/data/mdm/reboot_mark");
-                if (rebootMarkFile.exists() || longPressReboot || firstBootStatusCheck) {
-                    Log.v("DeviceManagerBootReceiver", "Device normal reboot");
-                    if (rebootMarkFile.exists()) {
-                        rebootMarkFile.delete();
-                    }
-                    DeviceManagerReceiver.this.mSettings.setPreference("first_boot_status_check", false);
-                    return;
-                }
-                String isRoot = String.valueOf(Utils.isRooted());
-                HashMap<String, String> detailEvent = new HashMap();
-                detailEvent.put("isroot", isRoot);
-                DeviceManagerReceiver.this.mTracker.onEvent("abnormal_reboot", detailEvent);
-                Log.v("DeviceManagerBootReceiver", "Device abnormal reboot, remount:" + isRoot);
-            }
-        };
+        }
     }
 
-    public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals("android.oem.mdm.upload")) {
-            Log.v("DeviceManagerBootReceiver", "Start to schedule MDM");
-            JobScheduler scheduler = (JobScheduler) context.getSystemService("jobscheduler");
-            ComponentName component = new ComponentName(context, MDMJobService.class);
-            Def.RANDOM_UPLOAD_DATA_DELAY = 1000;
-            scheduler.schedule(new Builder(999, component).setMinimumLatency(5000).build());
-            return;
-        }
-        Intent myIntent = new Intent(context, DeviceManagerService.class);
-        if (!Utils.isDebugRom() || Utils.isDailyRom()) {
-            DeviceError error;
-            context.startService(myIntent);
-            this.mSettings = DeviceManagerSetting.getInstance(context);
-            this.mContext = context;
-            this.mTracker = new OSTracker(this.mContext);
-            if (Build.PRODUCT.equals("OnePlus5")) {
-                error = new OnePlus5DeviceError();
-            } else if (Build.PRODUCT.equals("OnePlus3T")) {
-                error = new OnePlus3DeviceError();
-            } else if (Build.PRODUCT.equals("OnePlus3")) {
-                error = new OnePlus3DeviceError();
-            } else if (Build.PRODUCT.equals("OnePlus2")) {
-                error = new OnePlus2DeviceError();
-            } else {
-                error = new OnePlusDeviceError();
-            }
-            parsePstoreLog(error);
-            new Thread(this.mCheckBridgingTask).start();
-            new Thread(this.mCheckDeviceReboot).start();
-            return;
-        }
-        Log.v("DeviceManagerBootReceiver", "Pass");
-    }
-
-    private void checkBridging() {
-        IOException e;
-        FileNotFoundException e2;
-        Exception e3;
+    private void ci() {
+        FileInputStream fileInputStream;
+        FileNotFoundException e;
+        IOException e2;
         Throwable th;
+        Exception e3;
         File file = new File("/proc/interrupts");
-        FileInputStream fileInputStream = null;
+        FileInputStream fileInputStream2 = null;
         if (file.exists()) {
             try {
-                FileInputStream fin = new FileInputStream(file);
+                fileInputStream = new FileInputStream(file);
                 try {
-                    int resultCount = calBridgingResult(fin);
+                    int ch = ch(fileInputStream);
                     try {
-                        fin.close();
+                        fileInputStream.close();
                     } catch (IOException e4) {
                         Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e4.getMessage());
                     }
-                    if (resultCount > 2000) {
+                    if (ch > 2000) {
                         Log.v("DeviceManagerBootReceiver", "[Bridging] resultCount > 2000");
-                        AppTracker tracker = new AppTracker(this.mContext);
-                        HashMap<String, String> data = new HashMap();
-                        data.put("sum", String.valueOf(resultCount));
-                        tracker.onEvent("BridgingIssue", data);
+                        AppTracker appTracker = new AppTracker(this.bA);
+                        Map hashMap = new HashMap();
+                        hashMap.put("sum", String.valueOf(ch));
+                        appTracker.onEvent("BridgingIssue", hashMap);
                     }
                     return;
                 } catch (FileNotFoundException e5) {
-                    e2 = e5;
-                    fileInputStream = fin;
-                    Log.e("DeviceManagerBootReceiver", "[Bridging] FileNotFoundException:" + e2.getMessage());
+                    e = e5;
+                    fileInputStream2 = fileInputStream;
+                    Log.e("DeviceManagerBootReceiver", "[Bridging] FileNotFoundException:" + e.getMessage());
                     try {
-                        fileInputStream.close();
-                    } catch (IOException e42) {
-                        Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e42.getMessage());
+                        fileInputStream2.close();
+                    } catch (IOException e22) {
+                        Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e22.getMessage());
                     }
                     return;
                 } catch (IOException e6) {
-                    e42 = e6;
-                    fileInputStream = fin;
-                    Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e42.getMessage());
+                    e22 = e6;
+                    fileInputStream2 = fileInputStream;
                     try {
-                        fileInputStream.close();
-                    } catch (IOException e422) {
-                        Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e422.getMessage());
-                    }
-                    return;
-                } catch (Exception e7) {
-                    e3 = e7;
-                    fileInputStream = fin;
-                    try {
-                        Log.e("DeviceManagerBootReceiver", "[Bridging] Exception:" + e3.getMessage());
+                        Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e22.getMessage());
                         try {
-                            fileInputStream.close();
-                        } catch (IOException e4222) {
-                            Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e4222.getMessage());
+                            fileInputStream2.close();
+                        } catch (IOException e222) {
+                            Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e222.getMessage());
                         }
                         return;
                     } catch (Throwable th2) {
                         th = th2;
                         try {
-                            fileInputStream.close();
-                        } catch (IOException e42222) {
-                            Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e42222.getMessage());
+                            fileInputStream2.close();
+                        } catch (IOException e42) {
+                            Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e42.getMessage());
                         }
                         throw th;
                     }
-                } catch (Throwable th3) {
-                    th = th3;
-                    fileInputStream = fin;
-                    fileInputStream.close();
-                    throw th;
+                } catch (Exception e7) {
+                    e3 = e7;
+                    try {
+                        Log.e("DeviceManagerBootReceiver", "[Bridging] Exception:" + e3.getMessage());
+                        try {
+                            fileInputStream.close();
+                        } catch (IOException e2222) {
+                            Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e2222.getMessage());
+                        }
+                        return;
+                    } catch (Throwable th3) {
+                        th = th3;
+                        fileInputStream2 = fileInputStream;
+                        fileInputStream2.close();
+                        throw th;
+                    }
                 }
             } catch (FileNotFoundException e8) {
-                e2 = e8;
-                Log.e("DeviceManagerBootReceiver", "[Bridging] FileNotFoundException:" + e2.getMessage());
-                fileInputStream.close();
+                e = e8;
+                Log.e("DeviceManagerBootReceiver", "[Bridging] FileNotFoundException:" + e.getMessage());
+                fileInputStream2.close();
                 return;
             } catch (IOException e9) {
-                e42222 = e9;
-                Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e42222.getMessage());
-                fileInputStream.close();
+                e2222 = e9;
+                Log.e("DeviceManagerBootReceiver", "[Bridging] IOException:" + e2222.getMessage());
+                fileInputStream2.close();
                 return;
             } catch (Exception e10) {
                 e3 = e10;
+                fileInputStream = null;
                 Log.e("DeviceManagerBootReceiver", "[Bridging] Exception:" + e3.getMessage());
                 fileInputStream.close();
                 return;
@@ -425,190 +140,203 @@ public class DeviceManagerReceiver extends BroadcastReceiver {
         Log.e("DeviceManagerBootReceiver", "[Bridging] File doesnt exists");
     }
 
-    private int calBridgingResult(FileInputStream is) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        String str = null;
-        while (true) {
-            String line = reader.readLine();
-            if (line == null) {
-                String[] tmp = str.split(",|\\s+");
-                int sum = (((Integer.valueOf(tmp[1]).intValue() + 0) + Integer.valueOf(tmp[2]).intValue()) + Integer.valueOf(tmp[3]).intValue()) + Integer.valueOf(tmp[4]).intValue();
-                Log.v("DeviceManagerBootReceiver", "[Bridging] sum:" + sum);
-                return sum;
-            } else if (line.indexOf(",s1302") > 0) {
-                str = line;
-            }
-        }
-    }
-
-    private void parsePstoreLog(DeviceError deviceError) {
-        String line;
+    private void cj(c cVar) {
+        BufferedReader bufferedReader;
+        String readLine;
         Exception e;
-        Throwable th;
         IOException e2;
-        StringBuilder text;
-        BufferedReader br;
-        File file = deviceError.getLogFile();
-        String tag = "RecordAndroidErrorLog";
-        BufferedReader bufferedReader = null;
+        StringBuilder stringBuilder;
+        Throwable th;
+        File cn = cVar.cn();
+        String str = "RecordAndroidErrorLog";
         try {
-            BufferedReader bufferedReader2 = new BufferedReader(new FileReader(file));
+            bufferedReader = new BufferedReader(new FileReader(cn));
             while (true) {
                 try {
-                    line = bufferedReader2.readLine();
-                    if (line == null) {
+                    readLine = bufferedReader.readLine();
+                    if (readLine == null) {
                         break;
                     }
-                    if (line.indexOf("kernel panic") > 0 || line.indexOf(deviceError.getPanicKeyword()) > 0) {
-                        deviceError.setPanic();
+                    if (readLine.indexOf("kernel panic") > 0 || readLine.indexOf(cVar.co()) > 0) {
+                        cVar.cs();
                     }
-                    if (line.indexOf(deviceError.getWatchDogKeyword()) > 0) {
-                        deviceError.setWatchDog();
+                    if (readLine.indexOf(cVar.cp()) > 0) {
+                        cVar.ct();
                     }
                 } catch (Exception e3) {
                     e = e3;
-                    bufferedReader = bufferedReader2;
-                } catch (Throwable th2) {
-                    th = th2;
-                    bufferedReader = bufferedReader2;
                 }
             }
-            if (bufferedReader2 != null) {
+            if (bufferedReader != null) {
                 try {
-                    bufferedReader2.close();
+                    bufferedReader.close();
                 } catch (IOException e22) {
-                    Log.e(tag, e22.getMessage());
+                    Log.e(str, e22.getMessage());
                 }
             }
         } catch (Exception e4) {
             e = e4;
+            bufferedReader = null;
             try {
-                Log.e(tag, e.getMessage());
+                Log.e(str, e.getMessage());
                 if (bufferedReader != null) {
                     try {
                         bufferedReader.close();
                     } catch (IOException e222) {
-                        Log.e(tag, e222.getMessage());
+                        Log.e(str, e222.getMessage());
                     }
                 }
-                if (!deviceError.isPanic()) {
+                if (!cVar.cq()) {
                 }
-                Log.v(tag, "There is an error happend cause this reboot");
-                text = new StringBuilder();
-                BufferedReader bufferedReader3 = null;
+                Log.v(str, "There is an error happend cause this reboot");
+                stringBuilder = new StringBuilder();
                 try {
-                    br = new BufferedReader(new FileReader(file));
+                    bufferedReader = new BufferedReader(new FileReader(cn));
                     while (true) {
                         try {
-                            line = br.readLine();
-                            if (line != null) {
+                            readLine = bufferedReader.readLine();
+                            if (readLine != null) {
                                 break;
-                                if (br != null) {
-                                    try {
-                                        br.close();
-                                    } catch (IOException e2222) {
-                                        Log.e(tag, e2222.getMessage());
-                                    }
-                                }
-                                new HashMap().put("message", text);
-                                if (!deviceError.isPanic()) {
-                                    Log.v(tag, "Kernel Panic happen");
-                                    this.mTracker.onEvent("kernel_panic", null);
-                                    return;
-                                } else if (!deviceError.isWatchDog()) {
-                                    Log.v(tag, "Hardware watch dog happen");
-                                    this.mTracker.onEvent("hardware_watchdog", null);
-                                    return;
-                                } else {
-                                    return;
-                                }
                             }
-                            text.append(line);
-                            text.append('\n');
+                            stringBuilder.append(readLine);
+                            stringBuilder.append('\n');
                         } catch (IOException e5) {
-                            e2222 = e5;
-                            bufferedReader3 = br;
-                        } catch (Throwable th3) {
-                            th = th3;
-                            bufferedReader3 = br;
+                            e222 = e5;
+                        }
+                    }
+                    if (bufferedReader != null) {
+                        try {
+                            bufferedReader.close();
+                        } catch (IOException e2222) {
+                            Log.e(str, e2222.getMessage());
                         }
                     }
                 } catch (IOException e6) {
                     e2222 = e6;
+                    bufferedReader = null;
                     try {
-                        Log.e(tag, e2222.getMessage());
-                        if (bufferedReader3 != null) {
+                        Log.e(str, e2222.getMessage());
+                        if (bufferedReader != null) {
                             try {
-                                bufferedReader3.close();
+                                bufferedReader.close();
                             } catch (IOException e22222) {
-                                Log.e(tag, e22222.getMessage());
+                                Log.e(str, e22222.getMessage());
                             }
                         }
-                        new HashMap().put("message", text);
-                        if (!deviceError.isPanic()) {
-                            Log.v(tag, "Kernel Panic happen");
-                            this.mTracker.onEvent("kernel_panic", null);
+                        new HashMap().put("message", stringBuilder);
+                        if (!cVar.cq()) {
+                            Log.v(str, "Kernel Panic happen");
+                            this.bC.onEvent("kernel_panic", null);
                             return;
-                        } else if (!deviceError.isWatchDog()) {
-                            Log.v(tag, "Hardware watch dog happen");
-                            this.mTracker.onEvent("hardware_watchdog", null);
+                        } else if (!cVar.cr()) {
+                            Log.v(str, "Hardware watch dog happen");
+                            this.bC.onEvent("hardware_watchdog", null);
                             return;
                         } else {
                             return;
                         }
-                    } catch (Throwable th4) {
-                        th = th4;
-                        if (bufferedReader3 != null) {
+                    } catch (Throwable th2) {
+                        th = th2;
+                        if (bufferedReader != null) {
                             try {
-                                bufferedReader3.close();
-                            } catch (IOException e222222) {
-                                Log.e(tag, e222222.getMessage());
+                                bufferedReader.close();
+                            } catch (IOException e7) {
+                                Log.e(str, e7.getMessage());
                             }
                         }
                         throw th;
                     }
+                } catch (Throwable th3) {
+                    th = th3;
+                    bufferedReader = null;
+                    if (bufferedReader != null) {
+                        bufferedReader.close();
+                    }
+                    throw th;
                 }
-            } catch (Throwable th5) {
-                th = th5;
+                new HashMap().put("message", stringBuilder);
+                if (!cVar.cq()) {
+                    Log.v(str, "Kernel Panic happen");
+                    this.bC.onEvent("kernel_panic", null);
+                    return;
+                } else if (!cVar.cr()) {
+                    Log.v(str, "Hardware watch dog happen");
+                    this.bC.onEvent("hardware_watchdog", null);
+                    return;
+                } else {
+                    return;
+                }
+            } catch (Throwable th4) {
+                th = th4;
                 if (bufferedReader != null) {
                     try {
                         bufferedReader.close();
-                    } catch (IOException e2222222) {
-                        Log.e(tag, e2222222.getMessage());
+                    } catch (IOException e72) {
+                        Log.e(str, e72.getMessage());
                     }
                 }
                 throw th;
             }
+        } catch (Throwable th5) {
+            th = th5;
+            bufferedReader = null;
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            throw th;
         }
-        if (deviceError.isPanic() || deviceError.isWatchDog()) {
-            Log.v(tag, "There is an error happend cause this reboot");
-            text = new StringBuilder();
-            BufferedReader bufferedReader32 = null;
-            br = new BufferedReader(new FileReader(file));
+        if (cVar.cq() || cVar.cr()) {
+            Log.v(str, "There is an error happend cause this reboot");
+            stringBuilder = new StringBuilder();
+            bufferedReader = new BufferedReader(new FileReader(cn));
             while (true) {
-                line = br.readLine();
-                if (line != null) {
+                readLine = bufferedReader.readLine();
+                if (readLine != null) {
                     break;
                 }
-                text.append(line);
-                text.append('\n');
+                stringBuilder.append(readLine);
+                stringBuilder.append('\n');
             }
-            if (br != null) {
-                br.close();
+            if (bufferedReader != null) {
+                bufferedReader.close();
             }
-            new HashMap().put("message", text);
-            if (!deviceError.isPanic()) {
-                Log.v(tag, "Kernel Panic happen");
-                this.mTracker.onEvent("kernel_panic", null);
+            new HashMap().put("message", stringBuilder);
+            if (!cVar.cq()) {
+                Log.v(str, "Kernel Panic happen");
+                this.bC.onEvent("kernel_panic", null);
                 return;
-            } else if (!deviceError.isWatchDog()) {
-                Log.v(tag, "Hardware watch dog happen");
-                this.mTracker.onEvent("hardware_watchdog", null);
+            } else if (!cVar.cr()) {
+                Log.v(str, "Hardware watch dog happen");
+                this.bC.onEvent("hardware_watchdog", null);
                 return;
             } else {
                 return;
             }
         }
-        Log.d(tag, "There is no error.");
+        Log.d(str, "There is no error.");
+    }
+
+    public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals("android.oem.mdm.upload")) {
+            Log.v("DeviceManagerBootReceiver", "Start to schedule MDM");
+            JobScheduler jobScheduler = (JobScheduler) context.getSystemService("jobscheduler");
+            ComponentName componentName = new ComponentName(context, MDMJobService.class);
+            c.V = 1000;
+            jobScheduler.schedule(new Builder(999, componentName).setMinimumLatency(5000).build());
+            return;
+        }
+        Intent intent2 = new Intent(context, DeviceManagerService.class);
+        if (!a.am() || a.al()) {
+            context.startService(intent2);
+            this.bB = b.bT(context);
+            this.bA = context;
+            this.bC = new OSTracker(this.bA);
+            c gVar = Build.PRODUCT.equals("OnePlus5") ? new g(this) : Build.PRODUCT.equals("OnePlus3T") ? new f(this) : Build.PRODUCT.equals("OnePlus3") ? new f(this) : Build.PRODUCT.equals("OnePlus2") ? new e(this) : new d(this);
+            cj(gVar);
+            new Thread(this.by).start();
+            new Thread(this.bz).start();
+            return;
+        }
+        Log.v("DeviceManagerBootReceiver", "Pass");
     }
 }

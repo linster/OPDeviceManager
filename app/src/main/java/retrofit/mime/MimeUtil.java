@@ -4,25 +4,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class MimeUtil {
-    private static final Pattern CHARSET;
+    private static final Pattern CHARSET = Pattern.compile("\\Wcharset=([^\\s;]+)", 2);
 
-    static {
-        CHARSET = Pattern.compile("\\Wcharset=([^\\s;]+)", 2);
+    private MimeUtil() {
     }
 
     @Deprecated
-    public static String parseCharset(String mimeType) {
-        return parseCharset(mimeType, "UTF-8");
+    public static String parseCharset(String str) {
+        return parseCharset(str, "UTF-8");
     }
 
-    public static String parseCharset(String mimeType, String defaultCharset) {
-        Matcher match = CHARSET.matcher(mimeType);
-        if (match.find()) {
-            return match.group(1).replaceAll("[\"\\\\]", "");
-        }
-        return defaultCharset;
-    }
-
-    private MimeUtil() {
+    public static String parseCharset(String str, String str2) {
+        Matcher matcher = CHARSET.matcher(str);
+        return !matcher.find() ? str2 : matcher.group(1).replaceAll("[\"\\\\]", "");
     }
 }

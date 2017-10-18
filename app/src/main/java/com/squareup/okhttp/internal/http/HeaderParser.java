@@ -1,51 +1,42 @@
 package com.squareup.okhttp.internal.http;
 
 public final class HeaderParser {
-    public static int skipUntil(String input, int pos, String characters) {
-        while (pos < input.length() && characters.indexOf(input.charAt(pos)) == -1) {
-            pos++;
-        }
-        return pos;
+    private HeaderParser() {
     }
 
-    public static int skipWhitespace(String input, int pos) {
-        while (pos < input.length()) {
-            char c = input.charAt(pos);
-            if (c != ' ') {
-                if (c != '\t') {
+    public static int parseSeconds(String str, int i) {
+        int i2 = 1;
+        try {
+            long parseLong = Long.parseLong(str);
+            if ((parseLong <= 2147483647L ? 1 : 0) == 0) {
+                return Integer.MAX_VALUE;
+            }
+            if (parseLong < 0) {
+                i2 = 0;
+            }
+            return i2 == 0 ? 0 : (int) parseLong;
+        } catch (NumberFormatException e) {
+            return i;
+        }
+    }
+
+    public static int skipUntil(String str, int i, String str2) {
+        while (i < str.length() && str2.indexOf(str.charAt(i)) == -1) {
+            i++;
+        }
+        return i;
+    }
+
+    public static int skipWhitespace(String str, int i) {
+        while (i < str.length()) {
+            char charAt = str.charAt(i);
+            if (charAt != ' ') {
+                if (charAt != '\t') {
                     break;
                 }
             }
-            pos++;
+            i++;
         }
-        return pos;
-    }
-
-    public static int parseSeconds(String value, int defaultValue) {
-        int i = 1;
-        try {
-            int i2;
-            long seconds = Long.parseLong(value);
-            if (seconds <= 2147483647L) {
-                i2 = 1;
-            } else {
-                i2 = 0;
-            }
-            if (i2 == 0) {
-                return Integer.MAX_VALUE;
-            }
-            if (seconds < 0) {
-                i = 0;
-            }
-            if (i == 0) {
-                return 0;
-            }
-            return (int) seconds;
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    private HeaderParser() {
+        return i;
     }
 }

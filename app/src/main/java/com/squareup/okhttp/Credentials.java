@@ -1,16 +1,15 @@
 package com.squareup.okhttp;
 
 import java.io.UnsupportedEncodingException;
-
 import okio.ByteString;
 
 public final class Credentials {
     private Credentials() {
     }
 
-    public static String basic(String userName, String password) {
+    public static String basic(String str, String str2) {
         try {
-            return "Basic " + ByteString.of((userName + ":" + password).getBytes("ISO-8859-1")).base64();
+            return "Basic " + ByteString.Ar((str + ":" + str2).getBytes("ISO-8859-1")).Au();
         } catch (UnsupportedEncodingException e) {
             throw new AssertionError();
         }

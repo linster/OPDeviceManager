@@ -6,24 +6,21 @@ public final class Challenge {
     private final String realm;
     private final String scheme;
 
-    public Challenge(String scheme, String realm) {
-        this.scheme = scheme;
-        this.realm = realm;
+    public Challenge(String str, String str2) {
+        this.scheme = str;
+        this.realm = str2;
     }
 
-    public String getScheme() {
-        return this.scheme;
+    public boolean equals(Object obj) {
+        return (obj instanceof Challenge) && Util.equal(this.scheme, ((Challenge) obj).scheme) && Util.equal(this.realm, ((Challenge) obj).realm);
     }
 
     public String getRealm() {
         return this.realm;
     }
 
-    public boolean equals(Object o) {
-        if ((o instanceof Challenge) && Util.equal(this.scheme, ((Challenge) o).scheme) && Util.equal(this.realm, ((Challenge) o).realm)) {
-            return true;
-        }
-        return false;
+    public String getScheme() {
+        return this.scheme;
     }
 
     public int hashCode() {

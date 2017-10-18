@@ -6,25 +6,18 @@ import java.io.Serializable;
 
 /* compiled from: Unknown */
 final class ce implements Serializable {
-    protected int a;
-    protected int b;
-    protected short c;
-    protected short d;
-    protected int e;
-    protected byte f;
-    private byte g;
+    protected int a = 0;
+    protected int b = 0;
+    protected short c = (short) 0;
+    protected short d = (short) 0;
+    protected int e = 0;
+    protected byte f = (byte) 0;
+    private byte g = (byte) 4;
 
     ce() {
-        this.g = (byte) 4;
-        this.a = 0;
-        this.b = 0;
-        this.c = (short) 0;
-        this.d = (short) 0;
-        this.e = 0;
-        this.f = (byte) 0;
     }
 
-    protected final Boolean a(DataOutputStream dataOutputStream) {
+    protected final Boolean lM(DataOutputStream dataOutputStream) {
         Boolean valueOf = Boolean.valueOf(false);
         try {
             dataOutputStream.writeByte(this.g);

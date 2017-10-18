@@ -1,104 +1,62 @@
 package com.loc;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-/* compiled from: BaseNetManager */
+/* compiled from: Unknown */
 public class am {
-    private static am a;
+    protected File nb;
+    private ArrayList nc;
+    protected int[] nd;
+    private boolean ne = false;
 
-    public static am a() {
-        if (a == null) {
-            a = new am();
-        }
-        return a;
+    protected am(File file, ArrayList arrayList, int[] iArr) {
+        this.nb = file;
+        this.nc = arrayList;
+        this.nd = iArr;
     }
 
-    public HttpURLConnection a(aq aqVar, boolean z) throws i {
-        i e;
-        Proxy proxy = null;
+    public void oA(boolean z) {
+        this.ne = z;
+    }
+
+    protected final boolean oB() {
+        return this.ne;
+    }
+
+    protected final int oC() {
+        if (this.nc == null) {
+            return 0;
+        }
+        int i = 0;
+        for (int i2 = 0; i2 < this.nc.size(); i2++) {
+            i += this.nc.get(i2) == null ? 0 : ((byte[]) this.nc.get(i2)).length;
+        }
+        return i;
+    }
+
+    public byte[] oz() {
+        OutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+        Iterator it = this.nc.iterator();
+        while (it.hasNext()) {
+            byte[] bArr = (byte[]) it.next();
+            try {
+                dataOutputStream.writeInt(bArr.length);
+                dataOutputStream.write(bArr);
+            } catch (IOException e) {
+            }
+        }
         try {
-            ao aoVar;
-            c(aqVar);
-            if (aqVar.c != null) {
-                proxy = aqVar.c;
-            }
-            if (z) {
-                aoVar = new ao(aqVar.a, aqVar.b, proxy, true);
-            } else {
-                aoVar = new ao(aqVar.a, aqVar.b, proxy, false);
-            }
-            HttpURLConnection a = aoVar.a(aqVar.d(), aqVar.a(), true);
-            byte[] e2 = aqVar.e();
-            if (e2 != null && e2.length > 0) {
-                DataOutputStream dataOutputStream = new DataOutputStream(a.getOutputStream());
-                dataOutputStream.write(e2);
-                dataOutputStream.close();
-            }
-            a.connect();
-            return a;
-        } catch (i e3) {
-            throw e3;
-        } catch (Throwable th) {
-            th.printStackTrace();
-            e3 = new i("\u672a\u77e5\u7684\u9519\u8bef");
+            byteArrayOutputStream.close();
+            dataOutputStream.close();
+        } catch (IOException e2) {
         }
-    }
-
-    public byte[] a(aq aqVar) throws i {
-        i e;
-        try {
-            ar b = b(aqVar, true);
-            if (b == null) {
-                return null;
-            }
-            return b.a;
-        } catch (i e2) {
-            throw e2;
-        } catch (Throwable th) {
-            e2 = new i("\u672a\u77e5\u7684\u9519\u8bef");
-        }
-    }
-
-    public byte[] b(aq aqVar) throws i {
-        i e;
-        try {
-            ar b = b(aqVar, false);
-            if (b == null) {
-                return null;
-            }
-            return b.a;
-        } catch (i e2) {
-            throw e2;
-        } catch (Throwable th) {
-            v.a(th, "BaseNetManager", "makeSyncPostRequest");
-            e2 = new i("\u672a\u77e5\u7684\u9519\u8bef");
-        }
-    }
-
-    protected void c(aq aqVar) throws i {
-        if (aqVar == null) {
-            throw new i("requeust is null");
-        } else if (aqVar.c() == null || "".equals(aqVar.c())) {
-            throw new i("request url is empty");
-        }
-    }
-
-    protected ar b(aq aqVar, boolean z) throws i {
-        i e;
-        Proxy proxy = null;
-        try {
-            c(aqVar);
-            if (aqVar.c != null) {
-                proxy = aqVar.c;
-            }
-            return new ao(aqVar.a, aqVar.b, proxy, z).a(aqVar.d(), aqVar.a(), aqVar.e());
-        } catch (i e2) {
-            throw e2;
-        } catch (Throwable th) {
-            th.printStackTrace();
-            e2 = new i("\u672a\u77e5\u7684\u9519\u8bef");
-        }
+        return byteArrayOutputStream.toByteArray();
     }
 }

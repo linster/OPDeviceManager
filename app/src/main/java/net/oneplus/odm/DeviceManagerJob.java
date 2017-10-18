@@ -6,78 +6,66 @@ import android.os.Parcelable;
 import android.os.Parcelable.Creator;
 
 public class DeviceManagerJob implements Parcelable {
-    public static final Creator CREATOR;
-    private boolean mActivated;
-    private long mInterval;
-    private String mLabel;
-    private PendingIntent mOperation;
-    private long mPeriodTime;
-    private int mType;
+    public static final Creator br = new q();
+    private boolean bs;
+    private long bt;
+    private String bu;
+    private PendingIntent bv;
+    private long bw;
+    private int bx;
+
+    public DeviceManagerJob(Parcel parcel) {
+        this.bt = parcel.readLong();
+        this.bu = parcel.readString();
+        this.bw = parcel.readLong();
+        this.bx = parcel.readInt();
+        this.bv = (PendingIntent) parcel.readParcelable(PendingIntent.class.getClassLoader());
+    }
+
+    public DeviceManagerJob(String str, long j, int i, PendingIntent pendingIntent) {
+        this.bu = str;
+        this.bt = j;
+        this.bx = i;
+        this.bv = pendingIntent;
+    }
+
+    public PendingIntent ca() {
+        return this.bv;
+    }
+
+    public int cb() {
+        return this.bx;
+    }
+
+    public long cc() {
+        return this.bt;
+    }
+
+    public long cd() {
+        return this.bw;
+    }
+
+    public String ce() {
+        return this.bu;
+    }
+
+    public boolean cf() {
+        return this.bs;
+    }
+
+    protected void cg(boolean z) {
+        this.bs = z;
+    }
 
     public int describeContents() {
         return 0;
     }
 
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(this.mInterval);
-        dest.writeString(this.mLabel);
-        dest.writeLong(this.mPeriodTime);
-        dest.writeInt(this.mType);
-        dest.writeParcelable(this.mOperation, 0);
-    }
-
-    public DeviceManagerJob(Parcel parcel) {
-        this.mInterval = parcel.readLong();
-        this.mLabel = parcel.readString();
-        this.mPeriodTime = parcel.readLong();
-        this.mType = parcel.readInt();
-        this.mOperation = (PendingIntent) parcel.readParcelable(PendingIntent.class.getClassLoader());
-    }
-
-    static {
-        CREATOR = new Creator() {
-            public DeviceManagerJob createFromParcel(Parcel in) {
-                return new DeviceManagerJob(in);
-            }
-
-            public DeviceManagerJob[] newArray(int size) {
-                return null;
-            }
-        };
-    }
-
-    public DeviceManagerJob(String label, long interval, int wakeUpType, PendingIntent operation) {
-        this.mLabel = label;
-        this.mInterval = interval;
-        this.mType = wakeUpType;
-        this.mOperation = operation;
-    }
-
-    public long getPeriodTime() {
-        return this.mPeriodTime;
-    }
-
-    protected void setActivated(boolean status) {
-        this.mActivated = status;
-    }
-
-    public long getInterval() {
-        return this.mInterval;
-    }
-
-    public boolean getActivatedStatus() {
-        return this.mActivated;
-    }
-
-    public String getLabel() {
-        return this.mLabel;
-    }
-
-    public int getType() {
-        return this.mType;
-    }
-
-    public PendingIntent getOperation() {
-        return this.mOperation;
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(this.bt);
+        parcel.writeString(this.bu);
+        parcel.writeLong(this.bw);
+        parcel.writeInt(this.bx);
+        parcel.writeParcelable(this.bv, 0);
     }
 }

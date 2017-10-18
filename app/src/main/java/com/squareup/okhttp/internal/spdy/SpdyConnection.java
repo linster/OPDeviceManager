@@ -4,9 +4,9 @@ import com.squareup.okhttp.Protocol;
 import com.squareup.okhttp.internal.NamedRunnable;
 import com.squareup.okhttp.internal.Util;
 import com.squareup.okhttp.internal.spdy.FrameReader.Handler;
-
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
@@ -18,11 +18,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import okio.Buffer;
-import okio.BufferedSource;
 import okio.ByteString;
-import okio.Okio;
+import okio.a;
+import okio.j;
+import okio.k;
 
 public final class SpdyConnection implements Closeable {
     static final /* synthetic */ boolean $assertionsDisabled;
@@ -30,7 +29,7 @@ public final class SpdyConnection implements Closeable {
     private static final ExecutorService executor;
     long bytesLeftInWriteWindow;
     final boolean client;
-    private final Set<Integer> currentPushRequests;
+    private final Set currentPushRequests;
     final FrameWriter frameWriter;
     private final IncomingStreamHandler handler;
     private final String hostName;
@@ -40,7 +39,7 @@ public final class SpdyConnection implements Closeable {
     private int nextStreamId;
     final Settings okHttpSettings;
     final Settings peerSettings;
-    private Map<Integer, Ping> pings;
+    private Map pings;
     final Protocol protocol;
     private final ExecutorService pushExecutor;
     private final PushObserver pushObserver;
@@ -48,175 +47,11 @@ public final class SpdyConnection implements Closeable {
     private boolean receivedInitialPeerSettings;
     private boolean shutdown;
     final Socket socket;
-    private final Map<Integer, SpdyStream> streams;
+    private final Map streams;
     long unacknowledgedBytesRead;
     final Variant variant;
 
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.1 */
-    class AnonymousClass1 extends NamedRunnable {
-        final /* synthetic */ ErrorCode val$errorCode;
-        final /* synthetic */ int val$streamId;
-
-        AnonymousClass1(String format, Object[] args, int i, ErrorCode errorCode) {
-            this.val$streamId = i;
-            this.val$errorCode = errorCode;
-            super(format, args);
-        }
-
-        public void execute() {
-            try {
-                SpdyConnection.this.writeSynReset(this.val$streamId, this.val$errorCode);
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.2 */
-    class AnonymousClass2 extends NamedRunnable {
-        final /* synthetic */ int val$streamId;
-        final /* synthetic */ long val$unacknowledgedBytesRead;
-
-        AnonymousClass2(String format, Object[] args, int i, long j) {
-            this.val$streamId = i;
-            this.val$unacknowledgedBytesRead = j;
-            super(format, args);
-        }
-
-        public void execute() {
-            try {
-                SpdyConnection.this.frameWriter.windowUpdate(this.val$streamId, this.val$unacknowledgedBytesRead);
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.3 */
-    class AnonymousClass3 extends NamedRunnable {
-        final /* synthetic */ int val$payload1;
-        final /* synthetic */ int val$payload2;
-        final /* synthetic */ Ping val$ping;
-        final /* synthetic */ boolean val$reply;
-
-        AnonymousClass3(String format, Object[] args, boolean z, int i, int i2, Ping ping) {
-            this.val$reply = z;
-            this.val$payload1 = i;
-            this.val$payload2 = i2;
-            this.val$ping = ping;
-            super(format, args);
-        }
-
-        public void execute() {
-            try {
-                SpdyConnection.this.writePing(this.val$reply, this.val$payload1, this.val$payload2, this.val$ping);
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.4 */
-    class AnonymousClass4 extends NamedRunnable {
-        final /* synthetic */ List val$requestHeaders;
-        final /* synthetic */ int val$streamId;
-
-        AnonymousClass4(String format, Object[] args, int i, List list) {
-            this.val$streamId = i;
-            this.val$requestHeaders = list;
-            super(format, args);
-        }
-
-        public void execute() {
-            if (SpdyConnection.this.pushObserver.onRequest(this.val$streamId, this.val$requestHeaders)) {
-                try {
-                    SpdyConnection.this.frameWriter.rstStream(this.val$streamId, ErrorCode.CANCEL);
-                    synchronized (SpdyConnection.this) {
-                        SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(this.val$streamId));
-                    }
-                } catch (IOException e) {
-                }
-            }
-        }
-    }
-
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.5 */
-    class AnonymousClass5 extends NamedRunnable {
-        final /* synthetic */ boolean val$inFinished;
-        final /* synthetic */ List val$requestHeaders;
-        final /* synthetic */ int val$streamId;
-
-        AnonymousClass5(String format, Object[] args, int i, List list, boolean z) {
-            this.val$streamId = i;
-            this.val$requestHeaders = list;
-            this.val$inFinished = z;
-            super(format, args);
-        }
-
-        public void execute() {
-            boolean cancel = SpdyConnection.this.pushObserver.onHeaders(this.val$streamId, this.val$requestHeaders, this.val$inFinished);
-            if (cancel) {
-                SpdyConnection.this.frameWriter.rstStream(this.val$streamId, ErrorCode.CANCEL);
-            }
-            if (cancel || this.val$inFinished) {
-                try {
-                    synchronized (SpdyConnection.this) {
-                        SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(this.val$streamId));
-                    }
-                } catch (IOException e) {
-                }
-            }
-        }
-    }
-
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.6 */
-    class AnonymousClass6 extends NamedRunnable {
-        final /* synthetic */ Buffer val$buffer;
-        final /* synthetic */ int val$byteCount;
-        final /* synthetic */ boolean val$inFinished;
-        final /* synthetic */ int val$streamId;
-
-        AnonymousClass6(String format, Object[] args, int i, Buffer buffer, int i2, boolean z) {
-            this.val$streamId = i;
-            this.val$buffer = buffer;
-            this.val$byteCount = i2;
-            this.val$inFinished = z;
-            super(format, args);
-        }
-
-        public void execute() {
-            try {
-                boolean cancel = SpdyConnection.this.pushObserver.onData(this.val$streamId, this.val$buffer, this.val$byteCount, this.val$inFinished);
-                if (cancel) {
-                    SpdyConnection.this.frameWriter.rstStream(this.val$streamId, ErrorCode.CANCEL);
-                }
-                if (cancel || this.val$inFinished) {
-                    synchronized (SpdyConnection.this) {
-                        SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(this.val$streamId));
-                    }
-                }
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.7 */
-    class AnonymousClass7 extends NamedRunnable {
-        final /* synthetic */ ErrorCode val$errorCode;
-        final /* synthetic */ int val$streamId;
-
-        AnonymousClass7(String format, Object[] args, int i, ErrorCode errorCode) {
-            this.val$streamId = i;
-            this.val$errorCode = errorCode;
-            super(format, args);
-        }
-
-        public void execute() {
-            SpdyConnection.this.pushObserver.onReset(this.val$streamId, this.val$errorCode);
-            synchronized (SpdyConnection.this) {
-                SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(this.val$streamId));
-            }
-        }
-    }
-
-    public static class Builder {
+    public class Builder {
         private boolean client;
         private IncomingStreamHandler handler;
         private String hostName;
@@ -224,21 +59,25 @@ public final class SpdyConnection implements Closeable {
         private PushObserver pushObserver;
         private Socket socket;
 
-        public Builder(boolean client, Socket socket) throws IOException {
-            this(((InetSocketAddress) socket.getRemoteSocketAddress()).getHostName(), client, socket);
-        }
-
-        public Builder(String hostName, boolean client, Socket socket) throws IOException {
+        public Builder(String str, boolean z, Socket socket) {
             this.handler = IncomingStreamHandler.REFUSE_INCOMING_STREAMS;
             this.protocol = Protocol.SPDY_3;
             this.pushObserver = PushObserver.CANCEL;
-            this.hostName = hostName;
-            this.client = client;
+            this.hostName = str;
+            this.client = z;
             this.socket = socket;
         }
 
-        public Builder handler(IncomingStreamHandler handler) {
-            this.handler = handler;
+        public Builder(boolean z, Socket socket) {
+            this(((InetSocketAddress) socket.getRemoteSocketAddress()).getHostName(), z, socket);
+        }
+
+        public SpdyConnection build() {
+            return new SpdyConnection();
+        }
+
+        public Builder handler(IncomingStreamHandler incomingStreamHandler) {
+            this.handler = incomingStreamHandler;
             return this;
         }
 
@@ -251,214 +90,278 @@ public final class SpdyConnection implements Closeable {
             this.pushObserver = pushObserver;
             return this;
         }
-
-        public SpdyConnection build() throws IOException {
-            return new SpdyConnection();
-        }
     }
 
     class Reader extends NamedRunnable implements Handler {
         FrameReader frameReader;
 
-        /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.Reader.1 */
-        class AnonymousClass1 extends NamedRunnable {
-            final /* synthetic */ SpdyStream val$newStream;
-
-            AnonymousClass1(String format, Object[] args, SpdyStream spdyStream) {
-                this.val$newStream = spdyStream;
-                super(format, args);
-            }
-
-            public void execute() {
-                try {
-                    SpdyConnection.this.handler.receive(this.val$newStream);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        /* renamed from: com.squareup.okhttp.internal.spdy.SpdyConnection.Reader.2 */
-        class AnonymousClass2 extends NamedRunnable {
-            final /* synthetic */ Settings val$peerSettings;
-
-            AnonymousClass2(String format, Object[] args, Settings settings) {
-                this.val$peerSettings = settings;
-                super(format, args);
-            }
-
-            public void execute() {
-                try {
-                    SpdyConnection.this.frameWriter.ackSettings(this.val$peerSettings);
-                } catch (IOException e) {
-                }
-            }
-        }
-
         private Reader() {
-            super("OkHttp %s", this$0.hostName);
+            super("OkHttp %s", r5.hostName);
         }
 
-        protected void execute() {
-            ErrorCode connectionErrorCode = ErrorCode.INTERNAL_ERROR;
-            ErrorCode streamErrorCode = ErrorCode.INTERNAL_ERROR;
-            try {
-                this.frameReader = SpdyConnection.this.variant.newReader(Okio.buffer(Okio.source(SpdyConnection.this.socket)), SpdyConnection.this.client);
-                if (!SpdyConnection.this.client) {
-                    this.frameReader.readConnectionPreface();
-                }
-                while (true) {
-                    if (!this.frameReader.nextFrame(this)) {
-                        break;
+        private void ackSettingsLater(final Settings settings) {
+            SpdyConnection.executor.execute(new NamedRunnable("OkHttp %s ACK Settings", new Object[]{SpdyConnection.this.hostName}) {
+                public void execute() {
+                    try {
+                        SpdyConnection.this.frameWriter.ackSettings(settings);
+                    } catch (IOException e) {
                     }
                 }
-                connectionErrorCode = ErrorCode.NO_ERROR;
-                streamErrorCode = ErrorCode.CANCEL;
-            } catch (IOException e) {
-                connectionErrorCode = ErrorCode.PROTOCOL_ERROR;
-                streamErrorCode = ErrorCode.PROTOCOL_ERROR;
-            } finally {
-                try {
-                    SpdyConnection.this.close(connectionErrorCode, streamErrorCode);
-                } catch (IOException e2) {
-                }
-                Util.closeQuietly(this.frameReader);
-            }
-        }
-
-        public void data(boolean inFinished, int streamId, BufferedSource source, int length) throws IOException {
-            if (SpdyConnection.this.pushedStream(streamId)) {
-                SpdyConnection.this.pushDataLater(streamId, source, length, inFinished);
-                return;
-            }
-            SpdyStream dataStream = SpdyConnection.this.getStream(streamId);
-            if (dataStream != null) {
-                dataStream.receiveData(source, length);
-                if (inFinished) {
-                    dataStream.receiveFin();
-                }
-                return;
-            }
-            SpdyConnection.this.writeSynResetLater(streamId, ErrorCode.INVALID_STREAM);
-            source.skip((long) length);
-        }
-
-        public void headers(boolean outFinished, boolean inFinished, int streamId, int associatedStreamId, List<Header> headerBlock, HeadersMode headersMode) {
-            if (SpdyConnection.this.pushedStream(streamId)) {
-                SpdyConnection.this.pushHeadersLater(streamId, headerBlock, inFinished);
-                return;
-            }
-            synchronized (SpdyConnection.this) {
-                if (SpdyConnection.this.shutdown) {
-                    return;
-                }
-                SpdyStream stream = SpdyConnection.this.getStream(streamId);
-                if (stream != null) {
-                    if (headersMode.failIfStreamPresent()) {
-                        stream.closeLater(ErrorCode.PROTOCOL_ERROR);
-                        SpdyConnection.this.removeStream(streamId);
-                        return;
-                    }
-                    stream.receiveHeaders(headerBlock, headersMode);
-                    if (inFinished) {
-                        stream.receiveFin();
-                    }
-                } else if (headersMode.failIfStreamAbsent()) {
-                    SpdyConnection.this.writeSynResetLater(streamId, ErrorCode.INVALID_STREAM);
-                } else if (streamId <= SpdyConnection.this.lastGoodStreamId) {
-                } else if (streamId % 2 != SpdyConnection.this.nextStreamId % 2) {
-                    SpdyStream newStream = new SpdyStream(streamId, SpdyConnection.this, outFinished, inFinished, headerBlock);
-                    SpdyConnection.this.lastGoodStreamId = streamId;
-                    SpdyConnection.this.streams.put(Integer.valueOf(streamId), newStream);
-                    SpdyConnection.executor.execute(new AnonymousClass1("OkHttp %s stream %d", new Object[]{SpdyConnection.this.hostName, Integer.valueOf(streamId)}, newStream));
-                }
-            }
-        }
-
-        public void rstStream(int streamId, ErrorCode errorCode) {
-            if (SpdyConnection.this.pushedStream(streamId)) {
-                SpdyConnection.this.pushResetLater(streamId, errorCode);
-                return;
-            }
-            SpdyStream rstStream = SpdyConnection.this.removeStream(streamId);
-            if (rstStream != null) {
-                rstStream.receiveRstStream(errorCode);
-            }
-        }
-
-        public void settings(boolean clearPrevious, Settings newSettings) {
-            long delta = 0;
-            SpdyStream[] streamsToNotify = null;
-            synchronized (SpdyConnection.this) {
-                int priorWriteWindowSize = SpdyConnection.this.peerSettings.getInitialWindowSize(65536);
-                if (clearPrevious) {
-                    SpdyConnection.this.peerSettings.clear();
-                }
-                SpdyConnection.this.peerSettings.merge(newSettings);
-                if (SpdyConnection.this.getProtocol() == Protocol.HTTP_2) {
-                    ackSettingsLater(newSettings);
-                }
-                int peerInitialWindowSize = SpdyConnection.this.peerSettings.getInitialWindowSize(65536);
-                if (!(peerInitialWindowSize == -1 || peerInitialWindowSize == priorWriteWindowSize)) {
-                    delta = (long) (peerInitialWindowSize - priorWriteWindowSize);
-                    if (!SpdyConnection.this.receivedInitialPeerSettings) {
-                        SpdyConnection.this.addBytesToWriteWindow(delta);
-                        SpdyConnection.this.receivedInitialPeerSettings = true;
-                    }
-                    if (!SpdyConnection.this.streams.isEmpty()) {
-                        streamsToNotify = (SpdyStream[]) SpdyConnection.this.streams.values().toArray(new SpdyStream[SpdyConnection.this.streams.size()]);
-                    }
-                }
-            }
-            if (streamsToNotify != null && delta != 0) {
-                for (SpdyStream stream : streamsToNotify) {
-                    synchronized (stream) {
-                        stream.addBytesToWriteWindow(delta);
-                    }
-                }
-            }
-        }
-
-        private void ackSettingsLater(Settings peerSettings) {
-            SpdyConnection.executor.execute(new AnonymousClass2("OkHttp %s ACK Settings", new Object[]{SpdyConnection.this.hostName}, peerSettings));
+            });
         }
 
         public void ackSettings() {
         }
 
-        public void ping(boolean reply, int payload1, int payload2) {
-            if (reply) {
-                Ping ping = SpdyConnection.this.removePing(payload1);
-                if (ping != null) {
-                    ping.receive();
-                    return;
+        public void alternateService(int i, String str, ByteString byteString, String str2, int i2, long j) {
+        }
+
+        public void data(boolean z, int i, a aVar, int i2) {
+            if (SpdyConnection.this.pushedStream(i)) {
+                SpdyConnection.this.pushDataLater(i, aVar, i2, z);
+                return;
+            }
+            SpdyStream stream = SpdyConnection.this.getStream(i);
+            if (stream != null) {
+                stream.receiveData(aVar, i2);
+                if (z) {
+                    stream.receiveFin();
                 }
                 return;
             }
-            SpdyConnection.this.writePingLater(true, payload1, payload2, null);
+            SpdyConnection.this.writeSynResetLater(i, ErrorCode.INVALID_STREAM);
+            aVar.skip((long) i2);
         }
 
-        public void goAway(int lastGoodStreamId, ErrorCode errorCode, ByteString debugData) {
-            if (debugData.size() <= 0) {
+        protected void execute() {
+            ErrorCode errorCode;
+            Throwable th;
+            ErrorCode errorCode2 = ErrorCode.INTERNAL_ERROR;
+            ErrorCode errorCode3 = ErrorCode.INTERNAL_ERROR;
+            try {
+                this.frameReader = SpdyConnection.this.variant.newReader(j.AE(j.AL(SpdyConnection.this.socket)), SpdyConnection.this.client);
+                if (!SpdyConnection.this.client) {
+                    this.frameReader.readConnectionPreface();
+                }
+                do {
+                } while (this.frameReader.nextFrame(this));
+                try {
+                    SpdyConnection.this.close(ErrorCode.NO_ERROR, ErrorCode.CANCEL);
+                } catch (IOException e) {
+                }
+                Util.closeQuietly(this.frameReader);
+            } catch (IOException e2) {
+                errorCode = ErrorCode.PROTOCOL_ERROR;
+                try {
+                    SpdyConnection.this.close(errorCode, ErrorCode.PROTOCOL_ERROR);
+                } catch (IOException e3) {
+                }
+                Util.closeQuietly(this.frameReader);
+            } catch (Throwable th2) {
+                th = th2;
+                SpdyConnection.this.close(errorCode, errorCode3);
+                Util.closeQuietly(this.frameReader);
+                throw th;
+            }
+        }
+
+        public void goAway(int i, ErrorCode errorCode, ByteString byteString) {
+            if (byteString.size() <= 0) {
             }
             synchronized (SpdyConnection.this) {
-                SpdyStream[] streamsCopy = (SpdyStream[]) SpdyConnection.this.streams.values().toArray(new SpdyStream[SpdyConnection.this.streams.size()]);
+                SpdyStream[] spdyStreamArr = (SpdyStream[]) SpdyConnection.this.streams.values().toArray(new SpdyStream[SpdyConnection.this.streams.size()]);
                 SpdyConnection.this.shutdown = true;
             }
-            for (SpdyStream spdyStream : streamsCopy) {
-                if (spdyStream.getId() > lastGoodStreamId && spdyStream.isLocallyInitiated()) {
+            for (SpdyStream spdyStream : spdyStreamArr) {
+                if (spdyStream.getId() > i && spdyStream.isLocallyInitiated()) {
                     spdyStream.receiveRstStream(ErrorCode.REFUSED_STREAM);
                     SpdyConnection.this.removeStream(spdyStream.getId());
                 }
             }
         }
 
-        public void windowUpdate(int streamId, long windowSizeIncrement) {
-            if (streamId != 0) {
-                SpdyStream stream = SpdyConnection.this.getStream(streamId);
+        /* JADX WARNING: inconsistent code. */
+        /* Code decompiled incorrectly, please refer to instructions dump. */
+        public void headers(boolean r9, boolean r10, int r11, int r12, java.util.List r13, com.squareup.okhttp.internal.spdy.HeadersMode r14) {
+            /*
+            r8 = this;
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;
+            r0 = r0.pushedStream(r11);
+            if (r0 != 0) goto L_0x0028;
+        L_0x0008:
+            r6 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;
+            monitor-enter(r6);
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r0 = r0.shutdown;	 Catch:{ all -> 0x0098 }
+            if (r0 != 0) goto L_0x002e;
+        L_0x0013:
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r0 = r0.getStream(r11);	 Catch:{ all -> 0x0098 }
+            if (r0 == 0) goto L_0x0030;
+        L_0x001b:
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            r1 = r14.failIfStreamPresent();
+            if (r1 != 0) goto L_0x009b;
+        L_0x0022:
+            r0.receiveHeaders(r13, r14);
+            if (r10 != 0) goto L_0x00a6;
+        L_0x0027:
+            return;
+        L_0x0028:
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;
+            r0.pushHeadersLater(r11, r13, r10);
+            return;
+        L_0x002e:
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            return;
+        L_0x0030:
+            r0 = r14.failIfStreamAbsent();	 Catch:{ all -> 0x0098 }
+            if (r0 != 0) goto L_0x008b;
+        L_0x0036:
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r0 = r0.lastGoodStreamId;	 Catch:{ all -> 0x0098 }
+            if (r11 <= r0) goto L_0x0094;
+        L_0x003e:
+            r0 = r11 % 2;
+            r1 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r1 = r1.nextStreamId;	 Catch:{ all -> 0x0098 }
+            r1 = r1 % 2;
+            if (r0 == r1) goto L_0x0096;
+        L_0x004a:
+            r0 = new com.squareup.okhttp.internal.spdy.SpdyStream;	 Catch:{ all -> 0x0098 }
+            r2 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r1 = r11;
+            r3 = r9;
+            r4 = r10;
+            r5 = r13;
+            r0.<init>(r1, r2, r3, r4, r5);	 Catch:{ all -> 0x0098 }
+            r1 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r1.lastGoodStreamId = r11;	 Catch:{ all -> 0x0098 }
+            r1 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r1 = r1.streams;	 Catch:{ all -> 0x0098 }
+            r2 = java.lang.Integer.valueOf(r11);	 Catch:{ all -> 0x0098 }
+            r1.put(r2, r0);	 Catch:{ all -> 0x0098 }
+            r1 = com.squareup.okhttp.internal.spdy.SpdyConnection.executor;	 Catch:{ all -> 0x0098 }
+            r2 = new com.squareup.okhttp.internal.spdy.SpdyConnection$Reader$1;	 Catch:{ all -> 0x0098 }
+            r3 = "OkHttp %s stream %d";
+            r4 = 2;
+            r4 = new java.lang.Object[r4];	 Catch:{ all -> 0x0098 }
+            r5 = 0;
+            r7 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r7 = r7.hostName;	 Catch:{ all -> 0x0098 }
+            r4[r5] = r7;	 Catch:{ all -> 0x0098 }
+            r5 = 1;
+            r7 = java.lang.Integer.valueOf(r11);	 Catch:{ all -> 0x0098 }
+            r4[r5] = r7;	 Catch:{ all -> 0x0098 }
+            r2.<init>(r3, r4, r0);	 Catch:{ all -> 0x0098 }
+            r1.execute(r2);	 Catch:{ all -> 0x0098 }
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            return;
+        L_0x008b:
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;	 Catch:{ all -> 0x0098 }
+            r1 = com.squareup.okhttp.internal.spdy.ErrorCode.INVALID_STREAM;	 Catch:{ all -> 0x0098 }
+            r0.writeSynResetLater(r11, r1);	 Catch:{ all -> 0x0098 }
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            return;
+        L_0x0094:
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            return;
+        L_0x0096:
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            return;
+        L_0x0098:
+            r0 = move-exception;
+            monitor-exit(r6);	 Catch:{ all -> 0x0098 }
+            throw r0;
+        L_0x009b:
+            r1 = com.squareup.okhttp.internal.spdy.ErrorCode.PROTOCOL_ERROR;
+            r0.closeLater(r1);
+            r0 = com.squareup.okhttp.internal.spdy.SpdyConnection.this;
+            r0.removeStream(r11);
+            return;
+        L_0x00a6:
+            r0.receiveFin();
+            goto L_0x0027;
+            */
+            throw new UnsupportedOperationException("Method not decompiled: com.squareup.okhttp.internal.spdy.SpdyConnection.Reader.headers(boolean, boolean, int, int, java.util.List, com.squareup.okhttp.internal.spdy.HeadersMode):void");
+        }
+
+        public void ping(boolean z, int i, int i2) {
+            if (z) {
+                Ping access$2200 = SpdyConnection.this.removePing(i);
+                if (access$2200 != null) {
+                    access$2200.receive();
+                    return;
+                }
+                return;
+            }
+            SpdyConnection.this.writePingLater(true, i, i2, null);
+        }
+
+        public void priority(int i, int i2, int i3, boolean z) {
+        }
+
+        public void pushPromise(int i, int i2, List list) {
+            SpdyConnection.this.pushRequestLater(i2, list);
+        }
+
+        public void rstStream(int i, ErrorCode errorCode) {
+            if (SpdyConnection.this.pushedStream(i)) {
+                SpdyConnection.this.pushResetLater(i, errorCode);
+                return;
+            }
+            SpdyStream removeStream = SpdyConnection.this.removeStream(i);
+            if (removeStream != null) {
+                removeStream.receiveRstStream(errorCode);
+            }
+        }
+
+        public void settings(boolean z, Settings settings) {
+            SpdyStream[] spdyStreamArr;
+            long j;
+            synchronized (SpdyConnection.this) {
+                int initialWindowSize = SpdyConnection.this.peerSettings.getInitialWindowSize(65536);
+                if (z) {
+                    SpdyConnection.this.peerSettings.clear();
+                }
+                SpdyConnection.this.peerSettings.merge(settings);
+                if (SpdyConnection.this.getProtocol() == Protocol.HTTP_2) {
+                    ackSettingsLater(settings);
+                }
+                int initialWindowSize2 = SpdyConnection.this.peerSettings.getInitialWindowSize(65536);
+                if (initialWindowSize2 == -1 || initialWindowSize2 == initialWindowSize) {
+                    spdyStreamArr = null;
+                    j = 0;
+                } else {
+                    long j2 = (long) (initialWindowSize2 - initialWindowSize);
+                    if (!SpdyConnection.this.receivedInitialPeerSettings) {
+                        SpdyConnection.this.addBytesToWriteWindow(j2);
+                        SpdyConnection.this.receivedInitialPeerSettings = true;
+                    }
+                    if (SpdyConnection.this.streams.isEmpty()) {
+                        j = j2;
+                        spdyStreamArr = null;
+                    } else {
+                        j = j2;
+                        spdyStreamArr = (SpdyStream[]) SpdyConnection.this.streams.values().toArray(new SpdyStream[SpdyConnection.this.streams.size()]);
+                    }
+                }
+            }
+            if (spdyStreamArr != null && j != 0) {
+                for (SpdyStream spdyStream : spdyStreamArr) {
+                    synchronized (spdyStream) {
+                        spdyStream.addBytesToWriteWindow(j);
+                    }
+                }
+            }
+        }
+
+        public void windowUpdate(int i, long j) {
+            if (i != 0) {
+                SpdyStream stream = SpdyConnection.this.getStream(i);
                 if (stream != null) {
                     synchronized (stream) {
-                        stream.addBytesToWriteWindow(windowSizeIncrement);
+                        stream.addBytesToWriteWindow(j);
                     }
                     return;
                 }
@@ -466,42 +369,32 @@ public final class SpdyConnection implements Closeable {
             }
             synchronized (SpdyConnection.this) {
                 SpdyConnection spdyConnection = SpdyConnection.this;
-                spdyConnection.bytesLeftInWriteWindow += windowSizeIncrement;
+                spdyConnection.bytesLeftInWriteWindow += j;
                 SpdyConnection.this.notifyAll();
             }
-        }
-
-        public void priority(int streamId, int streamDependency, int weight, boolean exclusive) {
-        }
-
-        public void pushPromise(int streamId, int promisedStreamId, List<Header> requestHeaders) {
-            SpdyConnection.this.pushRequestLater(promisedStreamId, requestHeaders);
-        }
-
-        public void alternateService(int streamId, String origin, ByteString protocol, String host, int port, long maxAge) {
         }
     }
 
     static {
         /* JADX: method processing error */
 /*
-        Error: java.lang.OutOfMemoryError: Java heap space
+Error: java.lang.OutOfMemoryError: Java heap space
 	at java.util.Arrays.copyOf(Arrays.java:3181)
 	at java.util.ArrayList.grow(ArrayList.java:261)
 	at java.util.ArrayList.ensureExplicitCapacity(ArrayList.java:235)
 	at java.util.ArrayList.ensureCapacityInternal(ArrayList.java:227)
 	at java.util.ArrayList.add(ArrayList.java:458)
-	at jadx.core.dex.visitors.regions.RegionMaker.traverse(RegionMaker.java:142)
-	at jadx.core.dex.visitors.regions.RegionMaker.makeRegion(RegionMaker.java:90)
-	at jadx.core.dex.visitors.regions.RegionMakerVisitor.visit(RegionMakerVisitor.java:46)
+	at jadx.core.dex.visitors.regions.RegionMaker.traverse(RegionMaker.java:146)
+	at jadx.core.dex.visitors.regions.RegionMaker.makeRegion(RegionMaker.java:94)
+	at jadx.core.dex.visitors.regions.RegionMakerVisitor.visit(RegionMakerVisitor.java:49)
 	at jadx.core.dex.visitors.DepthTraversal.visit(DepthTraversal.java:31)
 	at jadx.core.dex.visitors.DepthTraversal.visit(DepthTraversal.java:17)
 	at jadx.core.ProcessClass.process(ProcessClass.java:37)
 	at jadx.core.ProcessClass.processDependencies(ProcessClass.java:59)
 	at jadx.core.ProcessClass.process(ProcessClass.java:42)
-	at jadx.api.JadxDecompiler.processClass(JadxDecompiler.java:281)
-	at jadx.api.JavaClass.decompile(JavaClass.java:59)
-	at jadx.api.JadxDecompiler$1.run(JadxDecompiler.java:161)
+	at jadx.api.JadxDecompiler.processClass(JadxDecompiler.java:306)
+	at jadx.api.JavaClass.decompile(JavaClass.java:62)
+	at jadx.api.JadxDecompiler$1.run(JadxDecompiler.java:199)
 */
         /*
         r8 = 1;
@@ -529,7 +422,7 @@ public final class SpdyConnection implements Closeable {
         throw new UnsupportedOperationException("Method not decompiled: com.squareup.okhttp.internal.spdy.SpdyConnection.<clinit>():void");
     }
 
-    private SpdyConnection(Builder builder) throws IOException {
+    private SpdyConnection(Builder builder) {
         int i = 2;
         this.streams = new HashMap();
         this.idleStartTimeNs = System.nanoTime();
@@ -567,365 +460,403 @@ public final class SpdyConnection implements Closeable {
         }
         this.bytesLeftInWriteWindow = (long) this.peerSettings.getInitialWindowSize(65536);
         this.socket = builder.socket;
-        this.frameWriter = this.variant.newWriter(Okio.buffer(Okio.sink(builder.socket)), this.client);
+        this.frameWriter = this.variant.newWriter(j.AF(j.AI(builder.socket)), this.client);
         this.readerRunnable = new Reader();
         new Thread(this.readerRunnable).start();
     }
 
-    public Protocol getProtocol() {
-        return this.protocol;
-    }
-
-    public synchronized int openStreamCount() {
-        return this.streams.size();
-    }
-
-    synchronized SpdyStream getStream(int id) {
-        return (SpdyStream) this.streams.get(Integer.valueOf(id));
-    }
-
-    synchronized SpdyStream removeStream(int streamId) {
-        SpdyStream stream;
-        stream = (SpdyStream) this.streams.remove(Integer.valueOf(streamId));
-        if (stream != null) {
+    private void close(ErrorCode errorCode, ErrorCode errorCode2) {
+        IOException iOException;
+        IOException e;
+        if (!$assertionsDisabled && Thread.holdsLock(this)) {
+            throw new AssertionError();
+        }
+        SpdyStream[] spdyStreamArr;
+        Ping[] pingArr;
+        try {
+            shutdown(errorCode);
+            iOException = null;
+        } catch (IOException e2) {
+            iOException = e2;
+        }
+        synchronized (this) {
             if (this.streams.isEmpty()) {
-                setIdle(true);
+                spdyStreamArr = null;
+            } else {
+                SpdyStream[] spdyStreamArr2 = (SpdyStream[]) this.streams.values().toArray(new SpdyStream[this.streams.size()]);
+                this.streams.clear();
+                setIdle($assertionsDisabled);
+                spdyStreamArr = spdyStreamArr2;
+            }
+            if (this.pings == null) {
+                pingArr = null;
+            } else {
+                Ping[] pingArr2 = (Ping[]) this.pings.values().toArray(new Ping[this.pings.size()]);
+                this.pings = null;
+                pingArr = pingArr2;
             }
         }
-        return stream;
+        if (spdyStreamArr != null) {
+            e2 = iOException;
+            for (SpdyStream close : spdyStreamArr) {
+                try {
+                    close.close(errorCode2);
+                } catch (IOException iOException2) {
+                    if (e2 != null) {
+                        e2 = iOException2;
+                    }
+                }
+            }
+            iOException2 = e2;
+        }
+        if (pingArr != null) {
+            for (Ping cancel : pingArr) {
+                cancel.cancel();
+            }
+        }
+        try {
+            this.frameWriter.close();
+            e2 = iOException2;
+        } catch (IOException e3) {
+            e2 = e3;
+            if (iOException2 != null) {
+                e2 = iOException2;
+            }
+        }
+        try {
+            this.socket.close();
+        } catch (IOException e4) {
+            e2 = e4;
+        }
+        if (e2 != null) {
+            throw e2;
+        }
     }
 
-    private synchronized void setIdle(boolean value) {
-        this.idleStartTimeNs = !value ? Long.MAX_VALUE : System.nanoTime();
+    private SpdyStream newStream(int i, List list, boolean z, boolean z2) {
+        SpdyStream spdyStream;
+        boolean z3 = z ? $assertionsDisabled : true;
+        boolean z4 = z2 ? $assertionsDisabled : true;
+        synchronized (this.frameWriter) {
+            synchronized (this) {
+                if (this.shutdown) {
+                    throw new IOException("shutdown");
+                }
+                int i2 = this.nextStreamId;
+                this.nextStreamId += 2;
+                spdyStream = new SpdyStream(i2, this, z3, z4, list);
+                if (spdyStream.isOpen()) {
+                    this.streams.put(Integer.valueOf(i2), spdyStream);
+                    setIdle($assertionsDisabled);
+                }
+            }
+            if (i == 0) {
+                this.frameWriter.synStream(z3, z4, i2, i, list);
+            } else if (this.client) {
+                throw new IllegalArgumentException("client streams shouldn't have associated stream IDs");
+            } else {
+                this.frameWriter.pushPromise(i, i2, list);
+            }
+        }
+        if (!z) {
+            this.frameWriter.flush();
+        }
+        return spdyStream;
     }
 
-    public synchronized boolean isIdle() {
-        return this.idleStartTimeNs != Long.MAX_VALUE ? true : $assertionsDisabled;
+    private void pushDataLater(int i, a aVar, int i2, boolean z) {
+        final k kVar = new k();
+        aVar.zM((long) i2);
+        aVar.read(kVar, (long) i2);
+        if (kVar.size() != ((long) i2)) {
+            throw new IOException(kVar.size() + " != " + i2);
+        }
+        final int i3 = i;
+        final int i4 = i2;
+        final boolean z2 = z;
+        this.pushExecutor.execute(new NamedRunnable("OkHttp %s Push Data[%s]", new Object[]{this.hostName, Integer.valueOf(i)}) {
+            public void execute() {
+                try {
+                    boolean onData = SpdyConnection.this.pushObserver.onData(i3, kVar, i4, z2);
+                    if (onData) {
+                        SpdyConnection.this.frameWriter.rstStream(i3, ErrorCode.CANCEL);
+                    }
+                    if (onData || z2) {
+                        synchronized (SpdyConnection.this) {
+                            SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(i3));
+                        }
+                    }
+                } catch (IOException e) {
+                }
+            }
+        });
+    }
+
+    private void pushHeadersLater(int i, List list, boolean z) {
+        final int i2 = i;
+        final List list2 = list;
+        final boolean z2 = z;
+        this.pushExecutor.execute(new NamedRunnable("OkHttp %s Push Headers[%s]", new Object[]{this.hostName, Integer.valueOf(i)}) {
+            public void execute() {
+                boolean onHeaders = SpdyConnection.this.pushObserver.onHeaders(i2, list2, z2);
+                if (onHeaders) {
+                    SpdyConnection.this.frameWriter.rstStream(i2, ErrorCode.CANCEL);
+                }
+                if (onHeaders || z2) {
+                    try {
+                        synchronized (SpdyConnection.this) {
+                            SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(i2));
+                        }
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        });
+    }
+
+    private void pushRequestLater(int i, List list) {
+        synchronized (this) {
+            if (this.currentPushRequests.contains(Integer.valueOf(i))) {
+                writeSynResetLater(i, ErrorCode.PROTOCOL_ERROR);
+                return;
+            }
+            this.currentPushRequests.add(Integer.valueOf(i));
+            final int i2 = i;
+            final List list2 = list;
+            this.pushExecutor.execute(new NamedRunnable("OkHttp %s Push Request[%s]", new Object[]{this.hostName, Integer.valueOf(i)}) {
+                public void execute() {
+                    if (SpdyConnection.this.pushObserver.onRequest(i2, list2)) {
+                        try {
+                            SpdyConnection.this.frameWriter.rstStream(i2, ErrorCode.CANCEL);
+                            synchronized (SpdyConnection.this) {
+                                SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(i2));
+                            }
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private void pushResetLater(int i, ErrorCode errorCode) {
+        final int i2 = i;
+        final ErrorCode errorCode2 = errorCode;
+        this.pushExecutor.execute(new NamedRunnable("OkHttp %s Push Reset[%s]", new Object[]{this.hostName, Integer.valueOf(i)}) {
+            public void execute() {
+                SpdyConnection.this.pushObserver.onReset(i2, errorCode2);
+                synchronized (SpdyConnection.this) {
+                    SpdyConnection.this.currentPushRequests.remove(Integer.valueOf(i2));
+                }
+            }
+        });
+    }
+
+    private boolean pushedStream(int i) {
+        return (this.protocol == Protocol.HTTP_2 && i != 0 && (i & 1) == 0) ? true : $assertionsDisabled;
+    }
+
+    private synchronized Ping removePing(int i) {
+        Ping ping = null;
+        synchronized (this) {
+            if (this.pings != null) {
+                ping = (Ping) this.pings.remove(Integer.valueOf(i));
+            }
+        }
+        return ping;
+    }
+
+    private synchronized void setIdle(boolean z) {
+        this.idleStartTimeNs = !z ? Long.MAX_VALUE : System.nanoTime();
+    }
+
+    private void writePing(boolean z, int i, int i2, Ping ping) {
+        synchronized (this.frameWriter) {
+            if (ping != null) {
+                ping.send();
+            }
+            this.frameWriter.ping(z, i, i2);
+        }
+    }
+
+    private void writePingLater(boolean z, int i, int i2, Ping ping) {
+        final boolean z2 = z;
+        final int i3 = i;
+        final int i4 = i2;
+        final Ping ping2 = ping;
+        executor.execute(new NamedRunnable("OkHttp %s ping %08x%08x", new Object[]{this.hostName, Integer.valueOf(i), Integer.valueOf(i2)}) {
+            public void execute() {
+                try {
+                    SpdyConnection.this.writePing(z2, i3, i4, ping2);
+                } catch (IOException e) {
+                }
+            }
+        });
+    }
+
+    void addBytesToWriteWindow(long j) {
+        this.bytesLeftInWriteWindow += j;
+        if ((j <= 0 ? 1 : null) == null) {
+            notifyAll();
+        }
+    }
+
+    public void close() {
+        close(ErrorCode.NO_ERROR, ErrorCode.CANCEL);
+    }
+
+    public void flush() {
+        this.frameWriter.flush();
     }
 
     public synchronized long getIdleStartTimeNs() {
         return this.idleStartTimeNs;
     }
 
-    public SpdyStream pushStream(int associatedStreamId, List<Header> requestHeaders, boolean out) throws IOException {
-        if (this.client) {
-            throw new IllegalStateException("Client cannot push requests.");
-        } else if (this.protocol == Protocol.HTTP_2) {
-            return newStream(associatedStreamId, requestHeaders, out, $assertionsDisabled);
-        } else {
-            throw new IllegalStateException("protocol != HTTP_2");
-        }
+    public Protocol getProtocol() {
+        return this.protocol;
     }
 
-    public SpdyStream newStream(List<Header> requestHeaders, boolean out, boolean in) throws IOException {
-        return newStream(0, requestHeaders, out, in);
+    synchronized SpdyStream getStream(int i) {
+        return (SpdyStream) this.streams.get(Integer.valueOf(i));
     }
 
-    private SpdyStream newStream(int associatedStreamId, List<Header> requestHeaders, boolean out, boolean in) throws IOException {
-        boolean outFinished;
-        boolean inFinished;
-        SpdyStream stream;
-        if (out) {
-            outFinished = $assertionsDisabled;
-        } else {
-            outFinished = true;
-        }
-        if (in) {
-            inFinished = $assertionsDisabled;
-        } else {
-            inFinished = true;
-        }
-        synchronized (this.frameWriter) {
-            synchronized (this) {
-                if (this.shutdown) {
-                    throw new IOException("shutdown");
-                }
-                int streamId = this.nextStreamId;
-                this.nextStreamId += 2;
-                stream = new SpdyStream(streamId, this, outFinished, inFinished, requestHeaders);
-                if (stream.isOpen()) {
-                    this.streams.put(Integer.valueOf(streamId), stream);
-                    setIdle($assertionsDisabled);
-                }
-            }
-            if (associatedStreamId == 0) {
-                this.frameWriter.synStream(outFinished, inFinished, streamId, associatedStreamId, requestHeaders);
-            } else if (this.client) {
-                throw new IllegalArgumentException("client streams shouldn't have associated stream IDs");
-            } else {
-                this.frameWriter.pushPromise(associatedStreamId, streamId, requestHeaders);
-            }
-        }
-        if (!out) {
-            this.frameWriter.flush();
-        }
-        return stream;
+    public synchronized boolean isIdle() {
+        return this.idleStartTimeNs != Long.MAX_VALUE ? true : $assertionsDisabled;
     }
 
-    void writeSynReply(int streamId, boolean outFinished, List<Header> alternating) throws IOException {
-        this.frameWriter.synReply(outFinished, streamId, alternating);
+    public SpdyStream newStream(List list, boolean z, boolean z2) {
+        return newStream(0, list, z, z2);
     }
 
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    public void writeData(int r7, boolean r8, okio.Buffer r9, long r10) throws java.io.IOException {
-        /*
-        r6 = this;
-        r2 = 0;
-        r2 = (r10 > r2 ? 1 : (r10 == r2 ? 0 : -1));
-        if (r2 != 0) goto L_0x0017;
-    L_0x0006:
-        r2 = r6.frameWriter;
-        r3 = 0;
-        r2.data(r8, r7, r9, r3);
-        return;
-    L_0x000d:
-        r4 = 0;
-        r2 = (r10 > r4 ? 1 : (r10 == r4 ? 0 : -1));
-        if (r2 != 0) goto L_0x005c;
-    L_0x0013:
-        r2 = 1;
-    L_0x0014:
-        r3.data(r2, r7, r9, r1);
-    L_0x0017:
-        r2 = 0;
-        r2 = (r10 > r2 ? 1 : (r10 == r2 ? 0 : -1));
-        if (r2 > 0) goto L_0x003a;
-    L_0x001d:
-        r2 = 1;
-    L_0x001e:
-        if (r2 != 0) goto L_0x005e;
-    L_0x0020:
-        monitor-enter(r6);
-    L_0x0021:
-        r2 = r6.bytesLeftInWriteWindow;	 Catch:{ InterruptedException -> 0x0030 }
-        r4 = 0;
-        r2 = (r2 > r4 ? 1 : (r2 == r4 ? 0 : -1));
-        if (r2 <= 0) goto L_0x003c;
-    L_0x0029:
-        r2 = 1;
-    L_0x002a:
-        if (r2 != 0) goto L_0x003e;
-    L_0x002c:
-        r6.wait();	 Catch:{ InterruptedException -> 0x0030 }
-        goto L_0x0021;
-    L_0x0030:
-        r0 = move-exception;
-        r2 = new java.io.InterruptedIOException;	 Catch:{ all -> 0x0037 }
-        r2.<init>();	 Catch:{ all -> 0x0037 }
-        throw r2;	 Catch:{ all -> 0x0037 }
-    L_0x0037:
-        r2 = move-exception;
-        monitor-exit(r6);	 Catch:{ all -> 0x0037 }
-        throw r2;
-    L_0x003a:
-        r2 = 0;
-        goto L_0x001e;
-    L_0x003c:
-        r2 = 0;
-        goto L_0x002a;
-    L_0x003e:
-        r2 = r6.bytesLeftInWriteWindow;	 Catch:{ all -> 0x0037 }
-        r2 = java.lang.Math.min(r10, r2);	 Catch:{ all -> 0x0037 }
-        r1 = (int) r2;	 Catch:{ all -> 0x0037 }
-        r2 = r6.frameWriter;	 Catch:{ all -> 0x0037 }
-        r2 = r2.maxDataLength();	 Catch:{ all -> 0x0037 }
-        r1 = java.lang.Math.min(r1, r2);	 Catch:{ all -> 0x0037 }
-        r2 = r6.bytesLeftInWriteWindow;	 Catch:{ all -> 0x0037 }
-        r4 = (long) r1;	 Catch:{ all -> 0x0037 }
-        r2 = r2 - r4;
-        r6.bytesLeftInWriteWindow = r2;	 Catch:{ all -> 0x0037 }
-        monitor-exit(r6);	 Catch:{ all -> 0x0037 }
-        r2 = (long) r1;
-        r10 = r10 - r2;
-        r3 = r6.frameWriter;
-        if (r8 != 0) goto L_0x000d;
-    L_0x005c:
-        r2 = 0;
-        goto L_0x0014;
-    L_0x005e:
-        return;
-        */
-        throw new UnsupportedOperationException("Method not decompiled: com.squareup.okhttp.internal.spdy.SpdyConnection.writeData(int, boolean, okio.Buffer, long):void");
+    public synchronized int openStreamCount() {
+        return this.streams.size();
     }
 
-    void addBytesToWriteWindow(long delta) {
-        this.bytesLeftInWriteWindow += delta;
-        if ((delta <= 0 ? 1 : null) == null) {
-            notifyAll();
-        }
-    }
-
-    void writeSynResetLater(int streamId, ErrorCode errorCode) {
-        executor.submit(new AnonymousClass1("OkHttp %s stream %d", new Object[]{this.hostName, Integer.valueOf(streamId)}, streamId, errorCode));
-    }
-
-    void writeSynReset(int streamId, ErrorCode statusCode) throws IOException {
-        this.frameWriter.rstStream(streamId, statusCode);
-    }
-
-    void writeWindowUpdateLater(int streamId, long unacknowledgedBytesRead) {
-        executor.execute(new AnonymousClass2("OkHttp Window Update %s stream %d", new Object[]{this.hostName, Integer.valueOf(streamId)}, streamId, unacknowledgedBytesRead));
-    }
-
-    public Ping ping() throws IOException {
-        int pingId;
+    public Ping ping() {
+        int i;
         Ping ping = new Ping();
         synchronized (this) {
             if (this.shutdown) {
                 throw new IOException("shutdown");
             }
-            pingId = this.nextPingId;
+            i = this.nextPingId;
             this.nextPingId += 2;
             if (this.pings == null) {
                 this.pings = new HashMap();
             }
-            this.pings.put(Integer.valueOf(pingId), ping);
+            this.pings.put(Integer.valueOf(i), ping);
         }
-        writePing($assertionsDisabled, pingId, 1330343787, ping);
+        writePing($assertionsDisabled, i, 1330343787, ping);
         return ping;
     }
 
-    private void writePingLater(boolean reply, int payload1, int payload2, Ping ping) {
-        executor.execute(new AnonymousClass3("OkHttp %s ping %08x%08x", new Object[]{this.hostName, Integer.valueOf(payload1), Integer.valueOf(payload2)}, reply, payload1, payload2, ping));
-    }
-
-    private void writePing(boolean reply, int payload1, int payload2, Ping ping) throws IOException {
-        synchronized (this.frameWriter) {
-            if (ping != null) {
-                ping.send();
-            }
-            this.frameWriter.ping(reply, payload1, payload2);
+    public SpdyStream pushStream(int i, List list, boolean z) {
+        if (this.client) {
+            throw new IllegalStateException("Client cannot push requests.");
+        } else if (this.protocol == Protocol.HTTP_2) {
+            return newStream(i, list, z, $assertionsDisabled);
+        } else {
+            throw new IllegalStateException("protocol != HTTP_2");
         }
     }
 
-    private synchronized Ping removePing(int id) {
-        Ping ping = null;
-        synchronized (this) {
-            if (this.pings != null) {
-                ping = (Ping) this.pings.remove(Integer.valueOf(id));
+    synchronized SpdyStream removeStream(int i) {
+        SpdyStream spdyStream;
+        spdyStream = (SpdyStream) this.streams.remove(Integer.valueOf(i));
+        if (spdyStream != null) {
+            if (this.streams.isEmpty()) {
+                setIdle(true);
             }
         }
-        return ping;
+        return spdyStream;
     }
 
-    public void flush() throws IOException {
-        this.frameWriter.flush();
+    public void sendConnectionPreface() {
+        this.frameWriter.connectionPreface();
+        this.frameWriter.settings(this.okHttpSettings);
+        int initialWindowSize = this.okHttpSettings.getInitialWindowSize(65536);
+        if (initialWindowSize != 65536) {
+            this.frameWriter.windowUpdate(0, (long) (initialWindowSize - 65536));
+        }
     }
 
-    public void shutdown(ErrorCode statusCode) throws IOException {
+    public void shutdown(ErrorCode errorCode) {
         synchronized (this.frameWriter) {
             synchronized (this) {
                 if (this.shutdown) {
                     return;
                 }
                 this.shutdown = true;
-                int lastGoodStreamId = this.lastGoodStreamId;
-                this.frameWriter.goAway(lastGoodStreamId, statusCode, Util.EMPTY_BYTE_ARRAY);
+                int i = this.lastGoodStreamId;
+                this.frameWriter.goAway(i, errorCode, Util.EMPTY_BYTE_ARRAY);
+            }
+        }
+    }
+
+    public void writeData(int i, boolean z, k kVar, long j) {
+        if (j == 0) {
+            this.frameWriter.data(z, i, kVar, 0);
+            return;
+        }
+        while (true) {
+            if ((j <= 0 ? 1 : 0) == 0) {
+                int min;
+                synchronized (this) {
+                    while (true) {
+                        try {
+                            if ((this.bytesLeftInWriteWindow > 0 ? 1 : 0) != 0) {
+                                break;
+                            }
+                            wait();
+                        } catch (InterruptedException e) {
+                            throw new InterruptedIOException();
+                        }
+                    }
+                    min = Math.min((int) Math.min(j, this.bytesLeftInWriteWindow), this.frameWriter.maxDataLength());
+                    this.bytesLeftInWriteWindow -= (long) min;
+                }
+                j -= (long) min;
+                FrameWriter frameWriter = this.frameWriter;
+                boolean z2 = (z && j == 0) ? true : $assertionsDisabled;
+                frameWriter.data(z2, i, kVar, min);
+            } else {
                 return;
             }
         }
     }
 
-    public void close() throws IOException {
-        close(ErrorCode.NO_ERROR, ErrorCode.CANCEL);
+    void writeSynReply(int i, boolean z, List list) {
+        this.frameWriter.synReply(z, i, list);
     }
 
-    private void close(ErrorCode connectionCode, ErrorCode streamCode) throws IOException {
-        if (!$assertionsDisabled && Thread.holdsLock(this)) {
-            throw new AssertionError();
-        }
-        IOException thrown = null;
-        try {
-            shutdown(connectionCode);
-        } catch (IOException e) {
-            thrown = e;
-        }
-        SpdyStream[] streamsToClose = null;
-        Ping[] pingsToCancel = null;
-        synchronized (this) {
-            if (!this.streams.isEmpty()) {
-                streamsToClose = (SpdyStream[]) this.streams.values().toArray(new SpdyStream[this.streams.size()]);
-                this.streams.clear();
-                setIdle($assertionsDisabled);
-            }
-            if (this.pings != null) {
-                pingsToCancel = (Ping[]) this.pings.values().toArray(new Ping[this.pings.size()]);
-                this.pings = null;
-            }
-        }
-        if (streamsToClose != null) {
-            for (SpdyStream stream : streamsToClose) {
+    void writeSynReset(int i, ErrorCode errorCode) {
+        this.frameWriter.rstStream(i, errorCode);
+    }
+
+    void writeSynResetLater(int i, ErrorCode errorCode) {
+        final int i2 = i;
+        final ErrorCode errorCode2 = errorCode;
+        executor.submit(new NamedRunnable("OkHttp %s stream %d", new Object[]{this.hostName, Integer.valueOf(i)}) {
+            public void execute() {
                 try {
-                    stream.close(streamCode);
-                } catch (IOException e2) {
-                    if (thrown != null) {
-                        thrown = e2;
-                    }
+                    SpdyConnection.this.writeSynReset(i2, errorCode2);
+                } catch (IOException e) {
                 }
             }
-        }
-        if (pingsToCancel != null) {
-            for (Ping ping : pingsToCancel) {
-                ping.cancel();
+        });
+    }
+
+    void writeWindowUpdateLater(int i, long j) {
+        final int i2 = i;
+        final long j2 = j;
+        executor.execute(new NamedRunnable("OkHttp Window Update %s stream %d", new Object[]{this.hostName, Integer.valueOf(i)}) {
+            public void execute() {
+                try {
+                    SpdyConnection.this.frameWriter.windowUpdate(i2, j2);
+                } catch (IOException e) {
+                }
             }
-        }
-        try {
-            this.frameWriter.close();
-        } catch (IOException e22) {
-            if (thrown == null) {
-                thrown = e22;
-            }
-        }
-        try {
-            this.socket.close();
-        } catch (IOException e222) {
-            thrown = e222;
-        }
-        if (thrown != null) {
-            throw thrown;
-        }
-    }
-
-    public void sendConnectionPreface() throws IOException {
-        this.frameWriter.connectionPreface();
-        this.frameWriter.settings(this.okHttpSettings);
-        int windowSize = this.okHttpSettings.getInitialWindowSize(65536);
-        if (windowSize != 65536) {
-            this.frameWriter.windowUpdate(0, (long) (windowSize - 65536));
-        }
-    }
-
-    private boolean pushedStream(int streamId) {
-        return (this.protocol == Protocol.HTTP_2 && streamId != 0 && (streamId & 1) == 0) ? true : $assertionsDisabled;
-    }
-
-    private void pushRequestLater(int streamId, List<Header> requestHeaders) {
-        synchronized (this) {
-            if (this.currentPushRequests.contains(Integer.valueOf(streamId))) {
-                writeSynResetLater(streamId, ErrorCode.PROTOCOL_ERROR);
-                return;
-            }
-            this.currentPushRequests.add(Integer.valueOf(streamId));
-            this.pushExecutor.execute(new AnonymousClass4("OkHttp %s Push Request[%s]", new Object[]{this.hostName, Integer.valueOf(streamId)}, streamId, requestHeaders));
-        }
-    }
-
-    private void pushHeadersLater(int streamId, List<Header> requestHeaders, boolean inFinished) {
-        this.pushExecutor.execute(new AnonymousClass5("OkHttp %s Push Headers[%s]", new Object[]{this.hostName, Integer.valueOf(streamId)}, streamId, requestHeaders, inFinished));
-    }
-
-    private void pushDataLater(int streamId, BufferedSource source, int byteCount, boolean inFinished) throws IOException {
-        Buffer buffer = new Buffer();
-        source.require((long) byteCount);
-        source.read(buffer, (long) byteCount);
-        if (buffer.size() != ((long) byteCount)) {
-            throw new IOException(buffer.size() + " != " + byteCount);
-        }
-        this.pushExecutor.execute(new AnonymousClass6("OkHttp %s Push Data[%s]", new Object[]{this.hostName, Integer.valueOf(streamId)}, streamId, buffer, byteCount, inFinished));
-    }
-
-    private void pushResetLater(int streamId, ErrorCode errorCode) {
-        this.pushExecutor.execute(new AnonymousClass7("OkHttp %s Push Reset[%s]", new Object[]{this.hostName, Integer.valueOf(streamId)}, streamId, errorCode));
+        });
     }
 }

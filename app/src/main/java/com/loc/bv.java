@@ -9,35 +9,23 @@ import java.util.ArrayList;
 
 /* compiled from: Unknown */
 final class bv implements Serializable {
-    protected byte[] a;
-    protected byte[] b;
-    protected byte[] c;
-    protected short d;
-    protected short e;
-    protected byte f;
-    protected byte[] g;
-    protected byte[] h;
-    protected short i;
-    protected ArrayList j;
-    private byte k;
-    private short l;
+    protected byte[] a = new byte[16];
+    protected byte[] b = new byte[16];
+    protected byte[] c = new byte[16];
+    protected short d = (short) 0;
+    protected short e = (short) 0;
+    protected byte f = (byte) 0;
+    protected byte[] g = new byte[16];
+    protected byte[] h = new byte[32];
+    protected short i = (short) 0;
+    protected ArrayList j = new ArrayList();
+    private byte k = (byte) 41;
+    private short l = (short) 0;
 
     bv() {
-        this.k = (byte) 41;
-        this.l = (short) 0;
-        this.a = new byte[16];
-        this.b = new byte[16];
-        this.c = new byte[16];
-        this.d = (short) 0;
-        this.e = (short) 0;
-        this.f = (byte) 0;
-        this.g = new byte[16];
-        this.h = new byte[32];
-        this.i = (short) 0;
-        this.j = new ArrayList();
     }
 
-    private Boolean a(DataOutputStream dataOutputStream) {
+    private Boolean nf(DataOutputStream dataOutputStream) {
         Boolean.valueOf(true);
         try {
             OutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -50,30 +38,30 @@ final class bv implements Serializable {
             dataOutputStream2.writeShort(this.e);
             dataOutputStream2.writeByte(this.f);
             this.g[15] = (byte) 0;
-            dataOutputStream2.write(cd.a(this.g, this.g.length));
+            dataOutputStream2.write(aW.sL(this.g, this.g.length));
             this.h[31] = (byte) 0;
-            dataOutputStream2.write(cd.a(this.h, this.h.length));
+            dataOutputStream2.write(aW.sL(this.h, this.h.length));
             dataOutputStream2.writeShort(this.i);
             for (short s = (short) 0; s < this.i; s = (short) (s + 1)) {
                 OutputStream byteArrayOutputStream2 = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream3 = new DataOutputStream(byteArrayOutputStream2);
                 dataOutputStream3.flush();
                 bt btVar = (bt) this.j.get(s);
-                if (!(btVar.c == null || btVar.c.a(dataOutputStream3).booleanValue())) {
+                if (!(btVar.c == null || btVar.c.ns(dataOutputStream3).booleanValue())) {
                     Boolean.valueOf(false);
                 }
                 if (btVar.d != null) {
-                    if (!btVar.d.a(dataOutputStream3).booleanValue()) {
+                    if (!btVar.d.ll(dataOutputStream3).booleanValue()) {
                         Boolean.valueOf(false);
                     }
                 }
-                if (!(btVar.e == null || btVar.e.a(dataOutputStream3).booleanValue())) {
+                if (!(btVar.e == null || btVar.e.lM(dataOutputStream3).booleanValue())) {
                     Boolean.valueOf(false);
                 }
-                if (!(btVar.f == null || btVar.f.a(dataOutputStream3).booleanValue())) {
+                if (!(btVar.f == null || btVar.f.rC(dataOutputStream3).booleanValue())) {
                     Boolean.valueOf(false);
                 }
-                if (!(btVar.g == null || btVar.g.a(dataOutputStream3).booleanValue())) {
+                if (!(btVar.g == null || btVar.g.mD(dataOutputStream3).booleanValue())) {
                     Boolean.valueOf(false);
                 }
                 btVar.a = (short) Integer.valueOf(byteArrayOutputStream2.size() + 4).shortValue();
@@ -91,9 +79,9 @@ final class bv implements Serializable {
         }
     }
 
-    protected final byte[] a() {
+    protected final byte[] ng() {
         OutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        a(new DataOutputStream(byteArrayOutputStream));
+        nf(new DataOutputStream(byteArrayOutputStream));
         return byteArrayOutputStream.toByteArray();
     }
 }

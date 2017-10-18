@@ -2,7 +2,6 @@ package com.squareup.okhttp;
 
 import com.squareup.okhttp.internal.http.OkHeaders;
 import com.squareup.okhttp.internal.http.StatusLine;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public final class Response {
     private final Protocol protocol;
     private final Request request;
 
-    public static class Builder {
+    public class Builder {
         private ResponseBody body;
         private Response cacheResponse;
         private int code;
@@ -50,96 +49,32 @@ public final class Response {
             this.priorResponse = response.priorResponse;
         }
 
-        public Builder request(Request request) {
-            this.request = request;
-            return this;
-        }
-
-        public Builder protocol(Protocol protocol) {
-            this.protocol = protocol;
-            return this;
-        }
-
-        public Builder code(int code) {
-            this.code = code;
-            return this;
-        }
-
-        public Builder message(String message) {
-            this.message = message;
-            return this;
-        }
-
-        public Builder handshake(Handshake handshake) {
-            this.handshake = handshake;
-            return this;
-        }
-
-        public Builder header(String name, String value) {
-            this.headers.set(name, value);
-            return this;
-        }
-
-        public Builder addHeader(String name, String value) {
-            this.headers.add(name, value);
-            return this;
-        }
-
-        public Builder removeHeader(String name) {
-            this.headers.removeAll(name);
-            return this;
-        }
-
-        public Builder headers(Headers headers) {
-            this.headers = headers.newBuilder();
-            return this;
-        }
-
-        public Builder body(ResponseBody body) {
-            this.body = body;
-            return this;
-        }
-
-        public Builder networkResponse(Response networkResponse) {
-            if (networkResponse != null) {
-                checkSupportResponse("networkResponse", networkResponse);
-            }
-            this.networkResponse = networkResponse;
-            return this;
-        }
-
-        public Builder cacheResponse(Response cacheResponse) {
-            if (cacheResponse != null) {
-                checkSupportResponse("cacheResponse", cacheResponse);
-            }
-            this.cacheResponse = cacheResponse;
-            return this;
-        }
-
-        private void checkSupportResponse(String name, Response response) {
-            if (response.body != null) {
-                throw new IllegalArgumentException(name + ".body != null");
-            } else if (response.networkResponse != null) {
-                throw new IllegalArgumentException(name + ".networkResponse != null");
-            } else if (response.cacheResponse != null) {
-                throw new IllegalArgumentException(name + ".cacheResponse != null");
-            } else if (response.priorResponse != null) {
-                throw new IllegalArgumentException(name + ".priorResponse != null");
-            }
-        }
-
-        public Builder priorResponse(Response priorResponse) {
-            if (priorResponse != null) {
-                checkPriorResponse(priorResponse);
-            }
-            this.priorResponse = priorResponse;
-            return this;
-        }
-
         private void checkPriorResponse(Response response) {
             if (response.body != null) {
                 throw new IllegalArgumentException("priorResponse.body != null");
             }
+        }
+
+        private void checkSupportResponse(String str, Response response) {
+            if (response.body != null) {
+                throw new IllegalArgumentException(str + ".body != null");
+            } else if (response.networkResponse != null) {
+                throw new IllegalArgumentException(str + ".networkResponse != null");
+            } else if (response.cacheResponse != null) {
+                throw new IllegalArgumentException(str + ".cacheResponse != null");
+            } else if (response.priorResponse != null) {
+                throw new IllegalArgumentException(str + ".priorResponse != null");
+            }
+        }
+
+        public Builder addHeader(String str, String str2) {
+            this.headers.add(str, str2);
+            return this;
+        }
+
+        public Builder body(ResponseBody responseBody) {
+            this.body = responseBody;
+            return this;
         }
 
         public Response build() {
@@ -152,6 +87,70 @@ public final class Response {
             } else {
                 throw new IllegalStateException("code < 0: " + this.code);
             }
+        }
+
+        public Builder cacheResponse(Response response) {
+            if (response != null) {
+                checkSupportResponse("cacheResponse", response);
+            }
+            this.cacheResponse = response;
+            return this;
+        }
+
+        public Builder code(int i) {
+            this.code = i;
+            return this;
+        }
+
+        public Builder handshake(Handshake handshake) {
+            this.handshake = handshake;
+            return this;
+        }
+
+        public Builder header(String str, String str2) {
+            this.headers.set(str, str2);
+            return this;
+        }
+
+        public Builder headers(Headers headers) {
+            this.headers = headers.newBuilder();
+            return this;
+        }
+
+        public Builder message(String str) {
+            this.message = str;
+            return this;
+        }
+
+        public Builder networkResponse(Response response) {
+            if (response != null) {
+                checkSupportResponse("networkResponse", response);
+            }
+            this.networkResponse = response;
+            return this;
+        }
+
+        public Builder priorResponse(Response response) {
+            if (response != null) {
+                checkPriorResponse(response);
+            }
+            this.priorResponse = response;
+            return this;
+        }
+
+        public Builder protocol(Protocol protocol) {
+            this.protocol = protocol;
+            return this;
+        }
+
+        public Builder removeHeader(String str) {
+            this.headers.removeAll(str);
+            return this;
+        }
+
+        public Builder request(Request request) {
+            this.request = request;
+            return this;
         }
     }
 
@@ -168,53 +167,59 @@ public final class Response {
         this.priorResponse = builder.priorResponse;
     }
 
-    public Request request() {
-        return this.request;
+    public ResponseBody body() {
+        return this.body;
     }
 
-    public Protocol protocol() {
-        return this.protocol;
+    public CacheControl cacheControl() {
+        CacheControl cacheControl = this.cacheControl;
+        if (cacheControl != null) {
+            return cacheControl;
+        }
+        cacheControl = CacheControl.parse(this.headers);
+        this.cacheControl = cacheControl;
+        return cacheControl;
+    }
+
+    public Response cacheResponse() {
+        return this.cacheResponse;
+    }
+
+    public List challenges() {
+        String str;
+        if (this.code == 401) {
+            str = "WWW-Authenticate";
+        } else if (this.code != 407) {
+            return Collections.emptyList();
+        } else {
+            str = "Proxy-Authenticate";
+        }
+        return OkHeaders.parseChallenges(headers(), str);
     }
 
     public int code() {
         return this.code;
     }
 
-    public boolean isSuccessful() {
-        return this.code >= 200 && this.code < 300;
-    }
-
-    public String message() {
-        return this.message;
-    }
-
     public Handshake handshake() {
         return this.handshake;
     }
 
-    public List<String> headers(String name) {
-        return this.headers.values(name);
+    public String header(String str) {
+        return header(str, null);
     }
 
-    public String header(String name) {
-        return header(name, null);
-    }
-
-    public String header(String name, String defaultValue) {
-        String result = this.headers.get(name);
-        return result == null ? defaultValue : result;
+    public String header(String str, String str2) {
+        String str3 = this.headers.get(str);
+        return str3 == null ? str2 : str3;
     }
 
     public Headers headers() {
         return this.headers;
     }
 
-    public ResponseBody body() {
-        return this.body;
-    }
-
-    public Builder newBuilder() {
-        return new Builder();
+    public List headers(String str) {
+        return this.headers.values(str);
     }
 
     public boolean isRedirect() {
@@ -231,38 +236,32 @@ public final class Response {
         }
     }
 
+    public boolean isSuccessful() {
+        return this.code >= 200 && this.code < 300;
+    }
+
+    public String message() {
+        return this.message;
+    }
+
     public Response networkResponse() {
         return this.networkResponse;
     }
 
-    public Response cacheResponse() {
-        return this.cacheResponse;
+    public Builder newBuilder() {
+        return new Builder();
     }
 
     public Response priorResponse() {
         return this.priorResponse;
     }
 
-    public List<Challenge> challenges() {
-        String responseField;
-        if (this.code == 401) {
-            responseField = "WWW-Authenticate";
-        } else if (this.code != 407) {
-            return Collections.emptyList();
-        } else {
-            responseField = "Proxy-Authenticate";
-        }
-        return OkHeaders.parseChallenges(headers(), responseField);
+    public Protocol protocol() {
+        return this.protocol;
     }
 
-    public CacheControl cacheControl() {
-        CacheControl cacheControl = this.cacheControl;
-        if (cacheControl != null) {
-            return cacheControl;
-        }
-        cacheControl = CacheControl.parse(this.headers);
-        this.cacheControl = cacheControl;
-        return cacheControl;
+    public Request request() {
+        return this.request;
     }
 
     public String toString() {

@@ -5,7 +5,6 @@ import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.Response.Builder;
-
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -13,8 +12,8 @@ public final class CacheStrategy {
     public final Response cacheResponse;
     public final Request networkRequest;
 
-    public static class Factory {
-        private int ageSeconds;
+    public class Factory {
+        private int ageSeconds = -1;
         final Response cacheResponse;
         private String etag;
         private Date expires;
@@ -27,165 +26,144 @@ public final class CacheStrategy {
         private Date servedDate;
         private String servedDateString;
 
-        public Factory(long nowMillis, Request request, Response cacheResponse) {
-            this.ageSeconds = -1;
-            this.nowMillis = nowMillis;
+        public Factory(long j, Request request, Response response) {
+            this.nowMillis = j;
             this.request = request;
-            this.cacheResponse = cacheResponse;
-            if (cacheResponse != null) {
-                Headers headers = cacheResponse.headers();
+            this.cacheResponse = response;
+            if (response != null) {
+                Headers headers = response.headers();
                 int size = headers.size();
                 for (int i = 0; i < size; i++) {
-                    String fieldName = headers.name(i);
+                    String name = headers.name(i);
                     String value = headers.value(i);
-                    if ("Date".equalsIgnoreCase(fieldName)) {
+                    if ("Date".equalsIgnoreCase(name)) {
                         this.servedDate = HttpDate.parse(value);
                         this.servedDateString = value;
-                    } else if ("Expires".equalsIgnoreCase(fieldName)) {
+                    } else if ("Expires".equalsIgnoreCase(name)) {
                         this.expires = HttpDate.parse(value);
-                    } else if ("Last-Modified".equalsIgnoreCase(fieldName)) {
+                    } else if ("Last-Modified".equalsIgnoreCase(name)) {
                         this.lastModified = HttpDate.parse(value);
                         this.lastModifiedString = value;
-                    } else if ("ETag".equalsIgnoreCase(fieldName)) {
+                    } else if ("ETag".equalsIgnoreCase(name)) {
                         this.etag = value;
-                    } else if ("Age".equalsIgnoreCase(fieldName)) {
+                    } else if ("Age".equalsIgnoreCase(name)) {
                         this.ageSeconds = HeaderParser.parseSeconds(value, -1);
-                    } else if (OkHeaders.SENT_MILLIS.equalsIgnoreCase(fieldName)) {
+                    } else if (OkHeaders.SENT_MILLIS.equalsIgnoreCase(name)) {
                         this.sentRequestMillis = Long.parseLong(value);
-                    } else if (OkHeaders.RECEIVED_MILLIS.equalsIgnoreCase(fieldName)) {
+                    } else if (OkHeaders.RECEIVED_MILLIS.equalsIgnoreCase(name)) {
                         this.receivedResponseMillis = Long.parseLong(value);
                     }
                 }
             }
         }
 
-        public CacheStrategy get() {
-            CacheStrategy candidate = getCandidate();
-            if (candidate.networkRequest != null && this.request.cacheControl().onlyIfCached()) {
-                return new CacheStrategy(null, null);
+        private long cacheResponseAge() {
+            long j = 0;
+            if (this.servedDate != null) {
+                j = Math.max(0, this.receivedResponseMillis - this.servedDate.getTime());
             }
-            return candidate;
-        }
-
-        private CacheStrategy getCandidate() {
-            if (this.cacheResponse != null) {
-                if (this.request.isHttps()) {
-                    if (this.cacheResponse.handshake() == null) {
-                        return new CacheStrategy(null, null);
-                    }
-                }
-                if (CacheStrategy.isCacheable(this.cacheResponse, this.request)) {
-                    CacheControl requestCaching = this.request.cacheControl();
-                    if (!requestCaching.noCache()) {
-                        if (!hasConditions(this.request)) {
-                            long ageMillis = cacheResponseAge();
-                            long freshMillis = computeFreshnessLifetime();
-                            if (requestCaching.maxAgeSeconds() != -1) {
-                                freshMillis = Math.min(freshMillis, TimeUnit.SECONDS.toMillis((long) requestCaching.maxAgeSeconds()));
-                            }
-                            long minFreshMillis = 0;
-                            if (requestCaching.minFreshSeconds() != -1) {
-                                minFreshMillis = TimeUnit.SECONDS.toMillis((long) requestCaching.minFreshSeconds());
-                            }
-                            long maxStaleMillis = 0;
-                            CacheControl responseCaching = this.cacheResponse.cacheControl();
-                            if (!(responseCaching.mustRevalidate() || requestCaching.maxStaleSeconds() == -1)) {
-                                maxStaleMillis = TimeUnit.SECONDS.toMillis((long) requestCaching.maxStaleSeconds());
-                            }
-                            if (!responseCaching.noCache()) {
-                                if ((ageMillis + minFreshMillis >= freshMillis + maxStaleMillis ? 1 : null) == null) {
-                                    Builder builder = this.cacheResponse.newBuilder();
-                                    if ((ageMillis + minFreshMillis < freshMillis ? 1 : null) == null) {
-                                        builder.addHeader("Warning", "110 HttpURLConnection \"Response is stale\"");
-                                    }
-                                    if ((ageMillis <= 86400000 ? 1 : null) == null && isFreshnessLifetimeHeuristic()) {
-                                        builder.addHeader("Warning", "113 HttpURLConnection \"Heuristic expiration\"");
-                                    }
-                                    return new CacheStrategy(builder.build(), null);
-                                }
-                            }
-                            Request.Builder conditionalRequestBuilder = this.request.newBuilder();
-                            if (this.etag != null) {
-                                conditionalRequestBuilder.header("If-None-Match", this.etag);
-                            } else if (this.lastModified != null) {
-                                conditionalRequestBuilder.header("If-Modified-Since", this.lastModifiedString);
-                            } else if (this.servedDate != null) {
-                                conditionalRequestBuilder.header("If-Modified-Since", this.servedDateString);
-                            }
-                            Request conditionalRequest = conditionalRequestBuilder.build();
-                            CacheStrategy cacheStrategy;
-                            if (hasConditions(conditionalRequest)) {
-                                cacheStrategy = new CacheStrategy(this.cacheResponse, null);
-                            } else {
-                                cacheStrategy = new CacheStrategy(null, null);
-                            }
-                            return r17;
-                        }
-                    }
-                    return new CacheStrategy(null, null);
-                }
-                return new CacheStrategy(null, null);
+            if (this.ageSeconds != -1) {
+                j = Math.max(j, TimeUnit.SECONDS.toMillis((long) this.ageSeconds));
             }
-            return new CacheStrategy(null, null);
+            return (j + (this.receivedResponseMillis - this.sentRequestMillis)) + (this.nowMillis - this.receivedResponseMillis);
         }
 
         private long computeFreshnessLifetime() {
             Object obj = 1;
             long j = 0;
-            CacheControl responseCaching = this.cacheResponse.cacheControl();
-            if (responseCaching.maxAgeSeconds() != -1) {
-                return TimeUnit.SECONDS.toMillis((long) responseCaching.maxAgeSeconds());
+            CacheControl cacheControl = this.cacheResponse.cacheControl();
+            if (cacheControl.maxAgeSeconds() != -1) {
+                return TimeUnit.SECONDS.toMillis((long) cacheControl.maxAgeSeconds());
             }
-            long delta;
             if (this.expires != null) {
-                delta = this.expires.getTime() - (this.servedDate == null ? this.receivedResponseMillis : this.servedDate.getTime());
-                if (delta > 0) {
+                long time = this.expires.getTime() - (this.servedDate == null ? this.receivedResponseMillis : this.servedDate.getTime());
+                if (time > 0) {
                     obj = null;
                 }
                 if (obj != null) {
-                    delta = 0;
+                    time = 0;
                 }
-                return delta;
+                return time;
             } else if (this.lastModified == null || this.cacheResponse.request().url().getQuery() != null) {
                 return 0;
             } else {
-                delta = (this.servedDate == null ? this.sentRequestMillis : this.servedDate.getTime()) - this.lastModified.getTime();
-                if (delta > 0) {
-                    obj = null;
-                }
-                if (obj == null) {
-                    j = delta / 10;
+                long time2 = (this.servedDate == null ? this.sentRequestMillis : this.servedDate.getTime()) - this.lastModified.getTime();
+                if ((time2 <= 0 ? 1 : null) == null) {
+                    j = time2 / 10;
                 }
                 return j;
             }
         }
 
-        private long cacheResponseAge() {
-            long receivedAge;
-            long apparentReceivedAge = 0;
-            if (this.servedDate != null) {
-                apparentReceivedAge = Math.max(0, this.receivedResponseMillis - this.servedDate.getTime());
+        private CacheStrategy getCandidate() {
+            if (this.cacheResponse == null) {
+                return new CacheStrategy(this.request, null);
             }
-            if (this.ageSeconds == -1) {
-                receivedAge = apparentReceivedAge;
-            } else {
-                receivedAge = Math.max(apparentReceivedAge, TimeUnit.SECONDS.toMillis((long) this.ageSeconds));
+            if (this.request.isHttps() && this.cacheResponse.handshake() == null) {
+                return new CacheStrategy(this.request, null);
             }
-            return (receivedAge + (this.receivedResponseMillis - this.sentRequestMillis)) + (this.nowMillis - this.receivedResponseMillis);
+            if (!CacheStrategy.isCacheable(this.cacheResponse, this.request)) {
+                return new CacheStrategy(this.request, null);
+            }
+            CacheControl cacheControl = this.request.cacheControl();
+            if (cacheControl.noCache() || hasConditions(this.request)) {
+                return new CacheStrategy(this.request, null);
+            }
+            long cacheResponseAge = cacheResponseAge();
+            long computeFreshnessLifetime = computeFreshnessLifetime();
+            if (cacheControl.maxAgeSeconds() != -1) {
+                computeFreshnessLifetime = Math.min(computeFreshnessLifetime, TimeUnit.SECONDS.toMillis((long) cacheControl.maxAgeSeconds()));
+            }
+            long j = 0;
+            if (cacheControl.minFreshSeconds() != -1) {
+                j = TimeUnit.SECONDS.toMillis((long) cacheControl.minFreshSeconds());
+            }
+            long j2 = 0;
+            CacheControl cacheControl2 = this.cacheResponse.cacheControl();
+            if (!(cacheControl2.mustRevalidate() || cacheControl.maxStaleSeconds() == -1)) {
+                j2 = TimeUnit.SECONDS.toMillis((long) cacheControl.maxStaleSeconds());
+            }
+            if (!cacheControl2.noCache()) {
+                if ((cacheResponseAge + j >= j2 + computeFreshnessLifetime ? 1 : null) == null) {
+                    Builder newBuilder = this.cacheResponse.newBuilder();
+                    if ((j + cacheResponseAge < computeFreshnessLifetime ? 1 : null) == null) {
+                        newBuilder.addHeader("Warning", "110 HttpURLConnection \"Response is stale\"");
+                    }
+                    if ((cacheResponseAge <= 86400000 ? 1 : null) == null && isFreshnessLifetimeHeuristic()) {
+                        newBuilder.addHeader("Warning", "113 HttpURLConnection \"Heuristic expiration\"");
+                    }
+                    return new CacheStrategy(null, newBuilder.build());
+                }
+            }
+            Request.Builder newBuilder2 = this.request.newBuilder();
+            if (this.etag != null) {
+                newBuilder2.header("If-None-Match", this.etag);
+            } else if (this.lastModified != null) {
+                newBuilder2.header("If-Modified-Since", this.lastModifiedString);
+            } else if (this.servedDate != null) {
+                newBuilder2.header("If-Modified-Since", this.servedDateString);
+            }
+            Request build = newBuilder2.build();
+            return !hasConditions(build) ? new CacheStrategy(build, null) : new CacheStrategy(build, this.cacheResponse);
+        }
+
+        private static boolean hasConditions(Request request) {
+            return (request.header("If-Modified-Since") == null && request.header("If-None-Match") == null) ? false : true;
         }
 
         private boolean isFreshnessLifetimeHeuristic() {
             return this.cacheResponse.cacheControl().maxAgeSeconds() == -1 && this.expires == null;
         }
 
-        private static boolean hasConditions(Request request) {
-            return (request.header("If-Modified-Since") == null && request.header("If-None-Match") == null) ? false : true;
+        public CacheStrategy get() {
+            CacheStrategy candidate = getCandidate();
+            return (candidate.networkRequest != null && this.request.cacheControl().onlyIfCached()) ? new CacheStrategy(null, null) : candidate;
         }
     }
 
-    private CacheStrategy(Request networkRequest, Response cacheResponse) {
-        this.networkRequest = networkRequest;
-        this.cacheResponse = cacheResponse;
+    private CacheStrategy(Request request, Response response) {
+        this.networkRequest = request;
+        this.cacheResponse = response;
     }
 
     /* JADX WARNING: inconsistent code. */

@@ -5,11 +5,9 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
@@ -17,213 +15,205 @@ import javax.net.ssl.SSLSession;
 public final class OkHostnameVerifier implements HostnameVerifier {
     private static final int ALT_DNS_NAME = 2;
     private static final int ALT_IPA_NAME = 7;
-    public static final OkHostnameVerifier INSTANCE;
-    private static final Pattern VERIFY_AS_IP_ADDRESS;
-
-    static {
-        INSTANCE = new OkHostnameVerifier();
-        VERIFY_AS_IP_ADDRESS = Pattern.compile("([0-9a-fA-F]*:[0-9a-fA-F:.]*)|([\\d.]+)");
-    }
+    public static final OkHostnameVerifier INSTANCE = new OkHostnameVerifier();
+    private static final Pattern VERIFY_AS_IP_ADDRESS = Pattern.compile("([0-9a-fA-F]*:[0-9a-fA-F:.]*)|([\\d.]+)");
 
     private OkHostnameVerifier() {
     }
 
-    public boolean verify(String host, SSLSession session) {
+    public static List allSubjectAltNames(X509Certificate x509Certificate) {
+        Collection subjectAltNames = getSubjectAltNames(x509Certificate, ALT_IPA_NAME);
+        Collection subjectAltNames2 = getSubjectAltNames(x509Certificate, ALT_DNS_NAME);
+        List arrayList = new ArrayList(subjectAltNames.size() + subjectAltNames2.size());
+        arrayList.addAll(subjectAltNames);
+        arrayList.addAll(subjectAltNames2);
+        return arrayList;
+    }
+
+    private static List getSubjectAltNames(X509Certificate x509Certificate, int i) {
+        List arrayList = new ArrayList();
         try {
-            return verify(host, (X509Certificate) session.getPeerCertificates()[0]);
-        } catch (SSLException e) {
-            return false;
-        }
-    }
-
-    public boolean verify(String host, X509Certificate certificate) {
-        if (verifyAsIpAddress(host)) {
-            return verifyIpAddress(host, certificate);
-        }
-        return verifyHostName(host, certificate);
-    }
-
-    static boolean verifyAsIpAddress(String host) {
-        return VERIFY_AS_IP_ADDRESS.matcher(host).matches();
-    }
-
-    private boolean verifyIpAddress(String ipAddress, X509Certificate certificate) {
-        List<String> altNames = getSubjectAltNames(certificate, ALT_IPA_NAME);
-        int size = altNames.size();
-        for (int i = 0; i < size; i++) {
-            if (ipAddress.equalsIgnoreCase((String) altNames.get(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean verifyHostName(String hostName, X509Certificate certificate) {
-        hostName = hostName.toLowerCase(Locale.US);
-        boolean hasDns = false;
-        List<String> altNames = getSubjectAltNames(certificate, ALT_DNS_NAME);
-        int size = altNames.size();
-        for (int i = 0; i < size; i++) {
-            hasDns = true;
-            if (verifyHostName(hostName, (String) altNames.get(i))) {
-                return true;
-            }
-        }
-        if (!hasDns) {
-            String cn = new DistinguishedNameParser(certificate.getSubjectX500Principal()).findMostSpecific("cn");
-            if (cn != null) {
-                return verifyHostName(hostName, cn);
-            }
-        }
-        return false;
-    }
-
-    public static List<String> allSubjectAltNames(X509Certificate certificate) {
-        List<String> altIpaNames = getSubjectAltNames(certificate, ALT_IPA_NAME);
-        List<String> altDnsNames = getSubjectAltNames(certificate, ALT_DNS_NAME);
-        List<String> result = new ArrayList(altIpaNames.size() + altDnsNames.size());
-        result.addAll(altIpaNames);
-        result.addAll(altDnsNames);
-        return result;
-    }
-
-    private static List<String> getSubjectAltNames(X509Certificate certificate, int type) {
-        List<String> result = new ArrayList();
-        try {
-            Collection<?> subjectAltNames = certificate.getSubjectAlternativeNames();
-            if (subjectAltNames == null) {
+            Collection<List> subjectAlternativeNames = x509Certificate.getSubjectAlternativeNames();
+            if (subjectAlternativeNames == null) {
                 return Collections.emptyList();
             }
-            Iterator it = subjectAltNames.iterator();
-            while (it.hasNext()) {
-                List<?> entry = (List) it.next();
-                if (entry != null && entry.size() >= ALT_DNS_NAME) {
-                    Integer altNameType = (Integer) entry.get(0);
-                    if (altNameType != null && altNameType.intValue() == type) {
-                        String altName = (String) entry.get(1);
-                        if (altName != null) {
-                            result.add(altName);
+            for (List list : subjectAlternativeNames) {
+                if (list != null && list.size() >= ALT_DNS_NAME) {
+                    Integer num = (Integer) list.get(0);
+                    if (num != null && num.intValue() == i) {
+                        String str = (String) list.get(1);
+                        if (str != null) {
+                            arrayList.add(str);
                         }
                     }
                 }
             }
-            return result;
+            return arrayList;
         } catch (CertificateParsingException e) {
             return Collections.emptyList();
         }
     }
 
+    static boolean verifyAsIpAddress(String str) {
+        return VERIFY_AS_IP_ADDRESS.matcher(str).matches();
+    }
+
     /* JADX WARNING: inconsistent code. */
     /* Code decompiled incorrectly, please refer to instructions dump. */
-    private boolean verifyHostName(java.lang.String r9, java.lang.String r10) {
+    private boolean verifyHostName(java.lang.String r8, java.lang.String r9) {
         /*
-        r8 = this;
-        r7 = -1;
-        r6 = 46;
-        r5 = 1;
-        r4 = 0;
-        if (r9 != 0) goto L_0x0008;
+        r7 = this;
+        r6 = -1;
+        r5 = 46;
+        r4 = 1;
+        r3 = 0;
+        if (r8 != 0) goto L_0x0008;
     L_0x0007:
-        return r4;
+        return r3;
     L_0x0008:
-        r2 = r9.length();
-        if (r2 == 0) goto L_0x0007;
+        r0 = r8.length();
+        if (r0 == 0) goto L_0x0007;
     L_0x000e:
-        r2 = ".";
-        r2 = r9.startsWith(r2);
-        if (r2 != 0) goto L_0x0007;
+        r0 = ".";
+        r0 = r8.startsWith(r0);
+        if (r0 != 0) goto L_0x0007;
     L_0x0017:
-        r2 = "..";
-        r2 = r9.endsWith(r2);
-        if (r2 != 0) goto L_0x0007;
+        r0 = "..";
+        r0 = r8.endsWith(r0);
+        if (r0 != 0) goto L_0x0007;
     L_0x0020:
-        if (r10 != 0) goto L_0x0023;
+        if (r9 != 0) goto L_0x0023;
     L_0x0022:
-        return r4;
+        return r3;
     L_0x0023:
-        r2 = r10.length();
-        if (r2 == 0) goto L_0x0022;
+        r0 = r9.length();
+        if (r0 == 0) goto L_0x0022;
     L_0x0029:
-        r2 = ".";
-        r2 = r10.startsWith(r2);
-        if (r2 != 0) goto L_0x0022;
+        r0 = ".";
+        r0 = r9.startsWith(r0);
+        if (r0 != 0) goto L_0x0022;
     L_0x0032:
-        r2 = "..";
-        r2 = r10.endsWith(r2);
-        if (r2 != 0) goto L_0x0022;
+        r0 = "..";
+        r0 = r9.endsWith(r0);
+        if (r0 != 0) goto L_0x0022;
     L_0x003b:
-        r2 = ".";
-        r2 = r9.endsWith(r2);
-        if (r2 == 0) goto L_0x0066;
+        r0 = ".";
+        r0 = r8.endsWith(r0);
+        if (r0 == 0) goto L_0x0066;
     L_0x0044:
-        r2 = ".";
-        r2 = r10.endsWith(r2);
-        if (r2 == 0) goto L_0x0078;
+        r0 = ".";
+        r0 = r9.endsWith(r0);
+        if (r0 == 0) goto L_0x0078;
     L_0x004d:
-        r2 = java.util.Locale.US;
-        r10 = r10.toLowerCase(r2);
-        r2 = "*";
-        r2 = r10.contains(r2);
-        if (r2 == 0) goto L_0x008a;
+        r0 = java.util.Locale.US;
+        r0 = r9.toLowerCase(r0);
+        r1 = "*";
+        r1 = r0.contains(r1);
+        if (r1 == 0) goto L_0x008a;
     L_0x005c:
-        r2 = "*.";
-        r2 = r10.startsWith(r2);
-        if (r2 != 0) goto L_0x008f;
+        r1 = "*.";
+        r1 = r0.startsWith(r1);
+        if (r1 != 0) goto L_0x008f;
     L_0x0065:
-        return r4;
+        return r3;
     L_0x0066:
-        r2 = new java.lang.StringBuilder;
-        r2.<init>();
-        r2 = r2.append(r9);
-        r2 = r2.append(r6);
-        r9 = r2.toString();
+        r0 = new java.lang.StringBuilder;
+        r0.<init>();
+        r0 = r0.append(r8);
+        r0 = r0.append(r5);
+        r8 = r0.toString();
         goto L_0x0044;
     L_0x0078:
-        r2 = new java.lang.StringBuilder;
-        r2.<init>();
-        r2 = r2.append(r10);
-        r2 = r2.append(r6);
-        r10 = r2.toString();
+        r0 = new java.lang.StringBuilder;
+        r0.<init>();
+        r0 = r0.append(r9);
+        r0 = r0.append(r5);
+        r9 = r0.toString();
         goto L_0x004d;
     L_0x008a:
-        r2 = r9.equals(r10);
-        return r2;
+        r0 = r8.equals(r0);
+        return r0;
     L_0x008f:
-        r2 = 42;
-        r2 = r10.indexOf(r2, r5);
-        if (r2 != r7) goto L_0x0065;
+        r1 = 42;
+        r1 = r0.indexOf(r1, r4);
+        if (r1 != r6) goto L_0x0065;
     L_0x0097:
-        r2 = r9.length();
-        r3 = r10.length();
-        if (r2 < r3) goto L_0x00c1;
+        r1 = r8.length();
+        r2 = r0.length();
+        if (r1 < r2) goto L_0x00c1;
     L_0x00a1:
-        r2 = "*.";
-        r2 = r2.equals(r10);
-        if (r2 != 0) goto L_0x00c2;
+        r1 = "*.";
+        r1 = r1.equals(r0);
+        if (r1 != 0) goto L_0x00c2;
     L_0x00aa:
-        r0 = r10.substring(r5);
-        r2 = r9.endsWith(r0);
-        if (r2 == 0) goto L_0x00c3;
+        r0 = r0.substring(r4);
+        r1 = r8.endsWith(r0);
+        if (r1 == 0) goto L_0x00c3;
     L_0x00b4:
-        r2 = r9.length();
-        r3 = r0.length();
-        r1 = r2 - r3;
-        if (r1 > 0) goto L_0x00c4;
+        r1 = r8.length();
+        r0 = r0.length();
+        r0 = r1 - r0;
+        if (r0 > 0) goto L_0x00c4;
     L_0x00c0:
-        return r5;
+        return r4;
     L_0x00c1:
-        return r4;
+        return r3;
     L_0x00c2:
-        return r4;
+        return r3;
     L_0x00c3:
-        return r4;
+        return r3;
     L_0x00c4:
-        r2 = r1 + -1;
-        r2 = r9.lastIndexOf(r6, r2);
-        if (r2 == r7) goto L_0x00c0;
+        r0 = r0 + -1;
+        r0 = r8.lastIndexOf(r5, r0);
+        if (r0 == r6) goto L_0x00c0;
     L_0x00cc:
-        return r4;
+        return r3;
         */
         throw new UnsupportedOperationException("Method not decompiled: com.squareup.okhttp.internal.tls.OkHostnameVerifier.verifyHostName(java.lang.String, java.lang.String):boolean");
+    }
+
+    private boolean verifyHostName(String str, X509Certificate x509Certificate) {
+        String toLowerCase = str.toLowerCase(Locale.US);
+        List subjectAltNames = getSubjectAltNames(x509Certificate, ALT_DNS_NAME);
+        int size = subjectAltNames.size();
+        int i = 0;
+        boolean z = false;
+        while (i < size) {
+            if (verifyHostName(toLowerCase, (String) subjectAltNames.get(i))) {
+                return true;
+            }
+            i++;
+            z = true;
+        }
+        if (!z) {
+            String findMostSpecific = new DistinguishedNameParser(x509Certificate.getSubjectX500Principal()).findMostSpecific("cn");
+            if (findMostSpecific != null) {
+                return verifyHostName(toLowerCase, findMostSpecific);
+            }
+        }
+        return false;
+    }
+
+    private boolean verifyIpAddress(String str, X509Certificate x509Certificate) {
+        List subjectAltNames = getSubjectAltNames(x509Certificate, ALT_IPA_NAME);
+        int size = subjectAltNames.size();
+        for (int i = 0; i < size; i++) {
+            if (str.equalsIgnoreCase((String) subjectAltNames.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean verify(String str, X509Certificate x509Certificate) {
+        return !verifyAsIpAddress(str) ? verifyHostName(str, x509Certificate) : verifyIpAddress(str, x509Certificate);
+    }
+
+    public boolean verify(String str, SSLSession sSLSession) {
+        try {
+            return verify(str, (X509Certificate) sSLSession.getPeerCertificates()[0]);
+        } catch (SSLException e) {
+            return false;
+        }
     }
 }

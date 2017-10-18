@@ -5,18 +5,16 @@ import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.http.CacheRequest;
 import com.squareup.okhttp.internal.http.CacheStrategy;
 
-import java.io.IOException;
-
 public interface InternalCache {
-    Response get(Request request) throws IOException;
+    Response get(Request request);
 
-    CacheRequest put(Response response) throws IOException;
+    CacheRequest put(Response response);
 
-    void remove(Request request) throws IOException;
+    void remove(Request request);
 
     void trackConditionalCacheHit();
 
     void trackResponse(CacheStrategy cacheStrategy);
 
-    void update(Response response, Response response2) throws IOException;
+    void update(Response response, Response response2);
 }

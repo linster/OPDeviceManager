@@ -3,31 +3,27 @@ package com.squareup.okhttp.internal.http;
 import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.ResponseBody;
-
-import okio.BufferedSource;
+import okio.a;
 
 public final class RealResponseBody extends ResponseBody {
     private final Headers headers;
-    private final BufferedSource source;
+    private final a source;
 
-    public RealResponseBody(Headers headers, BufferedSource source) {
+    public RealResponseBody(Headers headers, a aVar) {
         this.headers = headers;
-        this.source = source;
-    }
-
-    public MediaType contentType() {
-        String contentType = this.headers.get("Content-Type");
-        if (contentType == null) {
-            return null;
-        }
-        return MediaType.parse(contentType);
+        this.source = aVar;
     }
 
     public long contentLength() {
         return OkHeaders.contentLength(this.headers);
     }
 
-    public BufferedSource source() {
+    public MediaType contentType() {
+        String str = this.headers.get("Content-Type");
+        return str == null ? null : MediaType.parse(str);
+    }
+
+    public a source() {
         return this.source;
     }
 }

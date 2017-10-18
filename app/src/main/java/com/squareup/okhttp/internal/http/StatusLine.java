@@ -2,8 +2,6 @@ package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.Protocol;
 import com.squareup.okhttp.Response;
-
-import java.io.IOException;
 import java.net.ProtocolException;
 
 public final class StatusLine {
@@ -14,71 +12,65 @@ public final class StatusLine {
     public final String message;
     public final Protocol protocol;
 
-    public StatusLine(Protocol protocol, int code, String message) {
+    public StatusLine(Protocol protocol, int i, String str) {
         this.protocol = protocol;
-        this.code = code;
-        this.message = message;
+        this.code = i;
+        this.message = str;
     }
 
     public static StatusLine get(Response response) {
         return new StatusLine(response.protocol(), response.code(), response.message());
     }
 
-    public static StatusLine parse(String statusLine) throws IOException {
-        int codeStart;
+    public static StatusLine parse(String str) {
         Protocol protocol;
-        if (statusLine.startsWith("HTTP/1.")) {
-            if (statusLine.length() >= 9 && statusLine.charAt(8) == ' ') {
-                int httpMinorVersion = statusLine.charAt(7) - 48;
-                codeStart = 9;
-                if (httpMinorVersion == 0) {
+        int i = 9;
+        if (str.startsWith("HTTP/1.")) {
+            if (str.length() >= 9 && str.charAt(8) == ' ') {
+                int charAt = str.charAt(7) - 48;
+                if (charAt == 0) {
                     protocol = Protocol.HTTP_1_0;
-                } else if (httpMinorVersion != 1) {
-                    throw new ProtocolException("Unexpected status line: " + statusLine);
+                } else if (charAt != 1) {
+                    throw new ProtocolException("Unexpected status line: " + str);
                 } else {
                     protocol = Protocol.HTTP_1_1;
                 }
             } else {
-                throw new ProtocolException("Unexpected status line: " + statusLine);
+                throw new ProtocolException("Unexpected status line: " + str);
             }
-        } else if (statusLine.startsWith("ICY ")) {
+        } else if (str.startsWith("ICY ")) {
             protocol = Protocol.HTTP_1_0;
-            codeStart = 4;
+            i = 4;
         } else {
-            throw new ProtocolException("Unexpected status line: " + statusLine);
+            throw new ProtocolException("Unexpected status line: " + str);
         }
-        if (statusLine.length() >= codeStart + 3) {
+        if (str.length() >= i + 3) {
             try {
-                int code = Integer.parseInt(statusLine.substring(codeStart, codeStart + 3));
-                String message = "";
-                if (statusLine.length() > codeStart + 3) {
-                    if (statusLine.charAt(codeStart + 3) == ' ') {
-                        message = statusLine.substring(codeStart + 4);
-                    } else {
-                        throw new ProtocolException("Unexpected status line: " + statusLine);
-                    }
+                String str2;
+                int parseInt = Integer.parseInt(str.substring(i, i + 3));
+                String str3 = "";
+                if (str.length() <= i + 3) {
+                    str2 = str3;
+                } else if (str.charAt(i + 3) == ' ') {
+                    str2 = str.substring(i + 4);
+                } else {
+                    throw new ProtocolException("Unexpected status line: " + str);
                 }
-                return new StatusLine(protocol, code, message);
+                return new StatusLine(protocol, parseInt, str2);
             } catch (NumberFormatException e) {
-                throw new ProtocolException("Unexpected status line: " + statusLine);
+                throw new ProtocolException("Unexpected status line: " + str);
             }
         }
-        throw new ProtocolException("Unexpected status line: " + statusLine);
+        throw new ProtocolException("Unexpected status line: " + str);
     }
 
     public String toString() {
-        String str;
-        StringBuilder result = new StringBuilder();
-        if (this.protocol != Protocol.HTTP_1_0) {
-            str = "HTTP/1.1";
-        } else {
-            str = "HTTP/1.0";
-        }
-        result.append(str);
-        result.append(' ').append(this.code);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(this.protocol != Protocol.HTTP_1_0 ? "HTTP/1.1" : "HTTP/1.0");
+        stringBuilder.append(' ').append(this.code);
         if (this.message != null) {
-            result.append(' ').append(this.message);
+            stringBuilder.append(' ').append(this.message);
         }
-        return result.toString();
+        return stringBuilder.toString();
     }
 }

@@ -4,29 +4,26 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.Response.Builder;
 import com.squareup.okhttp.ResponseBody;
-
-import java.io.IOException;
-
-import okio.Sink;
+import okio.n;
 
 public interface Transport {
     public static final int DISCARD_STREAM_TIMEOUT_MILLIS = 100;
 
     boolean canReuseConnection();
 
-    Sink createRequestBody(Request request, long j) throws IOException;
+    n createRequestBody(Request request, long j);
 
-    void disconnect(HttpEngine httpEngine) throws IOException;
+    void disconnect(HttpEngine httpEngine);
 
-    void finishRequest() throws IOException;
+    void finishRequest();
 
-    ResponseBody openResponseBody(Response response) throws IOException;
+    ResponseBody openResponseBody(Response response);
 
-    Builder readResponseHeaders() throws IOException;
+    Builder readResponseHeaders();
 
-    void releaseConnectionOnIdle() throws IOException;
+    void releaseConnectionOnIdle();
 
-    void writeRequestBody(RetryableSink retryableSink) throws IOException;
+    void writeRequestBody(RetryableSink retryableSink);
 
-    void writeRequestHeaders(Request request) throws IOException;
+    void writeRequestHeaders(Request request);
 }

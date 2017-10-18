@@ -6,8 +6,8 @@ final class ResponseWrapper {
     final Response response;
     final Object responseBody;
 
-    ResponseWrapper(Response response, Object responseBody) {
+    ResponseWrapper(Response response, Object obj) {
         this.response = response;
-        this.responseBody = responseBody;
+        this.responseBody = obj;
     }
 }

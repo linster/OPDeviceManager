@@ -3,32 +3,32 @@ package retrofit;
 public final class Endpoints {
     private static final String DEFAULT_NAME = "default";
 
-    private static class FixedEndpoint implements Endpoint {
+    class FixedEndpoint implements Endpoint {
         private final String apiUrl;
         private final String name;
 
-        FixedEndpoint(String apiUrl, String name) {
-            this.apiUrl = apiUrl;
-            this.name = name;
-        }
-
-        public String getUrl() {
-            return this.apiUrl;
+        FixedEndpoint(String str, String str2) {
+            this.apiUrl = str;
+            this.name = str2;
         }
 
         public String getName() {
             return this.name;
+        }
+
+        public String getUrl() {
+            return this.apiUrl;
         }
     }
 
     private Endpoints() {
     }
 
-    public static Endpoint newFixedEndpoint(String url) {
-        return new FixedEndpoint(url, DEFAULT_NAME);
+    public static Endpoint newFixedEndpoint(String str) {
+        return new FixedEndpoint(str, DEFAULT_NAME);
     }
 
-    public static Endpoint newFixedEndpoint(String url, String name) {
-        return new FixedEndpoint(url, name);
+    public static Endpoint newFixedEndpoint(String str, String str2) {
+        return new FixedEndpoint(str, str2);
     }
 }

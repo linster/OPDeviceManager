@@ -5,584 +5,397 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Parcelable.Creator;
 import android.text.TextUtils;
-
-import com.loc.br;
-
+import com.loc.bq;
 import org.json.JSONObject;
 
 @SuppressLint({"NewApi"})
 public class AmapLoc implements Parcelable {
-    public static final Creator<AmapLoc> CREATOR;
-    private String A;
-    private String B;
-    private int C;
-    private String D;
-    private JSONObject E;
-    private String a;
-    private double b;
-    private double c;
-    private double d;
-    private float e;
-    private float f;
-    private float g;
-    private long h;
-    private String i;
-    private int j;
-    private String k;
-    private int l;
-    private String m;
-    private String n;
-    private String o;
-    private String p;
-    private String q;
-    private String r;
-    private String s;
-    private String t;
-    private String u;
-    private String v;
-    private String w;
-    private String x;
-    private String y;
-    private String z;
-
-    public int a() {
-        return this.j;
-    }
-
-    public int b() {
-        return this.l;
-    }
-
-    public void a(int i) {
-        this.l = i;
-    }
-
-    public void b(int i) {
-        if (this.j == 0) {
-            switch (i) {
-                case 0:
-                    this.k = "success";
-                    break;
-                case 1:
-                    this.k = "\u91cd\u8981\u53c2\u6570\u4e3a\u7a7a";
-                    break;
-                case 2:
-                    this.k = "WIFI\u4fe1\u606f\u4e0d\u8db3";
-                    break;
-                case 3:
-                    this.k = "\u8bf7\u6c42\u53c2\u6570\u83b7\u53d6\u51fa\u73b0\u5f02\u5e38";
-                    break;
-                case 4:
-                    this.k = "\u7f51\u7edc\u8fde\u63a5\u5f02\u5e38";
-                    break;
-                case 5:
-                    this.k = "\u89e3\u6790XML\u51fa\u9519";
-                    break;
-                case 6:
-                    this.k = "\u5b9a\u4f4d\u7ed3\u679c\u9519\u8bef";
-                    break;
-                case 7:
-                    this.k = "KEY\u9519\u8bef";
-                    break;
-                case 8:
-                    this.k = "\u5176\u4ed6\u9519\u8bef";
-                    break;
-                case 9:
-                    this.k = "\u521d\u59cb\u5316\u5f02\u5e38";
-                    break;
-                case 10:
-                    this.k = "\u5b9a\u4f4d\u670d\u52a1\u542f\u52a8\u5931\u8d25";
-                    break;
-                case 11:
-                    this.k = "\u9519\u8bef\u7684\u57fa\u7ad9\u4fe1\u606f\uff0c\u8bf7\u68c0\u67e5\u662f\u5426\u63d2\u5165SIM\u5361";
-                    break;
-                case 12:
-                    this.k = "\u7f3a\u5c11\u5b9a\u4f4d\u6743\u9650";
-                    break;
-            }
-            this.j = i;
-        }
-    }
-
-    public String c() {
-        return this.k;
-    }
-
-    public void a(String str) {
-        this.k = str;
-    }
-
-    public String d() {
-        return this.m;
-    }
-
-    public void b(String str) {
-        if (this.m == null || this.m.length() == 0) {
-            this.m = str;
-        }
-    }
-
-    public AmapLoc() {
-        this.a = "";
-        this.b = 0.0d;
-        this.c = 0.0d;
-        this.d = 0.0d;
-        this.e = 0.0f;
-        this.f = 0.0f;
-        this.g = 0.0f;
-        this.h = 0;
-        this.i = "new";
-        this.j = 0;
-        this.k = "success";
-        this.l = 0;
-        this.m = "";
-        this.n = "";
-        this.o = "";
-        this.p = "";
-        this.q = "";
-        this.r = "";
-        this.s = "";
-        this.t = "";
-        this.u = "";
-        this.v = "";
-        this.w = "";
-        this.x = "";
-        this.y = "";
-        this.z = null;
-        this.A = "";
-        this.B = "";
-        this.C = -1;
-        this.D = "";
-        this.E = null;
-    }
+    public static final Creator us = new a();
+    private String a = "";
+    private double c = 0.0d;
+    private double tP = 0.0d;
+    private double tQ = 0.0d;
+    private float tR = 0.0f;
+    private float tS = 0.0f;
+    private float tT = 0.0f;
+    private long tU = 0;
+    private String tV = "new";
+    private int tW = 0;
+    private String tX = "success";
+    private int tY = 0;
+    private String tZ = "";
+    private String ua = "";
+    private String ub = "";
+    private String uc = "";
+    private String ud = "";
+    private String ue = "";
+    private String uf = "";
+    private String ug = "";
+    private String uh = "";
+    private String ui = "";
+    private String uj = "";
+    private String uk = "";
+    private String ul = "";
+    private String um = null;
+    private String un = "";
+    private String uo = "";
+    private int up = -1;
+    private String uq = "";
+    private JSONObject ur = null;
 
     public AmapLoc(Parcel parcel) {
-        this.a = "";
-        this.b = 0.0d;
-        this.c = 0.0d;
-        this.d = 0.0d;
-        this.e = 0.0f;
-        this.f = 0.0f;
-        this.g = 0.0f;
-        this.h = 0;
-        this.i = "new";
-        this.j = 0;
-        this.k = "success";
-        this.l = 0;
-        this.m = "";
-        this.n = "";
-        this.o = "";
-        this.p = "";
-        this.q = "";
-        this.r = "";
-        this.s = "";
-        this.t = "";
-        this.u = "";
-        this.v = "";
-        this.w = "";
-        this.x = "";
-        this.y = "";
-        this.z = null;
-        this.A = "";
-        this.B = "";
-        this.C = -1;
-        this.D = "";
-        this.E = null;
         this.a = parcel.readString();
-        this.i = parcel.readString();
-        this.k = parcel.readString();
-        this.j = parcel.readInt();
-        this.g = parcel.readFloat();
-        this.f = parcel.readFloat();
-        this.e = parcel.readFloat();
-        this.b = parcel.readDouble();
+        this.tV = parcel.readString();
+        this.tX = parcel.readString();
+        this.tW = parcel.readInt();
+        this.tT = parcel.readFloat();
+        this.tS = parcel.readFloat();
+        this.tR = parcel.readFloat();
+        this.tP = parcel.readDouble();
         this.c = parcel.readDouble();
-        this.d = parcel.readDouble();
-        this.h = parcel.readLong();
-        this.n = parcel.readString();
-        this.o = parcel.readString();
-        this.p = parcel.readString();
-        this.q = parcel.readString();
-        this.r = parcel.readString();
-        this.s = parcel.readString();
-        this.t = parcel.readString();
-        this.u = parcel.readString();
-        this.v = parcel.readString();
-        this.w = parcel.readString();
-        this.x = parcel.readString();
-        this.y = parcel.readString();
-        this.z = parcel.readString();
-        this.A = parcel.readString();
-        this.B = parcel.readString();
-        this.D = parcel.readString();
-        this.m = parcel.readString();
-        this.C = parcel.readInt();
-        this.l = parcel.readInt();
+        this.tQ = parcel.readDouble();
+        this.tU = parcel.readLong();
+        this.ua = parcel.readString();
+        this.ub = parcel.readString();
+        this.uc = parcel.readString();
+        this.ud = parcel.readString();
+        this.ue = parcel.readString();
+        this.uf = parcel.readString();
+        this.ug = parcel.readString();
+        this.uh = parcel.readString();
+        this.ui = parcel.readString();
+        this.uj = parcel.readString();
+        this.uk = parcel.readString();
+        this.ul = parcel.readString();
+        this.um = parcel.readString();
+        this.un = parcel.readString();
+        this.uo = parcel.readString();
+        this.uq = parcel.readString();
+        this.tZ = parcel.readString();
+        this.up = parcel.readInt();
+        this.tY = parcel.readInt();
     }
 
     public AmapLoc(JSONObject jSONObject) {
-        this.a = "";
-        this.b = 0.0d;
-        this.c = 0.0d;
-        this.d = 0.0d;
-        this.e = 0.0f;
-        this.f = 0.0f;
-        this.g = 0.0f;
-        this.h = 0;
-        this.i = "new";
-        this.j = 0;
-        this.k = "success";
-        this.l = 0;
-        this.m = "";
-        this.n = "";
-        this.o = "";
-        this.p = "";
-        this.q = "";
-        this.r = "";
-        this.s = "";
-        this.t = "";
-        this.u = "";
-        this.v = "";
-        this.w = "";
-        this.x = "";
-        this.y = "";
-        this.z = null;
-        this.A = "";
-        this.B = "";
-        this.C = -1;
-        this.D = "";
-        this.E = null;
         if (jSONObject != null) {
             try {
-                c(jSONObject.getString("provider"));
-                a(jSONObject.getDouble("lon"));
-                b(jSONObject.getDouble("lat"));
-                if (br.a(jSONObject, "altitude")) {
-                    c(jSONObject.getDouble("altitude"));
+                yF(jSONObject.getString("provider"));
+                yH(jSONObject.getDouble("lon"));
+                yK(jSONObject.getDouble("lat"));
+                if (bq.wb(jSONObject, "altitude")) {
+                    yM(jSONObject.getDouble("altitude"));
                 }
-                a((float) jSONObject.getLong("accuracy"));
-                b((float) jSONObject.getLong("speed"));
-                c((float) jSONObject.getLong("bearing"));
-                f(jSONObject.getString("type"));
-                g(jSONObject.getString("retype"));
-                i(jSONObject.getString("citycode"));
-                j(jSONObject.getString("desc"));
-                k(jSONObject.getString("adcode"));
-                l(jSONObject.getString("country"));
-                m(jSONObject.getString("province"));
-                n(jSONObject.getString("city"));
-                p(jSONObject.getString("road"));
-                r(jSONObject.getString("poiname"));
-                q(jSONObject.getString("street"));
-                b(jSONObject.getInt("errorCode"));
-                a(jSONObject.getString("errorInfo"));
-                a(jSONObject.getInt("locationType"));
-                b(jSONObject.getString("locationDetail"));
-                if (br.a(jSONObject, "cens")) {
-                    s(jSONObject.getString("cens"));
+                yO((float) jSONObject.getLong("accuracy"));
+                yQ((float) jSONObject.getLong("speed"));
+                yS((float) jSONObject.getLong("bearing"));
+                yX(jSONObject.getString("type"));
+                yZ(jSONObject.getString("retype"));
+                zd(jSONObject.getString("citycode"));
+                zf(jSONObject.getString("desc"));
+                zh(jSONObject.getString("adcode"));
+                zj(jSONObject.getString("country"));
+                zl(jSONObject.getString("province"));
+                zn(jSONObject.getString("city"));
+                zr(jSONObject.getString("road"));
+                zu(jSONObject.getString("poiname"));
+                zs(jSONObject.getString("street"));
+                yz(jSONObject.getInt("errorCode"));
+                yB(jSONObject.getString("errorInfo"));
+                yy(jSONObject.getInt("locationType"));
+                yD(jSONObject.getString("locationDetail"));
+                if (bq.wb(jSONObject, "cens")) {
+                    zv(jSONObject.getString("cens"));
                 }
-                if (br.a(jSONObject, "poiid")) {
-                    t(jSONObject.getString("poiid"));
+                if (bq.wb(jSONObject, "poiid")) {
+                    zx(jSONObject.getString("poiid"));
                 }
-                if (br.a(jSONObject, "floor")) {
-                    u(jSONObject.getString("floor"));
+                if (bq.wb(jSONObject, "floor")) {
+                    zy(jSONObject.getString("floor"));
                 }
-                if (br.a(jSONObject, "coord")) {
-                    v(jSONObject.getString("coord"));
+                if (bq.wb(jSONObject, "coord")) {
+                    zA(jSONObject.getString("coord"));
                 }
-                if (br.a(jSONObject, "mcell")) {
-                    w(jSONObject.getString("mcell"));
+                if (bq.wb(jSONObject, "mcell")) {
+                    zD(jSONObject.getString("mcell"));
                 }
-                if (br.a(jSONObject, "time")) {
-                    a(jSONObject.getLong("time"));
+                if (bq.wb(jSONObject, "time")) {
+                    yV(jSONObject.getLong("time"));
                 }
-                if (br.a(jSONObject, "district")) {
-                    o(jSONObject.getString("district"));
+                if (bq.wb(jSONObject, "district")) {
+                    zp(jSONObject.getString("district"));
                 }
             } catch (Exception e) {
             }
         }
     }
 
-    public String e() {
+    private void yP(String str) {
+        this.tR = Float.parseFloat(str);
+    }
+
+    private void yR(String str) {
+        this.tS = Float.parseFloat(str);
+        if (this.tS > 100.0f) {
+            this.tS = 0.0f;
+        }
+    }
+
+    private void yT(String str) {
+        this.tT = Float.parseFloat(str);
+    }
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(this.a);
+        parcel.writeString(this.tV);
+        parcel.writeString(this.tX);
+        parcel.writeInt(this.tW);
+        parcel.writeFloat(this.tT);
+        parcel.writeFloat(this.tS);
+        parcel.writeFloat(this.tR);
+        parcel.writeDouble(this.tP);
+        parcel.writeDouble(this.c);
+        parcel.writeDouble(this.tQ);
+        parcel.writeLong(this.tU);
+        parcel.writeString(this.ua);
+        parcel.writeString(this.ub);
+        parcel.writeString(this.uc);
+        parcel.writeString(this.ud);
+        parcel.writeString(this.ue);
+        parcel.writeString(this.uf);
+        parcel.writeString(this.ug);
+        parcel.writeString(this.uh);
+        parcel.writeString(this.ui);
+        parcel.writeString(this.uj);
+        parcel.writeString(this.uk);
+        parcel.writeString(this.ul);
+        parcel.writeString(this.um);
+        parcel.writeString(this.un);
+        parcel.writeString(this.uo);
+        parcel.writeString(this.uq);
+        parcel.writeString(this.tZ);
+        parcel.writeInt(this.up);
+        parcel.writeInt(this.tY);
+    }
+
+    public String yA() {
+        return this.tX;
+    }
+
+    public void yB(String str) {
+        this.tX = str;
+    }
+
+    public String yC() {
+        return this.tZ;
+    }
+
+    public void yD(String str) {
+        if (this.tZ == null || this.tZ.length() == 0) {
+            this.tZ = str;
+        }
+    }
+
+    public String yE() {
         return this.a;
     }
 
-    public void c(String str) {
+    public void yF(String str) {
         this.a = str;
     }
 
-    public double f() {
-        return this.b;
+    public double yG() {
+        return this.tP;
     }
 
-    public void a(double d) {
-        d(br.a(Double.valueOf(d), "#.000000"));
+    public void yH(double d) {
+        yI(bq.wx(Double.valueOf(d), "#.000000"));
     }
 
-    public void d(String str) {
-        this.b = Double.parseDouble(str);
+    public void yI(String str) {
+        this.tP = Double.parseDouble(str);
     }
 
-    public double g() {
+    public double yJ() {
         return this.c;
     }
 
-    public void b(double d) {
-        e(br.a(Double.valueOf(d), "#.000000"));
+    public void yK(double d) {
+        yL(bq.wx(Double.valueOf(d), "#.000000"));
     }
 
-    public void e(String str) {
+    public void yL(String str) {
         this.c = Double.parseDouble(str);
     }
 
-    public void c(double d) {
-        this.d = d;
+    public void yM(double d) {
+        this.tQ = d;
     }
 
-    public float h() {
-        return this.e;
+    public float yN() {
+        return this.tR;
     }
 
-    public void a(float f) {
-        x(String.valueOf(Math.round(f)));
+    public void yO(float f) {
+        yP(String.valueOf(Math.round(f)));
     }
 
-    private void x(String str) {
-        this.e = Float.parseFloat(str);
+    public void yQ(float f) {
+        yR(bq.wx(Float.valueOf(f), "#.0"));
     }
 
-    public void b(float f) {
-        y(br.a(Float.valueOf(f), "#.0"));
+    public void yS(float f) {
+        yT(bq.wx(Float.valueOf(f), "#.0"));
     }
 
-    private void y(String str) {
-        this.f = Float.parseFloat(str);
-        if (this.f > 100.0f) {
-            this.f = 0.0f;
-        }
+    public long yU() {
+        return this.tU;
     }
 
-    public void c(float f) {
-        z(br.a(Float.valueOf(f), "#.0"));
+    public void yV(long j) {
+        this.tU = j;
     }
 
-    private void z(String str) {
-        this.g = Float.parseFloat(str);
+    public String yW() {
+        return this.tV;
     }
 
-    public long i() {
-        return this.h;
+    public void yX(String str) {
+        this.tV = str;
     }
 
-    public void a(long j) {
-        this.h = j;
+    public String yY() {
+        return this.ua;
     }
 
-    public String j() {
-        return this.i;
+    public void yZ(String str) {
+        this.ua = str;
     }
 
-    public void f(String str) {
-        this.i = str;
+    public int yw() {
+        return this.tW;
     }
 
-    public String k() {
-        return this.n;
+    public int yx() {
+        return this.tY;
     }
 
-    public void g(String str) {
-        this.n = str;
+    public void yy(int i) {
+        this.tY = i;
     }
 
-    public String l() {
-        return this.o;
-    }
-
-    public void h(String str) {
-        this.o = str;
-    }
-
-    public String m() {
-        return this.p;
-    }
-
-    public void i(String str) {
-        this.p = str;
-    }
-
-    public String n() {
-        return this.q;
-    }
-
-    public void j(String str) {
-        this.q = str;
-    }
-
-    public String o() {
-        return this.r;
-    }
-
-    public void k(String str) {
-        this.r = str;
-    }
-
-    public String p() {
-        return this.s;
-    }
-
-    public void l(String str) {
-        this.s = str;
-    }
-
-    public String q() {
-        return this.t;
-    }
-
-    public void m(String str) {
-        this.t = str;
-    }
-
-    public String r() {
-        return this.u;
-    }
-
-    public void n(String str) {
-        this.u = str;
-    }
-
-    public String s() {
-        return this.v;
-    }
-
-    public void o(String str) {
-        this.v = str;
-    }
-
-    public String t() {
-        return this.w;
-    }
-
-    public void p(String str) {
-        this.w = str;
-    }
-
-    public void q(String str) {
-        this.x = str;
-    }
-
-    public String u() {
-        return this.y;
-    }
-
-    public void r(String str) {
-        this.y = str;
-    }
-
-    public void s(String str) {
-        if (!TextUtils.isEmpty(str)) {
-            for (Object obj : str.split("\\*")) {
-                if (!TextUtils.isEmpty(obj)) {
-                    String[] split = obj.split(",");
-                    a(Double.parseDouble(split[0]));
-                    b(Double.parseDouble(split[1]));
-                    a((float) Integer.parseInt(split[2]));
+    public void yz(int i) {
+        if (this.tW == 0) {
+            switch (i) {
+                case 0:
+                    this.tX = "success";
                     break;
-                }
+                case 1:
+                    this.tX = "重要参数为空";
+                    break;
+                case 2:
+                    this.tX = "WIFI信息不足";
+                    break;
+                case 3:
+                    this.tX = "请求参数获取出现异常";
+                    break;
+                case 4:
+                    this.tX = "网络连接异常";
+                    break;
+                case 5:
+                    this.tX = "解析XML出错";
+                    break;
+                case 6:
+                    this.tX = "定位结果错误";
+                    break;
+                case 7:
+                    this.tX = "KEY错误";
+                    break;
+                case 8:
+                    this.tX = "其他错误";
+                    break;
+                case 9:
+                    this.tX = "初始化异常";
+                    break;
+                case 10:
+                    this.tX = "定位服务启动失败";
+                    break;
+                case 11:
+                    this.tX = "错误的基站信息，请检查是否插入SIM卡";
+                    break;
+                case 12:
+                    this.tX = "缺少定位权限";
+                    break;
             }
-            this.z = str;
+            this.tW = i;
         }
     }
 
-    public String v() {
-        return this.A;
-    }
-
-    public void t(String str) {
-        this.A = str;
-    }
-
-    public void u(String str) {
-        if (!TextUtils.isEmpty(str)) {
-            str = str.replace("F", "");
-            try {
-                Integer.parseInt(str);
-            } catch (Exception e) {
-                str = null;
-            }
-        }
-        this.B = str;
-    }
-
-    public int w() {
-        return this.C;
-    }
-
-    public void v(String str) {
+    public void zA(String str) {
         if (TextUtils.isEmpty(str)) {
-            this.C = -1;
+            this.up = -1;
         } else if (this.a.equals("gps")) {
-            this.C = 0;
+            this.up = 0;
         } else if (str.equals("0")) {
-            this.C = 0;
+            this.up = 0;
         } else if (str.equals("1")) {
-            this.C = 1;
+            this.up = 1;
         } else {
-            this.C = -1;
+            this.up = -1;
         }
     }
 
-    public String x() {
-        return this.D;
+    public String zB() {
+        return this.uq;
     }
 
-    public AmapLoc y() {
-        Object x = x();
-        if (TextUtils.isEmpty(x)) {
+    public AmapLoc zC() {
+        Object zB = zB();
+        if (TextUtils.isEmpty(zB)) {
             return null;
         }
-        String[] split = x.split(",");
+        String[] split = zB.split(",");
         if (split.length != 3) {
             return null;
         }
         AmapLoc amapLoc = new AmapLoc();
-        amapLoc.c(e());
-        amapLoc.d(split[0]);
-        amapLoc.e(split[1]);
-        amapLoc.a(Float.parseFloat(split[2]));
-        amapLoc.i(m());
-        amapLoc.k(o());
-        amapLoc.l(p());
-        amapLoc.m(q());
-        amapLoc.n(r());
-        amapLoc.a(i());
-        amapLoc.f(j());
-        amapLoc.v(String.valueOf(w()));
-        if (br.a(amapLoc)) {
-            return amapLoc;
-        }
-        return null;
+        amapLoc.yF(yE());
+        amapLoc.yI(split[0]);
+        amapLoc.yL(split[1]);
+        amapLoc.yO(Float.parseFloat(split[2]));
+        amapLoc.zd(zc());
+        amapLoc.zh(zg());
+        amapLoc.zj(zi());
+        amapLoc.zl(zk());
+        amapLoc.zn(zm());
+        amapLoc.yV(yU());
+        amapLoc.yX(yW());
+        amapLoc.zA(String.valueOf(zz()));
+        return bq.vH(amapLoc) ? amapLoc : null;
     }
 
-    public void w(String str) {
-        this.D = str;
+    public void zD(String str) {
+        this.uq = str;
     }
 
-    public JSONObject z() {
-        return this.E;
+    public JSONObject zE() {
+        return this.ur;
     }
 
-    public void a(JSONObject jSONObject) {
-        this.E = jSONObject;
+    public void zF(JSONObject jSONObject) {
+        this.ur = jSONObject;
     }
 
-    public String A() {
-        return c(1);
+    public String zG() {
+        return zH(1);
     }
 
     /* JADX WARNING: inconsistent code. */
     /* Code decompiled incorrectly, please refer to instructions dump. */
-    public java.lang.String c(int r7) {
+    public java.lang.String zH(int r7) {
         /*
         r6 = this;
         r0 = 0;
@@ -602,98 +415,98 @@ public class AmapLoc implements Parcelable {
         return r0;
     L_0x0010:
         r2 = "altitude";
-        r4 = r6.d;	 Catch:{ Exception -> 0x0101 }
+        r4 = r6.tQ;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
         r2 = "speed";
-        r3 = r6.f;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tS;	 Catch:{ Exception -> 0x0101 }
         r4 = (double) r3;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
         r2 = "bearing";
-        r3 = r6.g;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tT;	 Catch:{ Exception -> 0x0101 }
         r4 = (double) r3;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
         r2 = "retype";
-        r3 = r6.n;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ua;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "citycode";
-        r3 = r6.p;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uc;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "desc";
-        r3 = r6.q;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ud;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "adcode";
-        r3 = r6.r;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ue;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "country";
-        r3 = r6.s;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uf;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "province";
-        r3 = r6.t;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ug;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "city";
-        r3 = r6.u;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uh;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "district";
-        r3 = r6.v;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ui;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "road";
-        r3 = r6.w;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uj;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "street";
-        r3 = r6.x;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uk;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "poiname";
-        r3 = r6.y;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ul;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "cens";
-        r3 = r6.z;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.um;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "poiid";
-        r3 = r6.A;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.un;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "floor";
-        r3 = r6.B;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uo;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "coord";
-        r3 = r6.C;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.up;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "mcell";
-        r3 = r6.D;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.uq;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "errorCode";
-        r3 = r6.j;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tW;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "errorInfo";
-        r3 = r6.k;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tX;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "locationType";
-        r3 = r6.l;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tY;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "locationDetail";
-        r3 = r6.m;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tZ;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
-        r2 = r6.E;	 Catch:{ Exception -> 0x0101 }
+        r2 = r6.ur;	 Catch:{ Exception -> 0x0101 }
         if (r2 != 0) goto L_0x0105;
     L_0x00ce:
         r2 = "time";
-        r4 = r6.h;	 Catch:{ Exception -> 0x0101 }
+        r4 = r6.tU;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
     L_0x00d6:
         r2 = "provider";
         r3 = r6.a;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         r2 = "lon";
-        r4 = r6.b;	 Catch:{ Exception -> 0x0101 }
+        r4 = r6.tP;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
         r2 = "lat";
         r4 = r6.c;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
         r2 = "accuracy";
-        r3 = r6.e;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tR;	 Catch:{ Exception -> 0x0101 }
         r4 = (double) r3;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r4);	 Catch:{ Exception -> 0x0101 }
         r2 = "type";
-        r3 = r6.i;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.tV;	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         goto L_0x0009;
     L_0x0101:
@@ -702,73 +515,139 @@ public class AmapLoc implements Parcelable {
         goto L_0x0009;
     L_0x0105:
         r2 = "offpct";
-        r2 = com.loc.br.a(r1, r2);	 Catch:{ Exception -> 0x0101 }
+        r2 = com.loc.bq.wb(r1, r2);	 Catch:{ Exception -> 0x0101 }
         if (r2 == 0) goto L_0x00ce;
     L_0x010e:
         r2 = "offpct";
-        r3 = r6.E;	 Catch:{ Exception -> 0x0101 }
+        r3 = r6.ur;	 Catch:{ Exception -> 0x0101 }
         r4 = "offpct";
         r3 = r3.getString(r4);	 Catch:{ Exception -> 0x0101 }
         r1.put(r2, r3);	 Catch:{ Exception -> 0x0101 }
         goto L_0x00ce;
         */
-        throw new UnsupportedOperationException("Method not decompiled: com.autonavi.aps.amapapi.model.AmapLoc.c(int):java.lang.String");
+        throw new UnsupportedOperationException("Method not decompiled: com.autonavi.aps.amapapi.model.AmapLoc.zH(int):java.lang.String");
     }
 
-    public int describeContents() {
-        return 0;
+    public String za() {
+        return this.ub;
     }
 
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(this.a);
-        parcel.writeString(this.i);
-        parcel.writeString(this.k);
-        parcel.writeInt(this.j);
-        parcel.writeFloat(this.g);
-        parcel.writeFloat(this.f);
-        parcel.writeFloat(this.e);
-        parcel.writeDouble(this.b);
-        parcel.writeDouble(this.c);
-        parcel.writeDouble(this.d);
-        parcel.writeLong(this.h);
-        parcel.writeString(this.n);
-        parcel.writeString(this.o);
-        parcel.writeString(this.p);
-        parcel.writeString(this.q);
-        parcel.writeString(this.r);
-        parcel.writeString(this.s);
-        parcel.writeString(this.t);
-        parcel.writeString(this.u);
-        parcel.writeString(this.v);
-        parcel.writeString(this.w);
-        parcel.writeString(this.x);
-        parcel.writeString(this.y);
-        parcel.writeString(this.z);
-        parcel.writeString(this.A);
-        parcel.writeString(this.B);
-        parcel.writeString(this.D);
-        parcel.writeString(this.m);
-        parcel.writeInt(this.C);
-        parcel.writeInt(this.l);
+    public void zb(String str) {
+        this.ub = str;
     }
 
-    static {
-        CREATOR = new Creator<AmapLoc>() {
-            public /* synthetic */ Object createFromParcel(Parcel parcel) {
-                return a(parcel);
-            }
+    public String zc() {
+        return this.uc;
+    }
 
-            public /* synthetic */ Object[] newArray(int i) {
-                return a(i);
-            }
+    public void zd(String str) {
+        this.uc = str;
+    }
 
-            public AmapLoc a(Parcel parcel) {
-                return new AmapLoc(parcel);
-            }
+    public String ze() {
+        return this.ud;
+    }
 
-            public AmapLoc[] a(int i) {
-                return null;
+    public void zf(String str) {
+        this.ud = str;
+    }
+
+    public String zg() {
+        return this.ue;
+    }
+
+    public void zh(String str) {
+        this.ue = str;
+    }
+
+    public String zi() {
+        return this.uf;
+    }
+
+    public void zj(String str) {
+        this.uf = str;
+    }
+
+    public String zk() {
+        return this.ug;
+    }
+
+    public void zl(String str) {
+        this.ug = str;
+    }
+
+    public String zm() {
+        return this.uh;
+    }
+
+    public void zn(String str) {
+        this.uh = str;
+    }
+
+    public String zo() {
+        return this.ui;
+    }
+
+    public void zp(String str) {
+        this.ui = str;
+    }
+
+    public String zq() {
+        return this.uj;
+    }
+
+    public void zr(String str) {
+        this.uj = str;
+    }
+
+    public void zs(String str) {
+        this.uk = str;
+    }
+
+    public String zt() {
+        return this.ul;
+    }
+
+    public void zu(String str) {
+        this.ul = str;
+    }
+
+    public void zv(String str) {
+        if (!TextUtils.isEmpty(str)) {
+            for (Object obj : str.split("\\*")) {
+                if (!TextUtils.isEmpty(obj)) {
+                    String[] split = obj.split(",");
+                    yH(Double.parseDouble(split[0]));
+                    yK(Double.parseDouble(split[1]));
+                    yO((float) Integer.parseInt(split[2]));
+                    break;
+                }
             }
-        };
+            this.um = str;
+        }
+    }
+
+    public String zw() {
+        return this.un;
+    }
+
+    public void zx(String str) {
+        this.un = str;
+    }
+
+    public void zy(String str) {
+        if (!TextUtils.isEmpty(str)) {
+            str = str.replace("F", "");
+            try {
+                Integer.parseInt(str);
+            } catch (Exception e) {
+                str = null;
+            }
+        }
+        this.uo = str;
+    }
+
+    public int zz() {
+        return this.up;
     }
 }

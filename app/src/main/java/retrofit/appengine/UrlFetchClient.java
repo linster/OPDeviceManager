@@ -6,104 +6,96 @@ import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
-
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
 import retrofit.client.Client;
 import retrofit.client.Header;
 import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.mime.TypedByteArray;
-import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
 
 public class UrlFetchClient implements Client {
     private final URLFetchService urlFetchService;
 
-    private static HTTPMethod getHttpMethod(String method) {
-        if ("GET".equals(method)) {
-            return HTTPMethod.GET;
-        }
-        if ("POST".equals(method)) {
-            return HTTPMethod.POST;
-        }
-        if ("PATCH".equals(method)) {
-            return HTTPMethod.PATCH;
-        }
-        if ("PUT".equals(method)) {
-            return HTTPMethod.PUT;
-        }
-        if ("DELETE".equals(method)) {
-            return HTTPMethod.DELETE;
-        }
-        if ("HEAD".equals(method)) {
-            return HTTPMethod.HEAD;
-        }
-        throw new IllegalStateException("Illegal HTTP method: " + method);
-    }
-
     public UrlFetchClient() {
         this(URLFetchServiceFactory.getURLFetchService());
     }
 
-    public UrlFetchClient(URLFetchService urlFetchService) {
-        this.urlFetchService = urlFetchService;
+    public UrlFetchClient(URLFetchService uRLFetchService) {
+        this.urlFetchService = uRLFetchService;
     }
 
-    public Response execute(Request request) throws IOException {
-        HTTPRequest fetchRequest = createRequest(request);
-        return parseResponse(execute(this.urlFetchService, fetchRequest), fetchRequest);
-    }
-
-    protected HTTPResponse execute(URLFetchService urlFetchService, HTTPRequest request) throws IOException {
-        return urlFetchService.fetch(request);
-    }
-
-    static HTTPRequest createRequest(Request request) throws IOException {
-        HTTPRequest fetchRequest = new HTTPRequest(new URL(request.getUrl()), getHttpMethod(request.getMethod()));
+    static HTTPRequest createRequest(Request request) {
+        HTTPRequest hTTPRequest = new HTTPRequest(new URL(request.getUrl()), getHttpMethod(request.getMethod()));
         for (Header header : request.getHeaders()) {
-            fetchRequest.addHeader(new HTTPHeader(header.getName(), header.getValue()));
+            hTTPRequest.addHeader(new HTTPHeader(header.getName(), header.getValue()));
         }
         TypedOutput body = request.getBody();
         if (body != null) {
             String mimeType = body.mimeType();
             if (mimeType != null) {
-                fetchRequest.addHeader(new HTTPHeader("Content-Type", mimeType));
+                hTTPRequest.addHeader(new HTTPHeader("Content-Type", mimeType));
             }
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            body.writeTo(baos);
-            fetchRequest.setPayload(baos.toByteArray());
+            OutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            body.writeTo(byteArrayOutputStream);
+            hTTPRequest.setPayload(byteArrayOutputStream.toByteArray());
         }
-        return fetchRequest;
+        return hTTPRequest;
     }
 
-    static Response parseResponse(HTTPResponse response, HTTPRequest creatingRequest) {
-        URL responseUrl = response.getFinalUrl();
-        if (responseUrl == null) {
-            responseUrl = creatingRequest.getURL();
+    private static HTTPMethod getHttpMethod(String str) {
+        if ("GET".equals(str)) {
+            return HTTPMethod.GET;
         }
-        String urlString = responseUrl.toString();
-        int status = response.getResponseCode();
-        List<HTTPHeader> fetchHeaders = response.getHeaders();
-        List<Header> headers = new ArrayList(fetchHeaders.size());
-        String contentType = "application/octet-stream";
-        for (HTTPHeader fetchHeader : fetchHeaders) {
-            String name = fetchHeader.getName();
-            String value = fetchHeader.getValue();
-            if ("Content-Type".equalsIgnoreCase(name)) {
-                contentType = value;
-            }
-            headers.add(new Header(name, value));
+        if ("POST".equals(str)) {
+            return HTTPMethod.POST;
         }
-        TypedInput body = null;
-        byte[] fetchBody = response.getContent();
-        if (fetchBody != null) {
-            body = new TypedByteArray(contentType, fetchBody);
+        if ("PATCH".equals(str)) {
+            return HTTPMethod.PATCH;
         }
-        return new Response(urlString, status, "", headers, body);
+        if ("PUT".equals(str)) {
+            return HTTPMethod.PUT;
+        }
+        if ("DELETE".equals(str)) {
+            return HTTPMethod.DELETE;
+        }
+        if ("HEAD".equals(str)) {
+            return HTTPMethod.HEAD;
+        }
+        throw new IllegalStateException("Illegal HTTP method: " + str);
+    }
+
+    static Response parseResponse(HTTPResponse hTTPResponse, HTTPRequest hTTPRequest) {
+        URL finalUrl = hTTPResponse.getFinalUrl();
+        if (finalUrl == null) {
+            finalUrl = hTTPRequest.getURL();
+        }
+        String url = finalUrl.toString();
+        int responseCode = hTTPResponse.getResponseCode();
+        List<HTTPHeader> headers = hTTPResponse.getHeaders();
+        List arrayList = new ArrayList(headers.size());
+        String str = "application/octet-stream";
+        for (HTTPHeader hTTPHeader : headers) {
+            String name = hTTPHeader.getName();
+            String value = hTTPHeader.getValue();
+            String str2 = !"Content-Type".equalsIgnoreCase(name) ? str : value;
+            arrayList.add(new Header(name, value));
+            str = str2;
+        }
+        byte[] content = hTTPResponse.getContent();
+        return new Response(url, responseCode, "", arrayList, content == null ? null : new TypedByteArray(str, content));
+    }
+
+    protected HTTPResponse execute(URLFetchService uRLFetchService, HTTPRequest hTTPRequest) {
+        return uRLFetchService.fetch(hTTPRequest);
+    }
+
+    public Response execute(Request request) {
+        HTTPRequest createRequest = createRequest(request);
+        return parseResponse(execute(this.urlFetchService, createRequest), createRequest);
     }
 }

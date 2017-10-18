@@ -1,42 +1,28 @@
 package com.loc;
 
-import java.util.HashMap;
-import java.util.Map;
+public class u {
+    private String a;
+    private String la;
+    private String lb;
+    private boolean lc = true;
+    private String ld = "standard";
+    private String[] le = null;
 
-/* compiled from: AuthRequest */
-class u extends aq {
-    private Map<String, String> d;
-    private String e;
-    private Map<String, String> f;
-
-    u() {
-        this.d = new HashMap();
-        this.f = new HashMap();
+    public u(String str, String str2, String str3) {
+        this.a = str2;
+        this.lb = str3;
+        this.la = str;
     }
 
-    void a(Map<String, String> map) {
-        this.d.clear();
-        this.d.putAll(map);
+    public u mm(String[] strArr) {
+        this.le = (String[]) strArr.clone();
+        return this;
     }
 
-    void a(String str) {
-        this.e = str;
-    }
-
-    void b(Map<String, String> map) {
-        this.f.clear();
-        this.f.putAll(map);
-    }
-
-    public String c() {
-        return this.e;
-    }
-
-    public Map<String, String> a() {
-        return this.d;
-    }
-
-    public Map<String, String> b() {
-        return this.f;
+    public x mn() {
+        if (this.le != null) {
+            return new x();
+        }
+        throw new i("sdk packages is null");
     }
 }

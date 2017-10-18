@@ -16,5 +16,5 @@ public interface OnePlus {
 
     @FormUrlEncoded
     @POST("/oauth/token")
-    TokenResponse sendTokenRequest(@Field(encodeValue = false, value = "client_id") String str, @Field(encodeValue = false, value = "grant_type") String str2, @Field(encodeValue = false, value = "client_secret") String str3, @Field(encodeValue = false, value = "scope") String str4);
+    b sendTokenRequest(@Field(encodeValue = false, value = "client_id") String str, @Field(encodeValue = false, value = "grant_type") String str2, @Field(encodeValue = false, value = "client_secret") String str3, @Field(encodeValue = false, value = "scope") String str4);
 }

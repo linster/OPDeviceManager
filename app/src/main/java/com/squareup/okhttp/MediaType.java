@@ -6,84 +6,74 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class MediaType {
-    private static final Pattern PARAMETER;
+    private static final Pattern PARAMETER = Pattern.compile(";\\s*(?:([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)=(?:([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)|\"([^\"]*)\"))?");
     private static final String QUOTED = "\"([^\"]*)\"";
     private static final String TOKEN = "([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)";
-    private static final Pattern TYPE_SUBTYPE;
+    private static final Pattern TYPE_SUBTYPE = Pattern.compile("([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)/([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)");
     private final String charset;
     private final String mediaType;
     private final String subtype;
     private final String type;
 
-    static {
-        TYPE_SUBTYPE = Pattern.compile("([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)/([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)");
-        PARAMETER = Pattern.compile(";\\s*(?:([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)=(?:([a-zA-Z0-9-!#$%&'*+.^_`{|}~]+)|\"([^\"]*)\"))?");
+    private MediaType(String str, String str2, String str3, String str4) {
+        this.mediaType = str;
+        this.type = str2;
+        this.subtype = str3;
+        this.charset = str4;
     }
 
-    private MediaType(String mediaType, String type, String subtype, String charset) {
-        this.mediaType = mediaType;
-        this.type = type;
-        this.subtype = subtype;
-        this.charset = charset;
-    }
-
-    public static MediaType parse(String string) {
-        Matcher typeSubtype = TYPE_SUBTYPE.matcher(string);
-        if (!typeSubtype.lookingAt()) {
+    public static MediaType parse(String str) {
+        Matcher matcher = TYPE_SUBTYPE.matcher(str);
+        if (!matcher.lookingAt()) {
             return null;
         }
-        String type = typeSubtype.group(1).toLowerCase(Locale.US);
-        String subtype = typeSubtype.group(2).toLowerCase(Locale.US);
-        String charset = null;
-        Matcher parameter = PARAMETER.matcher(string);
-        for (int s = typeSubtype.end(); s < string.length(); s = parameter.end()) {
-            parameter.region(s, string.length());
-            if (!parameter.lookingAt()) {
+        String toLowerCase = matcher.group(1).toLowerCase(Locale.US);
+        String toLowerCase2 = matcher.group(2).toLowerCase(Locale.US);
+        Matcher matcher2 = PARAMETER.matcher(str);
+        String str2 = null;
+        for (int end = matcher.end(); end < str.length(); end = matcher2.end()) {
+            matcher2.region(end, str.length());
+            if (!matcher2.lookingAt()) {
                 return null;
             }
-            String name = parameter.group(1);
-            if (name != null && name.equalsIgnoreCase("charset")) {
-                String charsetParameter;
-                if (parameter.group(2) == null) {
-                    charsetParameter = parameter.group(3);
+            String group = matcher2.group(1);
+            if (group != null && group.equalsIgnoreCase("charset")) {
+                group = matcher2.group(2) == null ? matcher2.group(3) : matcher2.group(2);
+                if (str2 == null || group.equalsIgnoreCase(str2)) {
+                    str2 = group;
                 } else {
-                    charsetParameter = parameter.group(2);
-                }
-                if (charset == null || charsetParameter.equalsIgnoreCase(charset)) {
-                    charset = charsetParameter;
-                } else {
-                    throw new IllegalArgumentException("Multiple different charsets: " + string);
+                    throw new IllegalArgumentException("Multiple different charsets: " + str);
                 }
             }
         }
-        return new MediaType(string, type, subtype, charset);
-    }
-
-    public String type() {
-        return this.type;
-    }
-
-    public String subtype() {
-        return this.subtype;
+        return new MediaType(str, toLowerCase, toLowerCase2, str2);
     }
 
     public Charset charset() {
         return this.charset == null ? null : Charset.forName(this.charset);
     }
 
-    public Charset charset(Charset defaultValue) {
-        return this.charset == null ? defaultValue : Charset.forName(this.charset);
+    public Charset charset(Charset charset) {
+        return this.charset == null ? charset : Charset.forName(this.charset);
+    }
+
+    public boolean equals(Object obj) {
+        return (obj instanceof MediaType) && ((MediaType) obj).mediaType.equals(this.mediaType);
+    }
+
+    public int hashCode() {
+        return this.mediaType.hashCode();
+    }
+
+    public String subtype() {
+        return this.subtype;
     }
 
     public String toString() {
         return this.mediaType;
     }
 
-    public boolean equals(Object o) {
-        return (o instanceof MediaType) && ((MediaType) o).mediaType.equals(this.mediaType);
-    }
-
-    public int hashCode() {
-        return this.mediaType.hashCode();
+    public String type() {
+        return this.type;
     }
 }

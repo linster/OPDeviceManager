@@ -1,70 +1,64 @@
 package com.loc;
 
-/* compiled from: SDKInfo */
-public class s {
-    String a;
-    String b;
-    String c;
-    private boolean d;
-    private String e;
-    private String[] f;
+import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
+import java.text.SimpleDateFormat;
 
-    /* compiled from: SDKInfo */
-    public static class a {
-        private String a;
-        private String b;
-        private String c;
-        private boolean d;
-        private String e;
-        private String[] f;
+/* compiled from: Unknown */
+final class s implements LocationListener {
+    private /* synthetic */ aF kY;
 
-        public a(String str, String str2, String str3) {
-            this.d = true;
-            this.e = "standard";
-            this.f = null;
-            this.a = str2;
-            this.c = str3;
-            this.b = str;
-        }
+    s(aF aFVar) {
+        this.kY = aFVar;
+    }
 
-        public a a(String[] strArr) {
-            this.f = (String[]) strArr.clone();
-            return this;
-        }
+    private static boolean ml(Location location) {
+        return location != null && "gps".equalsIgnoreCase(location.getProvider()) && location.getLatitude() > -90.0d && location.getLatitude() < 90.0d && location.getLongitude() > -180.0d && location.getLongitude() < 180.0d;
+    }
 
-        public s a() throws i {
-            if (this.f != null) {
-                return new s();
+    public final void onLocationChanged(Location location) {
+        Object obj = null;
+        try {
+            long time = location.getTime();
+            long currentTimeMillis = System.currentTimeMillis();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            simpleDateFormat.format(Long.valueOf(time));
+            simpleDateFormat.format(Long.valueOf(currentTimeMillis));
+            if (time > 0) {
+                obj = 1;
             }
-            throw new i("sdk packages is null");
+            if (obj != null) {
+                currentTimeMillis = time;
+            }
+            if (location != null && ml(location)) {
+                if (location.getSpeed() > ((float) aF.e)) {
+                    Z.nQ(aF.oI);
+                    Z.nR(aF.oI * 10);
+                } else if (location.getSpeed() > ((float) aF.d)) {
+                    Z.nQ(aF.oH);
+                    Z.nR(aF.oH * 10);
+                } else {
+                    Z.nQ(aF.oG);
+                    Z.nR(aF.oG * 10);
+                }
+                this.kY.oW.sn();
+                ml(location);
+                if (this.kY.oW.sn() && ml(location)) {
+                    location.setTime(System.currentTimeMillis());
+                    aF.qK(this.kY, location, 0, currentTimeMillis);
+                }
+            }
+        } catch (Exception e) {
         }
     }
 
-    private s(a aVar) {
-        this.d = true;
-        this.e = "standard";
-        this.f = null;
-        this.a = aVar.a;
-        this.c = aVar.b;
-        this.b = aVar.c;
-        this.d = aVar.d;
-        this.e = aVar.e;
-        this.f = aVar.f;
+    public final void onProviderDisabled(String str) {
     }
 
-    public String a() {
-        return this.c;
+    public final void onProviderEnabled(String str) {
     }
 
-    public String b() {
-        return this.a;
-    }
-
-    public String c() {
-        return this.b;
-    }
-
-    public String d() {
-        return this.e;
+    public final void onStatusChanged(String str, int i, Bundle bundle) {
     }
 }

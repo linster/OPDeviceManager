@@ -2,17 +2,12 @@ package retrofit.android;
 
 import android.os.Handler;
 import android.os.Looper;
-
 import java.util.concurrent.Executor;
 
 public final class MainThreadExecutor implements Executor {
-    private final Handler handler;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
-    public MainThreadExecutor() {
-        this.handler = new Handler(Looper.getMainLooper());
-    }
-
-    public void execute(Runnable r) {
-        this.handler.post(r);
+    public void execute(Runnable runnable) {
+        this.handler.post(runnable);
     }
 }

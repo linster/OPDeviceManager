@@ -4,9 +4,20 @@ public final class Header {
     private final String name;
     private final String value;
 
-    public Header(String name, String value) {
-        this.name = name;
-        this.value = value;
+    public Header(String str, String str2) {
+        this.name = str;
+        this.value = str2;
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Header header = (Header) obj;
+        return (this.name != null ? this.name.equals(header.name) : header.name == null) ? this.value != null ? this.value.equals(header.value) : header.value == null : false;
     }
 
     public String getName() {
@@ -15,21 +26,6 @@ public final class Header {
 
     public String getValue() {
         return this.value;
-    }
-
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Header header = (Header) o;
-        if (this.name != null ? this.name.equals(header.name) : header.name == null) {
-            return this.value != null ? this.value.equals(header.value) : header.value == null;
-        } else {
-            return false;
-        }
     }
 
     public int hashCode() {
